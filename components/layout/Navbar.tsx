@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, X, Sparkles, PhoneCall } from 'lucide-react';
+import { ShoppingBag, Menu, X, Sparkles, PhoneCall, User } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import AuthModal from '@/components/shared/AuthModal';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  
   const { toggleCart, getItemCount } = useCartStore();
   const itemCount = getItemCount();
 
@@ -22,6 +25,8 @@ export default function Navbar() {
 
   return (
     <>
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+
       {/* Announcement Bar */}
       <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 text-white text-xs md:text-sm py-2 px-4 text-center font-bold tracking-wide shadow-inner flex items-center justify-center gap-2">
         <Sparkles className="w-4 h-4 animate-spin text-yellow-300" />
@@ -68,6 +73,17 @@ export default function Navbar() {
 
           {/* Action Controls */}
           <div className="flex items-center gap-3">
+            
+            {/* Customer Login / Account Button */}
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="p-3 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2 text-xs font-bold shadow-sm"
+              title="Customer Login / Signup"
+            >
+              <User className="w-5 h-5 text-orange-500" />
+              <span className="hidden sm:inline">Login / Sign Up</span>
+            </button>
+
             <a 
               href="https://wa.me/918793687379?text=Hi! I need help with an order on Rangaroo" 
               target="_blank" 
@@ -107,6 +123,13 @@ export default function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 px-4 py-6 shadow-xl animate-fadeIn">
             <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setAuthModalOpen(true); }}
+                className="font-heading text-lg text-orange-500 hover:text-orange-600 py-2 border-b border-slate-100 text-left flex items-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                <span>Customer Login / Sign Up</span>
+              </button>
               <Link 
                 href="/" 
                 onClick={() => setMobileMenuOpen(false)}

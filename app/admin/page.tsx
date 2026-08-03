@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { 
   TrendingUp, ShoppingBag, Users, DollarSign, Package, 
   Tag, MessageSquare, AlertTriangle, ArrowUpRight, CheckCircle2, 
-  Plus, Download, Search, Settings, Save, Edit3, Trash2, Lock, LogOut
+  Plus, Download, Search, Settings, Save, Edit3, Trash2, Lock, LogOut, Image as ImageIcon, Upload
 } from 'lucide-react';
 import { products as initialProducts } from '@/data/products';
 
@@ -38,10 +38,10 @@ export default function AdminDashboard() {
     collectionId: 'dinosaur',
     figureCount: '2',
     paintType: 'Tempera',
+    imageUrl: '/logo.png',
   });
 
   useEffect(() => {
-    // Check if session is authenticated
     const authStatus = sessionStorage.getItem('rangaroo_admin_authenticated');
     if (authStatus === 'true') {
       setIsAuthenticated(true);
@@ -50,7 +50,6 @@ export default function AdminDashboard() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default Admin Passcode: admin / rangaroo2026 or admin123
     if (
       (loginUsername === 'admin' && loginPassword === 'rangaroo2026') ||
       (loginUsername === 'admin' && loginPassword === 'admin123')
@@ -94,13 +93,13 @@ export default function AdminDashboard() {
       categoryId: newProduct.categoryId,
       collectionId: newProduct.collectionId,
       isFeatured: true,
-      images: ['/logo.png'],
+      images: [newProduct.imageUrl || '/logo.png'],
       kitContents: ['Plaster Figurines', '6 Paint Colors', '1 Paintbrush', 'Instruction Guide'],
       stock: 50
     };
     setProductList([created, ...productList]);
-    setNewProduct({ name: '', price: '', categoryId: 'mini-kit', collectionId: 'dinosaur', figureCount: '2', paintType: 'Tempera' });
-    toast.success(`${created.name} added to live catalog!`);
+    setNewProduct({ name: '', price: '', categoryId: 'mini-kit', collectionId: 'dinosaur', figureCount: '2', paintType: 'Tempera', imageUrl: '/logo.png' });
+    toast.success(`${created.name} added to live catalog with custom image!`);
   };
 
   const handleDeleteProduct = (id: string) => {
@@ -113,7 +112,6 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-body">
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
-          
           <div className="w-16 h-16 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto text-3xl border border-orange-500/30">
             <Lock className="w-8 h-8" />
           </div>
@@ -160,7 +158,6 @@ export default function AdminDashboard() {
           <p className="text-[11px] text-slate-500 font-mono">
             Default credentials: <strong className="text-slate-300">admin</strong> / <strong className="text-slate-300">rangaroo2026</strong>
           </p>
-
         </div>
       </div>
     );
@@ -202,7 +199,7 @@ export default function AdminDashboard() {
           {[
             { id: 'overview', label: '📊 Dashboard Overview' },
             { id: 'cms', label: '✍️ Site Content & CMS' },
-            { id: 'products', label: '🎨 Product Catalog & Pricing' },
+            { id: 'products', label: '🎨 Product Catalog & Images' },
             { id: 'orders', label: '📦 Orders & Shipping' },
           ].map((tab) => (
             <button
@@ -244,8 +241,8 @@ export default function AdminDashboard() {
                   <div className="text-xs text-slate-400 mt-1">Change main banner & tagline</div>
                 </button>
                 <button onClick={() => setActiveTab('products')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
-                  <div className="font-heading text-base text-amber-400">Add New DIY Kit</div>
-                  <div className="text-xs text-slate-400 mt-1">Add products & change prices</div>
+                  <div className="font-heading text-base text-amber-400">Add Product & Images</div>
+                  <div className="text-xs text-slate-400 mt-1">Add products, upload image URLs & change prices</div>
                 </button>
                 <button onClick={() => setActiveTab('orders')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
                   <div className="font-heading text-base text-emerald-400">View Customer Orders</div>
@@ -295,27 +292,6 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Contact Email</label>
-                  <input 
-                    type="email" 
-                    value={cmsSettings.contactEmail}
-                    onChange={(e) => setCmsSettings({ ...cmsSettings, contactEmail: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Contact Phone</label>
-                  <input 
-                    type="text" 
-                    value={cmsSettings.contactPhone}
-                    onChange={(e) => setCmsSettings({ ...cmsSettings, contactPhone: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white"
-                  />
-                </div>
-              </div>
-
               <button 
                 type="submit"
                 className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-heading text-sm px-6 py-3.5 rounded-2xl shadow-fun flex items-center gap-2"
@@ -327,73 +303,123 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* PRODUCTS CATALOG MANAGER TAB */}
+        {/* PRODUCTS & IMAGE MANAGEMENT TAB */}
         {activeTab === 'products' && (
           <div className="space-y-8">
-            {/* Add New Product Form */}
-            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 space-y-4">
-              <h3 className="font-heading text-xl text-white">Add New DIY Kit to Storefront 🎨</h3>
+            
+            {/* Add New Product Form with Image URL & Image Preview */}
+            <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading text-xl text-white">Add New DIY Kit with Image 🖼️</h3>
+                  <p className="text-xs text-slate-400 font-medium">Upload or enter image URL to display on product cards and product pages.</p>
+                </div>
+              </div>
               
-              <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <input 
-                  type="text" 
-                  placeholder="Kit Name (e.g. Magic Unicorn Kit)" 
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                />
-                <input 
-                  type="number" 
-                  placeholder="Price (₹)" 
-                  value={newProduct.price}
-                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                />
-                <select 
-                  value={newProduct.categoryId}
-                  onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                >
-                  <option value="mini-kit">Mini Kit (₹149)</option>
-                  <option value="fun-kit">Fun Kit (₹199)</option>
-                  <option value="creative-kit">Creative Kit (₹299)</option>
-                  <option value="signature-collection">Signature (₹499)</option>
-                </select>
-                <select 
-                  value={newProduct.collectionId}
-                  onChange={(e) => setNewProduct({ ...newProduct, collectionId: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                >
-                  <option value="dinosaur">Dinosaur</option>
-                  <option value="space">Space</option>
-                  <option value="princess">Princess</option>
-                  <option value="vehicle">Vehicle</option>
-                </select>
-                <input 
-                  type="number" 
-                  placeholder="Figure Count" 
-                  value={newProduct.figureCount}
-                  onChange={(e) => setNewProduct({ ...newProduct, figureCount: e.target.value })}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                />
-                <button 
-                  type="submit"
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs py-2 rounded-xl"
-                >
-                  + Add Kit
-                </button>
+              <form onSubmit={handleAddProduct} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Product Name *</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. DIY Unicorn Paint Kit" 
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Price (₹) *</label>
+                    <input 
+                      type="number" 
+                      placeholder="299" 
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Kit Tier</label>
+                    <select 
+                      value={newProduct.categoryId}
+                      onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                    >
+                      <option value="mini-kit">Mini Kit (₹149)</option>
+                      <option value="fun-kit">Fun Kit (₹199)</option>
+                      <option value="creative-kit">Creative Kit (₹299)</option>
+                      <option value="signature-collection">Signature (₹499)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Theme Collection</label>
+                    <select 
+                      value={newProduct.collectionId}
+                      onChange={(e) => setNewProduct({ ...newProduct, collectionId: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                    >
+                      <option value="dinosaur">Dinosaur 🦕</option>
+                      <option value="space">Space 🚀</option>
+                      <option value="princess">Princess 👸</option>
+                      <option value="vehicle">Vehicle 🚗</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Product Image Input & Live Preview Box */}
+                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row items-center gap-4">
+                  <div className="w-20 h-20 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                    <Image 
+                      src={newProduct.imageUrl || '/logo.png'} 
+                      alt="Preview" 
+                      width={80} 
+                      height={80} 
+                      className="w-full h-full object-contain p-1"
+                    />
+                  </div>
+
+                  <div className="flex-1 w-full space-y-1">
+                    <label className="block text-xs font-bold text-orange-400 flex items-center gap-1">
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      <span>Product Image URL / Asset Path:</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="/logo.png or https://example.com/kit-image.png" 
+                      value={newProduct.imageUrl}
+                      onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white font-heading text-xs px-6 py-3.5 rounded-xl shadow-fun shrink-0"
+                  >
+                    + Add Product to Live Store
+                  </button>
+                </div>
               </form>
             </div>
 
-            {/* Existing Products List */}
+            {/* Existing Products List with Image Thumbnails */}
             <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800">
-              <h3 className="font-heading text-xl text-white mb-4">Current Products ({productList.length})</h3>
+              <h3 className="font-heading text-xl text-white mb-4">Catalog Products ({productList.length})</h3>
               <div className="space-y-3">
                 {productList.map((p) => (
                   <div key={p.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 font-bold flex items-center justify-center text-xs">
-                        🎨
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-white p-1 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                        <Image 
+                          src={p.images && p.images.length > 0 ? p.images[0] : '/logo.png'} 
+                          alt={p.name} 
+                          width={48} 
+                          height={48} 
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                       <div>
                         <h4 className="font-heading text-white text-sm">{p.name}</h4>
@@ -405,6 +431,7 @@ export default function AdminDashboard() {
                       <button 
                         onClick={() => handleDeleteProduct(p.id)}
                         className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg"
+                        title="Delete Product"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
