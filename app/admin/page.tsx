@@ -1,71 +1,115 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { toast } from 'react-hot-toast';
 import { 
   TrendingUp, ShoppingBag, Users, DollarSign, Package, 
   Tag, MessageSquare, AlertTriangle, ArrowUpRight, CheckCircle2, 
-  Clock, Plus, Download, Search, ChevronRight 
+  Plus, Download, Search, Settings, Save, Edit3, Trash2
 } from 'lucide-react';
+import { products as initialProducts } from '@/data/products';
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'leads'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'cms' | 'products' | 'orders'>('overview');
 
-  const stats = [
-    { title: 'Total Revenue', value: '₹1,48,900', change: '+24% this month', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
-    { title: 'Total Orders', value: '432 Orders', change: '+18% this month', icon: ShoppingBag, color: 'from-purple-600 to-pink-500' },
-    { title: 'Store Conversion', value: '4.2%', change: '+0.8% benchmark', icon: TrendingUp, color: 'from-emerald-500 to-teal-500' },
-    { title: 'Bulk Party Leads', value: '12 Inquiries', change: '8 pending quotes', icon: Users, color: 'from-blue-500 to-indigo-600' },
-  ];
+  // Dynamic Site Settings State (CMS)
+  const [cmsSettings, setCmsSettings] = useState({
+    announcement: '🎨 Premium DIY Art & Craft Kits for Kids | Fast Pan-India Delivery',
+    heroTitle: 'Where Little Hands Create Big Smiles! 🎨',
+    heroSubtitle: 'Unbox creativity with thoughtfully designed DIY Paint Kits that encourage children to step away from screens and enjoy hands-on artistic adventures!',
+    contactEmail: 'rangaroo.co@gmail.com',
+    contactPhone: '+91 87936 87379',
+  });
 
-  const recentOrders = [
-    { id: 'RNG-20260803-089', customer: 'Ananya Sharma', items: 'Signature Collection Kit × 2', total: '₹998', status: 'PAID', date: 'Today, 8:45 PM' },
-    { id: 'RNG-20260803-088', customer: 'Rahul Verma', items: 'Mini Kit Bulk (25 Kids Pack)', total: '₹3,165', status: 'DISPATCHED', date: 'Today, 6:30 PM' },
-    { id: 'RNG-20260803-087', customer: 'Priya Mehta', items: 'Dinosaur DIY Kit + Space Kit', total: '₹598', status: 'PAID', date: 'Today, 4:15 PM' },
-    { id: 'RNG-20260803-086', customer: 'Deepak Joshi', items: 'DIY Ganesha Special Kit', total: '₹299', status: 'DELIVERED', date: 'Yesterday' },
-  ];
+  // Dynamic Products Management State
+  const [productList, setProductList] = useState(initialProducts);
+
+  // New Product Form State
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    price: '',
+    categoryId: 'mini-kit',
+    collectionId: 'dinosaur',
+    figureCount: '2',
+    paintType: 'Tempera',
+  });
+
+  const handleSaveCMS = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem('rangaroo_cms_settings', JSON.stringify(cmsSettings));
+    toast.success('Site content updated successfully! Live website reflects changes.');
+  };
+
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProduct.name || !newProduct.price) {
+      toast.error('Please enter product name and price');
+      return;
+    }
+    const created = {
+      id: 'prod-' + Date.now(),
+      name: newProduct.name,
+      slug: newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      description: 'Handcrafted premium DIY painting kit for kids.',
+      shortDescription: 'Fun screen-free painting kit with plaster figurines and paints.',
+      price: parseFloat(newProduct.price),
+      compareAtPrice: parseFloat(newProduct.price) * 1.3,
+      figureCount: parseInt(newProduct.figureCount),
+      paintType: newProduct.paintType,
+      categoryId: newProduct.categoryId,
+      collectionId: newProduct.collectionId,
+      isFeatured: true,
+      images: ['/logo.png'],
+      kitContents: ['Plaster Figurines', '6 Paint Colors', '1 Paintbrush', 'Instruction Guide'],
+      stock: 50
+    };
+    setProductList([created, ...productList]);
+    setNewProduct({ name: '', price: '', categoryId: 'mini-kit', collectionId: 'dinosaur', figureCount: '2', paintType: 'Tempera' });
+    toast.success(`${created.name} added to live catalog!`);
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    setProductList(productList.filter(p => p.id !== id));
+    toast.success('Product deleted from catalog');
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-body">
       
-      {/* Admin Header */}
+      {/* Admin Top Header */}
       <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center text-xl font-bold text-white shadow-fun">
-              🦘
-            </div>
-            <span className="font-heading text-xl text-white tracking-wide">RANGAROO ADMIN</span>
+            <Image src="/logo.png" alt="Rangaroo Admin" width={140} height={45} className="h-10 w-auto object-contain" />
+            <span className="bg-purple-500/20 text-purple-300 font-heading text-xs px-2.5 py-1 rounded-full border border-purple-500/30">
+              CMS Admin Panel
+            </span>
           </Link>
-          <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest">
-            ● Live 2026 Platform
-          </span>
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition-colors">
-            View Live Storefront ↗
+          <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-2 rounded-xl">
+            View Live Website ↗
           </Link>
-          <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-orange-400 border border-slate-700">
-            AD
-          </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         
         {/* Navigation Tabs */}
-        <div className="flex gap-2 border-b border-slate-800 mb-8 pb-3">
+        <div className="flex flex-wrap gap-2 border-b border-slate-800 mb-8 pb-3">
           {[
-            { id: 'overview', label: 'Dashboard Overview' },
-            { id: 'orders', label: 'Orders & Shipments' },
-            { id: 'products', label: 'Inventory & Kits' },
-            { id: 'leads', label: 'Bulk Birthday Leads' },
+            { id: 'overview', label: '📊 Dashboard Overview' },
+            { id: 'cms', label: '✍️ Site Content & CMS' },
+            { id: 'products', label: '🎨 Product Catalog & Pricing' },
+            { id: 'orders', label: '📦 Orders & Shipping' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === tab.id 
                   ? 'bg-orange-500 text-white shadow-fun' 
                   : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -76,114 +120,220 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Executive Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((s, idx) => (
-            <div key={idx} className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{s.title}</span>
-                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${s.color} text-white flex items-center justify-center shadow-md`}>
-                  <s.icon className="w-5 h-5" />
+        {/* OVERVIEW TAB */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { title: 'Total Sales Revenue', value: '₹1,48,900', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
+                { title: 'Orders Received', value: '432 Orders', icon: ShoppingBag, color: 'from-purple-600 to-pink-500' },
+                { title: 'Conversion Rate', value: '4.2%', icon: TrendingUp, color: 'from-emerald-500 to-teal-500' },
+                { title: 'Active Catalog Kits', value: `${productList.length} Products`, icon: Package, color: 'from-blue-500 to-indigo-600' },
+              ].map((s, idx) => (
+                <div key={idx} className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{s.title}</div>
+                  <div className="font-heading text-3xl text-white font-extrabold">{s.value}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800">
+              <h3 className="font-heading text-xl text-white mb-4">Quick CMS Actions</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button onClick={() => setActiveTab('cms')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
+                  <div className="font-heading text-base text-orange-400">Edit Hero Heading</div>
+                  <div className="text-xs text-slate-400 mt-1">Change main banner & tagline</div>
+                </button>
+                <button onClick={() => setActiveTab('products')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
+                  <div className="font-heading text-base text-amber-400">Add New DIY Kit</div>
+                  <div className="text-xs text-slate-400 mt-1">Add products & change prices</div>
+                </button>
+                <button onClick={() => setActiveTab('orders')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
+                  <div className="font-heading text-base text-emerald-400">View Customer Orders</div>
+                  <div className="text-xs text-slate-400 mt-1">Track payments & shipments</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CMS CONTENT MANAGER TAB */}
+        {activeTab === 'cms' && (
+          <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 max-w-3xl space-y-6">
+            <div>
+              <h3 className="font-heading text-2xl text-white">Live Storefront CMS Editor ✍️</h3>
+              <p className="text-xs text-slate-400 font-medium">Edit your site content below. Changes reflect on the live website instantly.</p>
+            </div>
+
+            <form onSubmit={handleSaveCMS} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">Top Announcement Bar Text</label>
+                <input 
+                  type="text" 
+                  value={cmsSettings.announcement}
+                  onChange={(e) => setCmsSettings({ ...cmsSettings, announcement: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">Main Hero Headline</label>
+                <input 
+                  type="text" 
+                  value={cmsSettings.heroTitle}
+                  onChange={(e) => setCmsSettings({ ...cmsSettings, heroTitle: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">Hero Subtitle</label>
+                <textarea 
+                  rows={3}
+                  value={cmsSettings.heroSubtitle}
+                  onChange={(e) => setCmsSettings({ ...cmsSettings, heroSubtitle: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Contact Email</label>
+                  <input 
+                    type="email" 
+                    value={cmsSettings.contactEmail}
+                    onChange={(e) => setCmsSettings({ ...cmsSettings, contactEmail: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Contact Phone</label>
+                  <input 
+                    type="text" 
+                    value={cmsSettings.contactPhone}
+                    onChange={(e) => setCmsSettings({ ...cmsSettings, contactPhone: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white"
+                  />
                 </div>
               </div>
-              <div className="font-heading text-3xl text-white font-extrabold">{s.value}</div>
-              <div className="text-xs font-semibold text-emerald-400 mt-2 flex items-center gap-1">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>{s.change}</span>
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left: Recent Orders Table */}
-          <div className="lg:col-span-2 bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-heading text-xl text-white">Recent Customer Orders</h3>
-                <p className="text-xs text-slate-400 font-medium">Real-time Razorpay payments & order status</p>
-              </div>
-              <button className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors">
-                <Download className="w-3.5 h-3.5" />
-                <span>Export CSV</span>
+              <button 
+                type="submit"
+                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-heading text-sm px-6 py-3.5 rounded-2xl shadow-fun flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Changes Live</span>
               </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider">
-                    <th className="pb-3">Order ID</th>
-                    <th className="pb-3">Customer</th>
-                    <th className="pb-3">Items</th>
-                    <th className="pb-3">Total</th>
-                    <th className="pb-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-medium text-slate-300">
-                  {recentOrders.map((ord) => (
-                    <tr key={ord.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-4 font-mono font-bold text-orange-400">{ord.id}</td>
-                      <td className="py-4 font-bold text-white">{ord.customer}</td>
-                      <td className="py-4">{ord.items}</td>
-                      <td className="py-4 font-bold text-white">{ord.total}</td>
-                      <td className="py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${
-                          ord.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                          ord.status === 'DISPATCHED' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                          'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                        }`}>
-                          {ord.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            </form>
           </div>
+        )}
 
-          {/* Right: Quick Action Controls */}
-          <div className="space-y-6">
-            
-            {/* Quick Actions Card */}
-            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
-              <h3 className="font-heading text-lg text-white">Store Quick Actions</h3>
+        {/* PRODUCTS CATALOG MANAGER TAB */}
+        {activeTab === 'products' && (
+          <div className="space-y-8">
+            {/* Add New Product Form */}
+            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 space-y-4">
+              <h3 className="font-heading text-xl text-white">Add New DIY Kit to Storefront 🎨</h3>
               
-              <button className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white font-heading text-sm py-3 rounded-2xl shadow-fun flex items-center justify-center gap-2 transition-all">
-                <Plus className="w-4 h-4" />
-                <span>Add New DIY Paint Kit</span>
-              </button>
-
-              <button className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors">
-                <Tag className="w-4 h-4 text-yellow-400" />
-                <span>Create Festival Coupon Code</span>
-              </button>
-
-              <button className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors">
-                <MessageSquare className="w-4 h-4 text-emerald-400" />
-                <span>Send WhatsApp Order Broadcast</span>
-              </button>
+              <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <input 
+                  type="text" 
+                  placeholder="Kit Name (e.g. Magic Unicorn Kit)" 
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                />
+                <input 
+                  type="number" 
+                  placeholder="Price (₹)" 
+                  value={newProduct.price}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                />
+                <select 
+                  value={newProduct.categoryId}
+                  onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                >
+                  <option value="mini-kit">Mini Kit (₹149)</option>
+                  <option value="fun-kit">Fun Kit (₹199)</option>
+                  <option value="creative-kit">Creative Kit (₹299)</option>
+                  <option value="signature-collection">Signature (₹499)</option>
+                </select>
+                <select 
+                  value={newProduct.collectionId}
+                  onChange={(e) => setNewProduct({ ...newProduct, collectionId: e.target.value })}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                >
+                  <option value="dinosaur">Dinosaur</option>
+                  <option value="space">Space</option>
+                  <option value="princess">Princess</option>
+                  <option value="vehicle">Vehicle</option>
+                </select>
+                <input 
+                  type="number" 
+                  placeholder="Figure Count" 
+                  value={newProduct.figureCount}
+                  onChange={(e) => setNewProduct({ ...newProduct, figureCount: e.target.value })}
+                  className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                />
+                <button 
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs py-2 rounded-xl"
+                >
+                  + Add Kit
+                </button>
+              </form>
             </div>
 
-            {/* Low Inventory Alert Card */}
-            <div className="bg-gradient-to-br from-amber-950/40 to-slate-900 rounded-3xl p-6 border border-amber-800/50 space-y-3">
-              <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
-                <AlertTriangle className="w-4 h-4" />
-                <span>Inventory Alert</span>
+            {/* Existing Products List */}
+            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800">
+              <h3 className="font-heading text-xl text-white mb-4">Current Products ({productList.length})</h3>
+              <div className="space-y-3">
+                {productList.map((p) => (
+                  <div key={p.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 font-bold flex items-center justify-center text-xs">
+                        🎨
+                      </div>
+                      <div>
+                        <h4 className="font-heading text-white text-sm">{p.name}</h4>
+                        <p className="text-xs text-slate-400">₹{p.price} • {p.figureCount} Figures • {p.paintType} Paints</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleDeleteProduct(p.id)}
+                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <h4 className="font-heading text-base text-white">DIY Ganesha Festival Kit</h4>
-              <p className="text-xs text-slate-400 font-medium">Only 14 units remaining in stock. Restock recommended before Ganesh Chaturthi rush.</p>
-              <button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition-colors">
-                Update Stock Quantity
-              </button>
             </div>
-
           </div>
+        )}
 
-        </div>
+        {/* ORDERS MANAGEMENT TAB */}
+        {activeTab === 'orders' && (
+          <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 space-y-4">
+            <h3 className="font-heading text-xl text-white">Customer Orders</h3>
+            <p className="text-xs text-slate-400">Manage Razorpay orders, view shipping addresses, and mark dispatch status.</p>
+            
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs font-semibold text-slate-300">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+                <span className="font-mono text-orange-400 font-bold">RNG-20260803-089</span>
+                <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">PAID</span>
+              </div>
+              <p className="mt-2 text-white font-bold">Ananya Sharma (Phone: 9876543210)</p>
+              <p className="text-slate-400">House 42, Green Avenue, Bengaluru, 560001</p>
+              <p className="mt-1 font-bold text-orange-400">Total: ₹998 (2 × Signature Collection Kit)</p>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

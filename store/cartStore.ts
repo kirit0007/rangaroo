@@ -76,7 +76,7 @@ export const useCartStore = create<CartStore>()(
       getShippingFee: () => {
         const subtotal = get().getSubtotal();
         if (subtotal === 0) return 0;
-        return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING_FEE;
+        return FLAT_SHIPPING_FEE;
       },
 
       getTotal: () => {

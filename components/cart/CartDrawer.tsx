@@ -13,9 +13,6 @@ export default function CartDrawer() {
   const subtotal = getSubtotal();
   const shippingFee = getShippingFee();
   const total = getTotal();
-  const freeShippingThreshold = 499;
-  const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
-  const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -47,32 +44,18 @@ export default function CartDrawer() {
             </button>
           </div>
 
-          {/* Free Shipping Tracker */}
-          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-4 border-b border-orange-100">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-2">
-              <Truck className="w-4 h-4 text-orange-500" />
-              {amountNeededForFreeShipping > 0 ? (
-                <span>Add <strong className="text-orange-600">₹{amountNeededForFreeShipping}</strong> more for FREE Pan-India Shipping!</span>
-              ) : (
-                <span className="text-emerald-700 font-extrabold flex items-center gap-1">
-                  🎉 You unlocked FREE Pan-India Shipping!
-                </span>
-              )}
-            </div>
-            <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-500 rounded-full"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+          {/* Delivery Note */}
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-4 border-b border-orange-100 flex items-center gap-2 text-xs font-bold text-slate-700">
+            <Truck className="w-4 h-4 text-orange-500 shrink-0" />
+            <span>Pan-India Delivery | Standard Shipping ₹60</span>
           </div>
 
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {items.length === 0 ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
-                <div className="w-24 h-24 rounded-full bg-orange-100 flex items-center justify-center text-5xl mb-4 animate-float">
-                  🦘
+                <div className="w-28 h-28 rounded-full bg-orange-100 flex items-center justify-center text-5xl mb-4 p-2 shadow-inner overflow-hidden">
+                  <Image src="/rangoo.png" alt="Rangoo Mascot" width={100} height={100} className="w-full h-full object-contain" />
                 </div>
                 <h3 className="font-heading text-xl text-slate-900 mb-2">Your basket is empty!</h3>
                 <p className="text-sm text-slate-500 max-w-xs mb-6 font-medium">
@@ -141,9 +124,7 @@ export default function CartDrawer() {
                 </div>
                 <div className="flex justify-between">
                   <span>Pan-India Delivery</span>
-                  <span className="text-slate-900 font-bold">
-                    {shippingFee === 0 ? <span className="text-emerald-600 font-black">FREE</span> : `₹${shippingFee}`}
-                  </span>
+                  <span className="text-slate-900 font-bold">₹{shippingFee}</span>
                 </div>
                 <div className="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-100">
                   <span>Total Amount</span>

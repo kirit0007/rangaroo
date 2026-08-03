@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, X, Sparkles, PhoneCall } from 'lucide-react';
+import { ShoppingBag, Menu, X, Sparkles, PhoneCall, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 
 export default function Navbar() {
@@ -25,7 +25,7 @@ export default function Navbar() {
       {/* Announcement Bar */}
       <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 text-white text-xs md:text-sm py-2 px-4 text-center font-bold tracking-wide shadow-inner flex items-center justify-center gap-2">
         <Sparkles className="w-4 h-4 animate-spin text-yellow-300" />
-        <span>🎨 FREE Pan-India Shipping on orders above ₹499! Use Code: <span className="bg-white/20 px-2 py-0.5 rounded-full text-yellow-200">FIRST10</span></span>
+        <span>🎨 Premium DIY Art & Craft Kits for Kids | Fast Pan-India Delivery</span>
         <Sparkles className="w-4 h-4 animate-spin text-yellow-300" />
       </div>
 
@@ -61,8 +61,8 @@ export default function Navbar() {
             <Link href="/about" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
               Our Story
             </Link>
-            <Link href="/faq" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
-              FAQ
+            <Link href="/admin" className="font-bold text-purple-600 hover:text-purple-700 transition-colors text-sm uppercase tracking-wider bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
+              ⚙️ Admin Panel
             </Link>
           </nav>
 
@@ -136,18 +136,11 @@ export default function Navbar() {
                 🦘 Our Story
               </Link>
               <Link 
-                href="/faq" 
+                href="/admin" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2 border-b border-slate-100"
+                className="font-heading text-lg text-purple-600 hover:text-purple-700 py-2"
               >
-                ❓ FAQ
-              </Link>
-              <Link 
-                href="/contact" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2"
-              >
-                📞 Contact Us
+                ⚙️ Admin Panel
               </Link>
             </div>
           </div>

@@ -6,11 +6,8 @@ import { Sparkles, ArrowRight, ShieldCheck, Heart, Award, Gift, Palette, Smile, 
 import ProductCard from '@/components/product/ProductCard';
 import ReturnGiftCalculator from '@/components/shared/ReturnGiftCalculator';
 import VirtualPaintStudio from '@/components/shared/VirtualPaintStudio';
-import GiftFinderQuiz from '@/components/shared/GiftFinderQuiz';
 import KidsArtGallery from '@/components/shared/KidsArtGallery';
 import VideoSection from '@/components/shared/VideoSection';
-import LoyaltyRewards from '@/components/shared/LoyaltyRewards';
-import SpinWheelModal from '@/components/shared/SpinWheelModal';
 import { getFeaturedProducts, categories, collections } from '@/data/products';
 
 export default function HomePage() {
@@ -24,9 +21,6 @@ export default function HomePage() {
 
   return (
     <div className="space-y-24 pb-20 overflow-hidden">
-      
-      {/* Gamified Conversion Spin Wheel */}
-      <SpinWheelModal />
 
       {/* 1. HERO SECTION WITH OFFICIAL MASCOT LOGO */}
       <section className="relative pt-8 pb-16 md:pt-16 md:pb-24 bg-gradient-to-b from-[#FFF9F2] via-orange-50/50 to-[#FFF9F2]">
@@ -86,7 +80,6 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* Floating Badge overlay */}
                 <div className="absolute -bottom-4 bg-white/90 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-orange-300 shadow-xl flex items-center gap-2">
                   <span className="text-xl">✨</span>
                   <span className="font-heading text-sm text-slate-900">Paint. Create. Imagine.</span>
@@ -170,10 +163,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. AI GIFT FINDER QUIZ */}
-      <GiftFinderQuiz />
-
-      {/* 4. BESTSELLERS SHOWCASE */}
+      {/* 3. BESTSELLERS SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
@@ -200,10 +190,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. INTERACTIVE VIRTUAL PAINT STUDIO */}
+      {/* 4. INTERACTIVE VIRTUAL PAINT STUDIO */}
       <VirtualPaintStudio />
 
-      {/* 6. THEME COLLECTIONS GRID */}
+      {/* 5. THEME COLLECTIONS GRID */}
       <section id="collections" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="bg-amber-100 text-amber-700 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -235,16 +225,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. UNBOXING & VIDEO DEMO SECTION */}
+      {/* 6. UNBOXING & VIDEO DEMO SECTION */}
       <VideoSection />
 
-      {/* 8. RETURN GIFT CALCULATOR FOR PARTY HOSTS */}
+      {/* 7. RETURN GIFT CALCULATOR FOR PARTY HOSTS */}
       <ReturnGiftCalculator />
 
-      {/* 9. KIDS ARTWORK GALLERY SHOWCASE */}
+      {/* 8. KIDS ARTWORK GALLERY SHOWCASE */}
       <KidsArtGallery />
 
-      {/* 10. REVIEWS & TESTIMONIALS */}
+      {/* 9. REVIEWS & TESTIMONIALS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="font-heading text-3xl sm:text-5xl text-slate-900">
@@ -271,9 +261,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* 11. LOYALTY REWARDS CLUB */}
-      <LoyaltyRewards />
 
     </div>
   );
