@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
 import toast from 'react-hot-toast';
 import Script from 'next/script';
+import { ShieldCheck, Truck, ArrowLeft, Lock, CreditCard, CheckCircle2 } from 'lucide-react';
 
 const STEP_SHIPPING = 1;
 const STEP_REVIEW = 2;
@@ -12,7 +13,7 @@ const STEP_PAYMENT = 3;
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, getSubtotal, updateQuantity } = useCartStore();
+  const { items, getSubtotal, updateQuantity, clearCart } = useCartStore();
   
   const [step, setStep] = useState(STEP_SHIPPING);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -100,12 +101,13 @@ export default function CheckoutPage() {
             });
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              toast.success('Payment successful!');
+              toast.success('Payment successful! 🎉');
               localStorage.setItem('lastOrder', JSON.stringify({
                 orderId: 'RNG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
                 total: total,
                 shippingInfo
               }));
+              clearCart();
               router.push('/order-confirmation');
             } else {
               toast.error('Payment verification failed');
@@ -144,155 +146,258 @@ export default function CheckoutPage() {
   if (items.length === 0) return null;
 
   return (
-    <div className="checkout-container" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-      <h1 className="heading-primary" style={{ textAlign: 'center', marginBottom: '2rem' }}>Checkout</h1>
-      
-      <div className="checkout-steps" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', padding: '0 1rem' }}>
-        <div style={{ fontWeight: step >= STEP_SHIPPING ? 'bold' : 'normal', color: step >= STEP_SHIPPING ? 'var(--color-primary, #FF6B35)' : '#999' }}>1. Shipping</div>
-        <div style={{ fontWeight: step >= STEP_REVIEW ? 'bold' : 'normal', color: step >= STEP_REVIEW ? 'var(--color-primary, #FF6B35)' : '#999' }}>2. Review</div>
-        <div style={{ fontWeight: step >= STEP_PAYMENT ? 'bold' : 'normal', color: step >= STEP_PAYMENT ? 'var(--color-primary, #FF6B35)' : '#999' }}>3. Payment</div>
+
+      {/* Step Tracker */}
+      <div className="flex items-center justify-center gap-3 mb-10">
+        {[
+          { num: 1, title: 'Shipping' },
+          { num: 2, title: 'Review' },
+          { num: 3, title: 'Payment' },
+        ].map((s) => (
+          <div key={s.num} className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-heading text-sm font-bold ${
+              step >= s.num ? 'bg-orange-500 text-white shadow-fun' : 'bg-slate-200 text-slate-500'
+            }`}>
+              {s.num}
+            </div>
+            <span className={`text-xs font-bold ${step >= s.num ? 'text-slate-900' : 'text-slate-400'}`}>
+              {s.title}
+            </span>
+            {s.num < 3 && <div className="w-8 h-0.5 bg-slate-200" />}
+          </div>
+        ))}
       </div>
 
-      <div className="checkout-content card" style={{ backgroundColor: '#fff', padding: '2rem', borderRadius: '1rem', border: '2px solid var(--color-primary, #FF6B35)' }}>
+      <div className="bg-white rounded-3xl p-6 sm:p-10 border border-orange-100 shadow-xl">
+        
+        {/* STEP 1: SHIPPING INFORMATION */}
         {step === STEP_SHIPPING && (
-          <form onSubmit={handleShippingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h2 className="heading-secondary">Shipping Information</h2>
-            
-            <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Full Name *</label>
-              <input type="text" name="name" value={shippingInfo.name} onChange={handleInputChange} required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
+          <form onSubmit={handleShippingSubmit} className="space-y-6">
+            <div>
+              <h2 className="font-heading text-2xl text-slate-900">Shipping Details 📦</h2>
+              <p className="text-xs text-slate-500 font-semibold mt-1">Enter where you'd like your Rangaroo DIY kit delivered.</p>
             </div>
-            
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <div className="form-group" style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column' }}>
-                <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Phone Number *</label>
-                <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={shippingInfo.name} 
+                  onChange={handleInputChange} 
+                  required 
+                  placeholder="e.g. Ananya Sharma"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                />
               </div>
-              <div className="form-group" style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column' }}>
-                <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Email *</label>
-                <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number (For WhatsApp Updates) *</label>
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    value={shippingInfo.phone} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder="9876543210"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={shippingInfo.email} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder="ananya@gmail.com"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Flat / Building / House No., Street *</label>
+                <input 
+                  type="text" 
+                  name="address1" 
+                  value={shippingInfo.address1} 
+                  onChange={handleInputChange} 
+                  required 
+                  placeholder="House 42, Green Avenue"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Landmark / Area (Optional)</label>
+                <input 
+                  type="text" 
+                  name="address2" 
+                  value={shippingInfo.address2} 
+                  onChange={handleInputChange} 
+                  placeholder="Near City Park"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">PIN Code *</label>
+                  <input 
+                    type="text" 
+                    name="pinCode" 
+                    value={shippingInfo.pinCode} 
+                    onChange={handleInputChange} 
+                    required 
+                    maxLength={6} 
+                    pattern="[0-9]{6}" 
+                    placeholder="560001"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">City *</label>
+                  <input 
+                    type="text" 
+                    name="city" 
+                    value={shippingInfo.city} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder="Bengaluru"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">State *</label>
+                  <input 
+                    type="text" 
+                    name="state" 
+                    value={shippingInfo.state} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder="Karnataka"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-orange-500 text-sm font-semibold" 
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Address Line 1 *</label>
-              <input type="text" name="address1" value={shippingInfo.address1} onChange={handleInputChange} required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-            </div>
-
-            <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Address Line 2 (Optional)</label>
-              <input type="text" name="address2" value={shippingInfo.address2} onChange={handleInputChange} style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <div className="form-group" style={{ flex: '1 1 120px', display: 'flex', flexDirection: 'column' }}>
-                <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>PIN Code *</label>
-                <input type="text" name="pinCode" value={shippingInfo.pinCode} onChange={handleInputChange} required maxLength={6} pattern="[0-9]{6}" style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-              </div>
-              <div className="form-group" style={{ flex: '1 1 120px', display: 'flex', flexDirection: 'column' }}>
-                <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>City *</label>
-                <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-              </div>
-              <div className="form-group" style={{ flex: '1 1 120px', display: 'flex', flexDirection: 'column' }}>
-                <label style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>State *</label>
-                <input type="text" name="state" value={shippingInfo.state} onChange={handleInputChange} required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-              </div>
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', padding: '1rem', borderRadius: '2rem', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', backgroundColor: 'var(--color-primary, #FF6B35)', color: 'white', border: 'none' }}>
-              Continue to Review
+            <button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-heading text-lg py-4 rounded-2xl shadow-fun transition-all"
+            >
+              Continue to Order Review
             </button>
           </form>
         )}
 
+        {/* STEP 2: ORDER REVIEW */}
         {step === STEP_REVIEW && (
-          <div className="review-section">
-            <h2 className="heading-secondary" style={{ marginBottom: '1rem' }}>Order Review</h2>
-            
-            <div className="cart-items" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-              {items.map(item => (
-                <div key={item.productId} className="cart-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '64px', height: '64px', backgroundColor: 'var(--color-background, #FFF8F0)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+          <div className="space-y-6">
+            <div>
+              <h2 className="font-heading text-2xl text-slate-900">Review Your Order 🛒</h2>
+              <p className="text-xs text-slate-500 font-semibold mt-1">Please confirm your items and shipping details before payment.</p>
+            </div>
+
+            <div className="space-y-3 divide-y divide-slate-100">
+              {items.map((item) => (
+                <div key={item.productId} className="pt-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-500 flex items-center justify-center text-xl shrink-0 font-bold">
                       🎨
                     </div>
                     <div>
-                      <h3 style={{ margin: 0, fontWeight: 'bold' }}>{item.name}</h3>
-                      <p style={{ margin: 0, color: '#666' }}>₹{item.price}</p>
+                      <h4 className="font-heading text-slate-900 text-sm">{item.name}</h4>
+                      <p className="text-xs font-bold text-orange-500">₹{item.price} × {item.quantity}</p>
                     </div>
                   </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', cursor: 'pointer', fontWeight: 'bold' }}>-</button>
-                    <span style={{ fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', backgroundColor: '#f0f0f0', cursor: 'pointer', fontWeight: 'bold' }}>+</button>
-                  </div>
-                  
-                  <div style={{ fontWeight: 'bold' }}>
+
+                  <div className="font-heading text-slate-900 text-base">
                     ₹{item.price * item.quantity}
                   </div>
                 </div>
               ))}
             </div>
-            
-            <div className="summary-section" style={{ backgroundColor: '#fafafa', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+
+            <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-sm font-semibold text-slate-600">
+              <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span style={{ fontWeight: 'bold' }}>₹{subtotal}</span>
+                <span className="text-slate-900 font-bold">₹{subtotal}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span>Shipping {shippingFee === 0 && <span style={{ color: 'var(--color-green, #4CAF50)', fontSize: '0.8rem' }}>(Free above ₹499)</span>}</span>
-                <span style={{ fontWeight: 'bold' }}>{shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}</span>
+              <div className="flex justify-between">
+                <span>Pan-India Delivery</span>
+                <span className="text-slate-900 font-bold">
+                  {shippingFee === 0 ? <span className="text-emerald-600 font-black">FREE</span> : `₹${shippingFee}`}
+                </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #eee', fontSize: '1.25rem' }}>
-                <span style={{ fontWeight: 'bold' }}>Total</span>
-                <span style={{ fontWeight: 'bold', color: 'var(--color-primary, #FF6B35)' }}>₹{total}</span>
+              <div className="flex justify-between text-lg font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                <span>Total Amount</span>
+                <span className="text-orange-500 font-heading text-2xl">₹{total}</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button onClick={() => setStep(STEP_SHIPPING)} className="btn" style={{ flex: '1', padding: '1rem', borderRadius: '2rem', fontWeight: 'bold', backgroundColor: 'transparent', border: '2px solid #ccc', cursor: 'pointer' }}>Back</button>
-              <button onClick={() => setStep(STEP_PAYMENT)} className="btn btn-primary" style={{ flex: '2', padding: '1rem', borderRadius: '2rem', fontWeight: 'bold', backgroundColor: 'var(--color-primary, #FF6B35)', color: 'white', border: 'none', cursor: 'pointer' }}>Proceed to Payment</button>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setStep(STEP_SHIPPING)}
+                className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-4 rounded-2xl flex items-center justify-center gap-2 transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <button 
+                onClick={() => setStep(STEP_PAYMENT)}
+                className="w-2/3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white font-heading text-lg py-4 rounded-2xl shadow-fun transition-all"
+              >
+                Proceed to Payment
+              </button>
             </div>
           </div>
         )}
 
+        {/* STEP 3: PAYMENT */}
         {step === STEP_PAYMENT && (
-          <div className="payment-section" style={{ textAlign: 'center', padding: '1rem' }}>
-            <h2 className="heading-secondary" style={{ marginBottom: '1.5rem' }}>Secure Payment</h2>
-            
-            <div style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #c8e6c9' }}>
-              <span style={{ fontSize: '1.25rem' }}>🔒</span>
-              <span style={{ fontWeight: 'bold' }}>100% Secure Payment</span>
+          <div className="text-center py-6 space-y-6">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+              <Lock className="w-8 h-8" />
             </div>
-            
-            <p style={{ marginBottom: '2rem', color: '#555' }}>
-              You will be redirected to Razorpay to complete your secure payment of <strong style={{ fontSize: '1.25rem', color: '#000' }}>₹{total}</strong>.
-            </p>
-            
+
+            <div>
+              <h2 className="font-heading text-2xl text-slate-900">100% Secure Payment</h2>
+              <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto mt-1">
+                You will be redirected to Razorpay to complete your secure payment of <strong className="text-slate-900 text-sm">₹{total}</strong>.
+              </p>
+            </div>
+
             <button 
               onClick={handlePayment} 
               disabled={isProcessing}
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '1.25rem', borderRadius: '2rem', fontSize: '1.25rem', fontWeight: 'bold', backgroundColor: 'var(--color-primary, #FF6B35)', color: 'white', border: 'none', cursor: isProcessing ? 'not-allowed' : 'pointer', opacity: isProcessing ? 0.7 : 1, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+              className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 hover:opacity-95 text-white font-heading text-xl py-4 rounded-2xl shadow-fun transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {isProcessing ? 'Processing...' : `Pay ₹${total}`}
+              <CreditCard className="w-6 h-6" />
+              <span>{isProcessing ? 'Processing Payment...' : `Pay ₹${total} Now`}</span>
             </button>
-            
-            <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#666', fontWeight: 'bold' }}>Powered by Razorpay</span>
-              <div style={{ display: 'flex', gap: '1rem', fontSize: '2rem', filter: 'grayscale(1)', opacity: 0.6 }}>
-                💳 🏦 📱
-              </div>
-              <span style={{ fontSize: '0.75rem', color: '#999' }}>Cards, UPI, Net Banking Accepted</span>
+
+            <div className="pt-4 border-t border-slate-100 space-y-2 text-xs font-semibold text-slate-500">
+              <p className="flex items-center justify-center gap-1.5 text-emerald-600 font-bold">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>UPI (GPay, PhonePe, Paytm), Cards & Netbanking Accepted</span>
+              </p>
+              <button 
+                onClick={() => setStep(STEP_REVIEW)} 
+                className="text-slate-400 hover:text-slate-700 underline mt-2 block mx-auto"
+              >
+                Back to Review
+              </button>
             </div>
-            
-            <button onClick={() => setStep(STEP_REVIEW)} style={{ marginTop: '2rem', background: 'none', border: 'none', color: '#666', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }}>
-              Back to Review
-            </button>
           </div>
         )}
+
       </div>
     </div>
   );

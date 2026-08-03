@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { Filter, SlidersHorizontal, ChevronRight, RefreshCw } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { products, categories, collections } from '@/data/products';
 
@@ -41,121 +42,162 @@ export default function ProductsPage() {
   }, [selectedType, selectedCollection, sortBy]);
 
   return (
-    <div className="container" style={{ padding: '2rem 1rem' }}>
-      <nav className="breadcrumb" style={{ marginBottom: '2rem', fontSize: '0.9rem', color: 'var(--color-dark)' }}>
-        <Link href="/" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>Home</Link>
-        <span style={{ margin: '0 0.5rem' }}>&gt;</span>
-        <span>Shop</span>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-6">
+        <Link href="/" className="hover:text-orange-500">Home</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <span className="text-slate-900">Shop All Kits</span>
       </nav>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-heading)' }}>Shop All Kits 🎨</h1>
-        <button 
-          className="btn btn-outline" 
-          style={{ display: 'none' /* Will manage responsive via CSS */ }}
-          onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-        >
-          Filters
-        </button>
-      </div>
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-orange-100">
+        <div>
+          <h1 className="font-heading text-3xl md:text-5xl text-slate-900">
+            Shop DIY Paint Kits 🎨
+          </h1>
+          <p className="text-sm font-medium text-slate-500 mt-1">
+            Browse our complete range of non-toxic DIY painting kits for kids.
+          </p>
+        </div>
 
-      <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-        {/* Sidebar */}
-        <aside style={{ width: '250px', flexShrink: 0, display: isMobileFilterOpen ? 'block' : 'block' }}>
-          <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', color: 'var(--color-dark)' }}>Sort By</h3>
+        <div className="flex items-center gap-3">
+          {/* Mobile Filter Toggle */}
+          <button 
+            onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+            className="md:hidden flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-800 shadow-sm"
+          >
+            <Filter className="w-4 h-4 text-orange-500" />
+            <span>Filters</span>
+          </button>
+
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-2 bg-white border border-orange-100 px-3 py-2 rounded-2xl shadow-sm">
+            <SlidersHorizontal className="w-4 h-4 text-orange-500 hidden sm:block" />
             <select 
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '2px solid var(--color-primary)' }}
+              className="bg-transparent text-xs md:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer"
             >
-              <option value="featured">Featured</option>
+              <option value="featured">Featured First</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="newest">Newest Arrivals</option>
             </select>
           </div>
+        </div>
+      </div>
 
-          <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', color: 'var(--color-dark)' }}>Kit Type</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input type="radio" name="type" checked={selectedType === ''} onChange={() => setSelectedType('')} />
-                All Types
-              </label>
-              {categories.map(cat => (
-                <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="type" checked={selectedType === cat.id} onChange={() => setSelectedType(cat.id)} />
-                  {cat.name}
-                </label>
+      <div className="flex flex-col md:flex-row gap-8">
+        
+        {/* Filter Sidebar */}
+        <aside className={`w-full md:w-64 shrink-0 space-y-6 ${isMobileFilterOpen ? 'block' : 'hidden md:block'}`}>
+          
+          {/* Kit Type Filter */}
+          <div className="bg-white rounded-3xl p-5 border border-orange-100 shadow-sm">
+            <h3 className="font-heading text-base text-slate-900 mb-3">Kit Tier</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setSelectedType('')}
+                className={`w-full text-left text-xs font-bold px-3 py-2 rounded-xl transition-all ${
+                  selectedType === '' ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-700 hover:bg-orange-50'
+                }`}
+              >
+                All Kit Types
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedType(cat.id)}
+                  className={`w-full text-left text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center justify-between ${
+                    selectedType === cat.id ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-700 hover:bg-orange-50'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                  <span className="text-[10px] opacity-80">₹{cat.price}</span>
+                </button>
               ))}
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ marginBottom: '1rem', color: 'var(--color-dark)' }}>Collection</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input type="radio" name="collection" checked={selectedCollection === ''} onChange={() => setSelectedCollection('')} />
-                All Collections
-              </label>
-              {collections.map(col => (
-                <label key={col.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="collection" checked={selectedCollection === col.id} onChange={() => setSelectedCollection(col.id)} />
-                  {col.emoji} {col.name}
-                </label>
+          {/* Theme Collection Filter */}
+          <div className="bg-white rounded-3xl p-5 border border-orange-100 shadow-sm">
+            <h3 className="font-heading text-base text-slate-900 mb-3">Themes</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setSelectedCollection('')}
+                className={`w-full text-left text-xs font-bold px-3 py-2 rounded-xl transition-all ${
+                  selectedCollection === '' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-700 hover:bg-purple-50'
+                }`}
+              >
+                All Theme Collections
+              </button>
+              {collections.map((col) => (
+                <button
+                  key={col.id}
+                  onClick={() => setSelectedCollection(col.id)}
+                  className={`w-full text-left text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-2 ${
+                    selectedCollection === col.id ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-700 hover:bg-purple-50'
+                  }`}
+                >
+                  <span>{col.emoji}</span>
+                  <span>{col.name}</span>
+                </button>
               ))}
             </div>
           </div>
+
+          {/* Reset Filters */}
+          {(selectedType || selectedCollection) && (
+            <button
+              onClick={() => {
+                setSelectedType('');
+                setSelectedCollection('');
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Reset All Filters</span>
+            </button>
+          )}
+
         </aside>
 
         {/* Product Grid */}
-        <div style={{ flex: 1 }}>
-          <p style={{ marginBottom: '1rem', color: 'var(--color-dark)', fontWeight: 'bold' }}>
-            Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-          </p>
+        <div className="flex-1">
+          <div className="text-xs font-bold text-slate-500 mb-4">
+            Showing <span className="text-slate-900 font-extrabold">{filteredProducts.length}</span> {filteredProducts.length === 1 ? 'kit' : 'kits'}
+          </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid-4" style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
-              gap: '1.5rem' 
-            }}>
-              {filteredProducts.map((product, index) => (
-                <div key={product.id} style={{ animation: `fadeIn 0.5s ease forwards ${(index % 10) * 0.1}s`, opacity: 0 }}>
-                  <ProductCard product={product} />
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '3rem', marginBottom: '1rem' }}>😢</h2>
-              <h3 style={{ color: 'var(--color-primary)', marginBottom: '1rem' }}>No products found!</h3>
-              <p>Try changing your filters to see more kits.</p>
+            <div className="bg-white rounded-3xl p-12 text-center border border-orange-100 shadow-sm max-w-md mx-auto">
+              <div className="text-5xl mb-3">🎨</div>
+              <h3 className="font-heading text-xl text-slate-900 mb-2">No kits found!</h3>
+              <p className="text-xs text-slate-500 font-medium mb-6">
+                Try selecting different kit tiers or themes to view available products.
+              </p>
               <button 
-                className="btn btn-primary" 
-                style={{ marginTop: '1rem' }}
                 onClick={() => {
                   setSelectedType('');
                   setSelectedCollection('');
                 }}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-6 py-3 rounded-2xl shadow-fun transition-all"
               >
                 Clear All Filters
               </button>
             </div>
           )}
         </div>
+
       </div>
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeIn {
-          to { opacity: 1; }
-        }
-        @media (max-width: 768px) {
-          aside {
-            display: none !important;
-          }
-        }
-      `}} />
+
     </div>
   );
 }
