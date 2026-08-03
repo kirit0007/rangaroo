@@ -7,11 +7,15 @@ import { toast } from 'react-hot-toast';
 import { 
   TrendingUp, ShoppingBag, Users, DollarSign, Package, 
   Tag, MessageSquare, AlertTriangle, ArrowUpRight, CheckCircle2, 
-  Plus, Download, Search, Settings, Save, Edit3, Trash2
+  Plus, Download, Search, Settings, Save, Edit3, Trash2, Lock, LogOut
 } from 'lucide-react';
 import { products as initialProducts } from '@/data/products';
 
 export default function AdminDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  
   const [activeTab, setActiveTab] = useState<'overview' | 'cms' | 'products' | 'orders'>('overview');
 
   // Dynamic Site Settings State (CMS)
@@ -35,6 +39,35 @@ export default function AdminDashboard() {
     figureCount: '2',
     paintType: 'Tempera',
   });
+
+  useEffect(() => {
+    // Check if session is authenticated
+    const authStatus = sessionStorage.getItem('rangaroo_admin_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Default Admin Passcode: admin / rangaroo2026 or admin123
+    if (
+      (loginUsername === 'admin' && loginPassword === 'rangaroo2026') ||
+      (loginUsername === 'admin' && loginPassword === 'admin123')
+    ) {
+      sessionStorage.setItem('rangaroo_admin_authenticated', 'true');
+      setIsAuthenticated(true);
+      toast.success('Welcome back, Admin! 🦘');
+    } else {
+      toast.error('Invalid Username or Password! Access Denied.');
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('rangaroo_admin_authenticated');
+    setIsAuthenticated(false);
+    toast.success('Logged out successfully.');
+  };
 
   const handleSaveCMS = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +108,65 @@ export default function AdminDashboard() {
     toast.success('Product deleted from catalog');
   };
 
+  // IF NOT AUTHENTICATED: SHOW ADMIN LOGIN SCREEN
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-body">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
+          
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto text-3xl border border-orange-500/30">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div>
+            <Image src="/logo.png" alt="Rangaroo Logo" width={160} height={50} className="h-10 w-auto mx-auto object-contain mb-2" />
+            <h2 className="font-heading text-2xl text-white">Admin Authentication</h2>
+            <p className="text-xs text-slate-400 font-medium mt-1">Authorized personnel login required to access Rangaroo CMS & Dashboard.</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4 text-left">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1">Admin Username</label>
+              <input 
+                type="text" 
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
+                placeholder="admin"
+                required
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1">Admin Password</label>
+              <input 
+                type="password" 
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
+              />
+            </div>
+
+            <button 
+              type="submit"
+              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white font-heading text-lg py-3.5 rounded-2xl shadow-fun transition-all"
+            >
+              Sign In to Admin Panel 🔒
+            </button>
+          </form>
+
+          <p className="text-[11px] text-slate-500 font-mono">
+            Default credentials: <strong className="text-slate-300">admin</strong> / <strong className="text-slate-300">rangaroo2026</strong>
+          </p>
+
+        </div>
+      </div>
+    );
+  }
+
+  // IF AUTHENTICATED: SHOW FULL DASHBOARD
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-body">
       
@@ -93,6 +185,13 @@ export default function AdminDashboard() {
           <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-2 rounded-xl">
             View Live Website ↗
           </Link>
+          <button 
+            onClick={handleLogout}
+            className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/50 border border-red-800/60 px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Log Out</span>
+          </button>
         </div>
       </header>
 

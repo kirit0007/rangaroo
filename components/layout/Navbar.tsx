@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, X, Sparkles, PhoneCall, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, Menu, X, Sparkles, PhoneCall } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 
 export default function Navbar() {
@@ -61,8 +61,8 @@ export default function Navbar() {
             <Link href="/about" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
               Our Story
             </Link>
-            <Link href="/admin" className="font-bold text-purple-600 hover:text-purple-700 transition-colors text-sm uppercase tracking-wider bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
-              ⚙️ Admin Panel
+            <Link href="/faq" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
+              FAQ
             </Link>
           </nav>
 
@@ -136,11 +136,11 @@ export default function Navbar() {
                 🦘 Our Story
               </Link>
               <Link 
-                href="/admin" 
+                href="/faq" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-purple-600 hover:text-purple-700 py-2"
+                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2"
               >
-                ⚙️ Admin Panel
+                ❓ FAQ
               </Link>
             </div>
           </div>
