@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingBag, Menu, X, Sparkles, PhoneCall } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 
@@ -29,23 +30,20 @@ export default function Navbar() {
       </div>
 
       {/* Main Sticky Navbar */}
-      <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'glass-nav py-3 shadow-md' : 'bg-[#FFF9F2] py-5'}`}>
+      <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'glass-nav py-2.5 shadow-md' : 'bg-[#FFF9F2] py-4'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-500 to-yellow-400 p-0.5 shadow-fun group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-2xl">
-                🦘
-              </div>
-            </div>
-            <div>
-              <span className="font-heading text-2xl md:text-3xl text-slate-900 tracking-wide block leading-none group-hover:text-orange-500 transition-colors">
-                RANGAROO
-              </span>
-              <span className="text-[10px] font-bold text-orange-500 tracking-wider uppercase block mt-0.5">
-                DIY Art & Craft Kits
-              </span>
+          {/* Brand Logo with Official Mascot Badge */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative hover:scale-105 transition-transform duration-300">
+              <Image 
+                src="/logo.png" 
+                alt="Rangaroo - Where Creativity Comes to Life!" 
+                width={180} 
+                height={60} 
+                className="h-12 md:h-14 w-auto object-contain drop-shadow-sm" 
+                priority
+              />
             </div>
           </Link>
 
@@ -74,7 +72,7 @@ export default function Navbar() {
               href="https://wa.me/918793687379?text=Hi! I need help with an order on Rangaroo" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-2xl text-xs font-bold hover:bg-emerald-100 transition-all"
+              className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-2 rounded-2xl text-xs font-bold hover:bg-emerald-100 transition-all"
             >
               <PhoneCall className="w-3.5 h-3.5" />
               <span>Need Help?</span>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, Award, Gift, Palette, Smile, Star } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import ReturnGiftCalculator from '@/components/shared/ReturnGiftCalculator';
@@ -27,44 +28,76 @@ export default function HomePage() {
       {/* Gamified Conversion Spin Wheel */}
       <SpinWheelModal />
 
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION WITH OFFICIAL MASCOT LOGO */}
       <section className="relative pt-8 pb-16 md:pt-16 md:pb-24 bg-gradient-to-b from-[#FFF9F2] via-orange-50/50 to-[#FFF9F2]">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-orange-400/20 via-yellow-300/20 to-purple-400/20 rounded-full blur-3xl -z-10 pointer-events-none" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           
-          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-orange-200 shadow-sm text-xs md:text-sm font-bold text-orange-600 mb-6 animate-float">
-            <span className="text-base">🦘</span>
-            <span>Meet Rangoo! India's #1 DIY Paint Kit Brand</span>
-            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            {/* Left Content */}
+            <div className="lg:col-span-7 text-center lg:text-left">
+              
+              <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-orange-200 shadow-sm text-xs md:text-sm font-bold text-orange-600 mb-6 animate-float">
+                <span className="text-base">🦘</span>
+                <span>Meet Rangoo! India's #1 DIY Paint Kit Brand</span>
+                <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400" />
+              </div>
+
+              <h1 className="font-heading text-4xl sm:text-6xl lg:text-6xl text-slate-900 tracking-tight leading-tight">
+                Where Little Hands Create <span className="gradient-text-orange inline-block">Big Smiles! 🎨</span>
+              </h1>
+
+              <p className="mt-6 text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Unbox creativity with thoughtfully designed DIY Paint Kits that encourage children to step away from screens and enjoy hands-on artistic adventures!
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link 
+                  href="/products" 
+                  className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 hover:opacity-95 text-white font-heading text-lg px-8 py-4 rounded-2xl shadow-fun flex items-center justify-center gap-3 group transition-all transform hover:-translate-y-0.5"
+                >
+                  <span>Explore All Paint Kits</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <Link 
+                  href="/#collections" 
+                  className="w-full sm:w-auto bg-white hover:bg-orange-50 text-slate-800 border-2 border-orange-200 font-heading text-lg px-8 py-4 rounded-2xl shadow-sm flex items-center justify-center gap-2 transition-all"
+                >
+                  <span>View Collections 🦕</span>
+                </Link>
+              </div>
+
+            </div>
+
+            {/* Right Mascot Hero Card */}
+            <div className="lg:col-span-5 flex justify-center relative">
+              <div className="relative w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-gradient-to-tr from-amber-400 via-orange-400 to-purple-500 p-3 shadow-2xl flex items-center justify-center group">
+                <div className="w-full h-full bg-white rounded-full flex items-center justify-center p-6 shadow-inner overflow-hidden relative">
+                  <Image 
+                    src="/rangoo.png" 
+                    alt="Rangoo Kangaroo Mascot - Rangaroo DIY Paint Kits" 
+                    width={360} 
+                    height={360} 
+                    className="w-full h-full object-contain drop-shadow-2xl animate-float group-hover:scale-105 transition-transform duration-500" 
+                    priority
+                  />
+                </div>
+
+                {/* Floating Badge overlay */}
+                <div className="absolute -bottom-4 bg-white/90 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-orange-300 shadow-xl flex items-center gap-2">
+                  <span className="text-xl">✨</span>
+                  <span className="font-heading text-sm text-slate-900">Paint. Create. Imagine.</span>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
-            Where Little Hands Create <span className="gradient-text-orange inline-block">Big Smiles! 🎨</span>
-          </h1>
-
-          <p className="mt-6 text-base sm:text-xl text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            Unbox creativity with thoughtfully designed DIY Paint Kits that encourage children to step away from screens and enjoy hands-on artistic adventures!
-          </p>
-
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link 
-              href="/products" 
-              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 hover:opacity-95 text-white font-heading text-lg px-8 py-4 rounded-2xl shadow-fun flex items-center justify-center gap-3 group transition-all transform hover:-translate-y-0.5"
-            >
-              <span>Explore All Paint Kits</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-
-            <Link 
-              href="/#collections" 
-              className="w-full sm:w-auto bg-white hover:bg-orange-50 text-slate-800 border-2 border-orange-200 font-heading text-lg px-8 py-4 rounded-2xl shadow-sm flex items-center justify-center gap-2 transition-all"
-            >
-              <span>View Collections 🦕</span>
-            </Link>
-          </div>
-
-          <div className="mt-14 pt-8 border-t border-orange-200/60 grid grid-cols-2 md:grid-cols-5 gap-3 max-w-4xl mx-auto">
+          {/* Trust Badges Bar */}
+          <div className="mt-14 pt-8 border-t border-orange-200/60 grid grid-cols-2 md:grid-cols-5 gap-3 max-w-5xl mx-auto">
             {[
               { icon: '📵', title: 'Screen-Free Fun' },
               { icon: '🧠', title: 'Boosts Concentration' },
