@@ -58,9 +58,9 @@ export default function Footer() {
 
               {/* Email */}
               <a 
-                href="mailto:rangaroo.co@gmail.com" 
+                href="mailto:hello@rangaroo.store" 
                 className="w-10 h-10 rounded-full bg-black border border-white/20 flex items-center justify-center text-white hover:scale-110 transition-transform shadow-md"
-                title="Email rangaroo.co@gmail.com"
+                title="Email hello@rangaroo.store"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <rect x="2" y="4" width="20" height="16" rx="2"/>
@@ -150,14 +150,14 @@ export default function Footer() {
 
                 {/* Email Address */}
                 <li className="flex items-center gap-3 text-sm text-gray-300">
-                  <a href="mailto:rangaroo.co@gmail.com" className="flex items-center gap-3 hover:text-orange-400 transition-colors group">
+                  <a href="mailto:hello@rangaroo.store" className="flex items-center gap-3 hover:text-orange-400 transition-colors group">
                     <div className="w-7 h-7 rounded-full bg-black border border-white/20 flex items-center justify-center text-white shrink-0 shadow-sm group-hover:scale-110 transition-transform">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <rect x="2" y="4" width="20" height="16" rx="2"/>
                         <path d="M22 6l-10 7L2 6"/>
                       </svg>
                     </div>
-                    <span className="font-semibold text-white group-hover:text-orange-400">rangaroo.co@gmail.com</span>
+                    <span className="font-semibold text-white group-hover:text-orange-400">hello@rangaroo.store</span>
                   </a>
                 </li>
               </ul>

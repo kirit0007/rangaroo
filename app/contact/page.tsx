@@ -67,7 +67,7 @@ export default function ContactPage() {
 
             {/* Email */}
             <a 
-              href="mailto:rangaroo.co@gmail.com" 
+              href="mailto:hello@rangaroo.store" 
               className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:border-orange-300 hover:shadow-md transition-all group"
             >
               <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
@@ -78,7 +78,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 text-sm">Email Address</h3>
-                <p className="text-base font-extrabold text-gray-900 mt-0.5">rangaroo.co@gmail.com</p>
+                <p className="text-base font-extrabold text-gray-900 mt-0.5">hello@rangaroo.store</p>
                 <p className="text-xs text-orange-600 font-medium mt-0.5">Click to send an email</p>
               </div>
             </a>

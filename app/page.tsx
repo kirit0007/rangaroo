@@ -272,7 +272,7 @@ export default function HomePage() {
                 <Shield className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Safe for Kids</h4>
+                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Safe for Kids</h3>
                 <p className="text-xs text-gray-500 font-medium">Non-toxic & child safe</p>
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function HomePage() {
                 <Palette className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Boosts Creativity</h4>
+                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Boosts Creativity</h3>
                 <p className="text-xs text-gray-500 font-medium">Encourages imagination</p>
               </div>
             </div>
@@ -294,7 +294,7 @@ export default function HomePage() {
                 <Star className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Quality You Trust</h4>
+                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Quality You Trust</h3>
                 <p className="text-xs text-gray-500 font-medium">Premium materials</p>
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function HomePage() {
                 <Heart className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Delivered with Love</h4>
+                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Delivered with Love</h3>
                 <p className="text-xs text-gray-500 font-medium">Carefully packed gifts</p>
               </div>
             </div>

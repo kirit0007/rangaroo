@@ -5,11 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
-import dynamic from 'next/dynamic';
-
-const CartDrawer = dynamic(() => import('@/components/cart/CartDrawer'), { ssr: false });
-const AuthModal = dynamic(() => import('@/components/auth/AuthModal'), { ssr: false });
-const WhatsAppButton = dynamic(() => import('@/components/shared/WhatsAppButton'), { ssr: false });
+import { ClientModals } from '@/components/shared/ClientModals';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -102,9 +98,7 @@ export default function RootLayout({
           </ErrorBoundary>
         </main>
         <Footer />
-        <CartDrawer />
-        <AuthModal />
-        <WhatsAppButton />
+        <ClientModals />
         <Toaster position="bottom-center" />
       </body>
     </html>
