@@ -163,6 +163,17 @@ export default function CheckoutPage() {
             }))
           };
           addOrder(newOrder);
+
+          // Trigger Brevo Order Confirmation Email
+          fetch('/api/email/order-confirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              order: newOrder,
+              customerEmail: formData.email,
+            }),
+          }).catch(err => console.error('Brevo order confirmation email trigger failed:', err));
+
           clearCart();
           router.push('/order-confirmation');
         },
