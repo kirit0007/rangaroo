@@ -82,6 +82,19 @@ function ConfirmationContent() {
           />
         </div>
 
+        <div className="bg-orange-50/60 p-5 rounded-2xl border border-orange-100 mb-8 max-w-lg mx-auto">
+          <p className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-1">🎉 Share the Excitement!</p>
+          <p className="text-xs text-gray-600 mb-3">Tell friends about your new DIY craft kit on WhatsApp and get ₹50 off your next kit!</p>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`I just ordered an awesome DIY paint kit from Rangaroo for my little artist! Check them out at https://www.rangaroo.store`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full text-xs font-bold shadow-sm hover:bg-[#20bd5a] transition-all"
+          >
+            Share on WhatsApp 🚀
+          </a>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/products" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-orange-500 text-white rounded-xl font-bold text-lg hover:bg-orange-600 transition-colors shadow-md">
             <ShoppingBag className="w-5 h-5" /> Continue Shopping

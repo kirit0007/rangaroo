@@ -187,6 +187,47 @@ export default function AuthModal() {
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+
+                    {/* Live Password Strength Indicator on Signup */}
+                    {authModalMode === 'signup' && password.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-gray-500 font-medium">Password Strength:</span>
+                          <span className={`font-bold ${
+                            strength.label === 'Weak' ? 'text-red-500' :
+                            strength.label === 'Medium' ? 'text-yellow-600' : 'text-emerald-600'
+                          }`}>
+                            {strength.label}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div className={`h-full transition-all duration-300 ${strength.color} ${
+                            strength.label === 'Weak' ? 'w-1/3' :
+                            strength.label === 'Medium' ? 'w-2/3' : 'w-full'
+                          }`}></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {authModalMode === 'login' && (
+                  <div className="flex items-center justify-between pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        defaultChecked
+                        className="rounded text-[var(--brand-orange)] focus:ring-[var(--brand-orange)]"
+                      />
+                      <span className="text-gray-600 text-xs font-medium">Remember me</span>
+                    </label>
+                    <button 
+                      type="button"
+                      onClick={() => setAuthModalMode('forgot')}
+                      className="text-xs font-semibold text-[var(--brand-orange)] hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                 )}
 

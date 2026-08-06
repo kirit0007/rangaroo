@@ -65,12 +65,12 @@ export const collections: Collection[] = [
     displayOrder: 7,
   },
   {
-    id: 'harry-potter',
-    name: 'Harry Potter Collection',
-    slug: 'harry-potter-collection',
+    id: 'wizarding-magic',
+    name: 'Wizarding Magic Collection',
+    slug: 'wizarding-magic-collection',
     description: 'Magic awaits! Paint enchanting figurines inspired by the wizarding world.',
     emoji: '⚡',
-    image: '/images/collections/harry-potter.jpg',
+    image: '/images/collections/magic.jpg',
     displayOrder: 8,
   },
 ];

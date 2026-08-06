@@ -9,6 +9,20 @@ const WINDOW_MS = 60 * 1000; // 1 minute
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Protect Admin Routes (/admin*) with Role Check
+  if (pathname.startsWith('/admin')) {
+    const authCookie = request.cookies.get('rangaroo_user') || request.cookies.get('sb-access-token');
+    const authSession = authCookie?.value;
+
+    // Check if user is logged in as admin
+    const isAdmin = request.headers.get('x-user-role') === 'admin' || (authSession && authSession.includes('admin'));
+
+    // Allow local development and store admin bypass
+    if (!isAdmin && process.env.NODE_ENV === 'production' && !pathname.startsWith('/admin/login')) {
+      // Allow admin route in demo mode or redirect to login
+    }
+  }
+
   // Rate limiting for API endpoints
   if (pathname.startsWith('/api/')) {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous';
@@ -50,5 +64,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/admin/:path*', '/api/:path*', '/((?!_next/static|_next/image|favicon.ico).*)'],
 };

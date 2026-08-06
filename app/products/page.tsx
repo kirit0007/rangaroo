@@ -25,6 +25,7 @@ function ProductsContent() {
   const [activeCategory, setActiveCategory] = useState<string>(
     initialCategory ? CATEGORIES.find(c => c.toLowerCase().replace(' ', '-') === initialCategory) || 'All' : 'All'
   );
+  const [activeAge, setActiveAge] = useState<string>('All');
   const [sortBy, setSortBy] = useState<string>('default');
   const [isSortOpen, setIsSortOpen] = useState(false);
 
@@ -38,6 +39,10 @@ function ProductsContent() {
       });
     }
 
+    if (activeAge !== 'All') {
+      filtered = filtered.filter(p => p.ageGroup === activeAge);
+    }
+
     // Sort
     const sorted = [...filtered];
     if (sortBy === 'price_asc') {
@@ -47,7 +52,7 @@ function ProductsContent() {
     }
 
     return sorted;
-  }, [products, activeCategory, sortBy]);
+  }, [products, activeCategory, activeAge, sortBy]);
 
   return (
     <div className="min-h-screen bg-[#FFF9F2] pt-24 pb-20">
@@ -64,10 +69,10 @@ function ProductsContent() {
         {/* Filter & Sort Bar */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           
-          {/* Categories */}
-          <div className="flex-grow overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+          {/* Categories & Age Filters */}
+          <div className="flex-grow space-y-3 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
             <div className="flex items-center gap-2 min-w-max">
-              <Filter className="w-5 h-5 text-gray-400 mr-2" />
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1">Category:</span>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
@@ -79,6 +84,23 @@ function ProductsContent() {
                   }`}
                 >
                   {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 min-w-max">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1">Age Group:</span>
+              {['All', '3-5', '5+', '8+'].map((age) => (
+                <button
+                  key={age}
+                  onClick={() => setActiveAge(age)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${
+                    activeAge === age 
+                      ? 'bg-purple-600 text-white shadow-sm' 
+                      : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                  }`}
+                >
+                  {age === 'All' ? 'All Ages' : `Age ${age}`}
                 </button>
               ))}
             </div>

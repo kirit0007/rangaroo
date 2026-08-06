@@ -39,14 +39,10 @@ export default function CheckoutPage() {
 
   const [isFetchingPincode, setIsFetchingPincode] = useState(false);
 
-  // Require user authentication for placing orders
+  // Allow guest checkout or logged-in users
   useEffect(() => {
-    if (!user) {
-      toast.error('Please login or create an account to proceed to checkout');
-      openAuthModal('login');
-      router.push('/products');
-    }
-  }, [user, openAuthModal, router]);
+    // Guest checkout is enabled by default
+  }, []);
 
   // Redirect if empty cart
   useEffect(() => {

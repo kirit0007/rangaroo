@@ -5,11 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag, User, ChevronDown } from 'lucide-react';
+import { Menu, X, ShoppingBag, User, ChevronDown, Search, Heart, Sparkles } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import { useAdminStore } from '@/store/adminStore';
-
+import { products as defaultProducts } from '@/data/products';
 import { createClient } from '@/lib/supabase/client';
 
 export default function Navbar() {
@@ -53,6 +54,9 @@ export default function Navbar() {
     };
   }, []);
 
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Zustand stores with atomic selectors to prevent infinite re-renders
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
@@ -60,10 +64,19 @@ export default function Navbar() {
 
   const items = useCartStore((state) => state.items) || [];
   const openCart = useCartStore((state) => state.openCart);
+  const wishlistItems = useWishlistStore((state) => state.items) || [];
 
   const siteSettings = useAdminStore((state) => state.siteSettings) || { announcementText: '🎉 Free shipping on all orders over ₹999! 🎉' };
 
   const cartItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
+  const wishlistCount = wishlistItems.length;
+
+  const adminProducts = useAdminStore((state) => state.products);
+  const allProducts = adminProducts && adminProducts.length > 0 ? adminProducts : defaultProducts;
+
+  const searchResults = searchQuery.trim().length > 0
+    ? allProducts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
+    : [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -203,14 +216,40 @@ export default function Navbar() {
               </button>
             )}
 
+            {/* Search Toggle Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Search products"
+              className="p-2 rounded-full hover:bg-white/50 transition-colors text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+            >
+              <Search size={22} />
+            </motion.button>
+
+            {/* Wishlist Button */}
+            <Link
+              href="/profile"
+              aria-label="Wishlist"
+              className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+            >
+              <Heart size={22} />
+              {mounted && wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
             {/* Cart Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={openCart}
-              className="relative p-2 rounded-full hover:bg-white/50 transition-colors"
+              aria-label="Shopping Cart"
+              className="relative p-2 rounded-full hover:bg-white/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
             >
-              <ShoppingBag size={24} className="text-gray-800" />
+              <ShoppingBag size={22} className="text-gray-800" />
               <AnimatePresence>
                 {mounted && cartItemCount > 0 && (
                   <motion.div
@@ -267,6 +306,80 @@ export default function Navbar() {
                 </button>
               )}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Instant Search Modal */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-start justify-center pt-20 px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: -20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: -20 }}
+              className="bg-white rounded-3xl p-6 max-w-xl w-full shadow-2xl border border-gray-100 relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-3 pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-3 flex-grow bg-gray-50 px-4 py-3 rounded-2xl border border-gray-200 focus-within:border-orange-500 transition-colors">
+                  <Search className="w-5 h-5 text-gray-400 shrink-0" />
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Search DIY paint kits, dinosaurs, vehicles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-transparent border-none outline-none text-sm w-full text-gray-900 font-medium placeholder-gray-400"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} className="text-xs text-gray-400 hover:text-gray-600 font-bold">Clear</button>
+                  )}
+                </div>
+                <button
+                  onClick={() => setIsSearchOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Instant Search Results */}
+              <div className="mt-4 max-h-[60vh] overflow-y-auto space-y-3">
+                {searchQuery.trim().length === 0 ? (
+                  <div className="py-8 text-center text-gray-400 text-xs">
+                    <Sparkles className="w-8 h-8 text-amber-400 mx-auto mb-2 opacity-60" />
+                    Type to search through all premium DIY craft kits...
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/products/${product.slug}`}
+                      onClick={() => setIsSearchOpen(false)}
+                      className="flex items-center gap-4 p-3 rounded-2xl hover:bg-orange-50/70 border border-transparent hover:border-orange-100 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gray-100 relative overflow-hidden flex-shrink-0">
+                        <Image src={product.images?.[0] || '/logo.png'} alt={product.name} fill className="object-cover" unoptimized />
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <h4 className="font-bold text-sm text-gray-900 truncate group-hover:text-orange-600 transition-colors">{product.name}</h4>
+                        <p className="text-xs text-gray-500 truncate">{product.description}</p>
+                      </div>
+                      <span className="font-extrabold text-sm text-orange-600 shrink-0">₹{product.price}</span>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-gray-400 text-xs">
+                    No craft kits found matching "{searchQuery}"
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
