@@ -22,9 +22,12 @@ export default function ErrorPage({
           <AlertCircle className="w-8 h-8" />
         </div>
         <h1 className="font-heading font-bold text-2xl text-gray-900 mb-2">Oops! Something went wrong</h1>
-        <p className="text-gray-600 text-sm mb-6">
+        <p className="text-gray-600 text-sm mb-4">
           We encountered a temporary error loading this section.
         </p>
+        <div className="bg-red-50 text-red-700 p-3 rounded-xl text-xs font-mono mb-6 text-left break-all w-full max-h-32 overflow-auto">
+          {error?.message || error?.digest || 'Client component error'}
+        </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <button
             onClick={() => reset()}

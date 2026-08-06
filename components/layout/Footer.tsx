@@ -42,26 +42,38 @@ export default function Footer() {
           <div>
             <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Quick Links</h4>
             <ul className="space-y-3">
-              {['Home', 'Shop', 'About Us', 'Contact', 'FAQ', 'Blog'].map((item) => (
-                <li key={item}>
-                  <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Shop All', path: '/products' },
+                { name: 'About Us', path: '/about' },
+                { name: 'Contact', path: '/contact' },
+                { name: 'FAQ', path: '/faq' },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.path} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-orange)]"></span>
-                    {item}
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Customer Service */}
+          {/* Customer Care */}
           <div>
             <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Customer Care</h4>
             <ul className="space-y-3">
-              {['Shipping Policy', 'Return Policy', 'Privacy Policy', 'Terms of Service', 'Track Order'].map((item) => (
-                <li key={item}>
-                  <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
+              {[
+                { name: 'Shipping Policy', path: '/shipping-policy' },
+                { name: 'Return Policy', path: '/refund-policy' },
+                { name: 'Privacy Policy', path: '/privacy-policy' },
+                { name: 'Terms of Service', path: '/terms' },
+                { name: 'Track Order', path: '/checkout' },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.path} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-orange)]"></span>
-                    {item}
+                    {link.name}
                   </Link>
                 </li>
               ))}

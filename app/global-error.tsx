@@ -21,9 +21,12 @@ export default function GlobalError({
             🦘
           </div>
           <h1 className="font-bold text-2xl text-gray-900 mb-2">Rangaroo Store</h1>
-          <p className="text-gray-600 text-sm mb-6">
-            An unexpected error occurred. Click below to reload the application.
+          <p className="text-gray-600 text-sm mb-4">
+            An unexpected error occurred:
           </p>
+          <div className="bg-red-50 text-red-700 p-3 rounded-xl text-xs font-mono mb-6 text-left break-all max-h-40 overflow-auto">
+            {error?.message || error?.digest || 'Unknown client error'}
+          </div>
           <button
             onClick={() => reset()}
             className="w-full py-3 bg-[#FF5722] text-white rounded-xl font-bold shadow-md hover:bg-[#e64a19] transition-colors"
