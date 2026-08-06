@@ -1,19 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, X, Sparkles, PhoneCall, User } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, ShoppingBag, User, ChevronDown } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
-import AuthModal from '@/components/shared/AuthModal';
+import { useAdminStore } from '@/store/adminStore';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  
-  const { toggleCart, getItemCount } = useCartStore();
-  const itemCount = getItemCount();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Zustand stores
+  const { user, openAuthModal, signOut } = useAuthStore((state: any) => ({
+    user: state.user,
+    openAuthModal: state.openAuthModal,
+    signOut: state.signOut || state.logout,
+  }));
+  const { items, openCart } = useCartStore((state: any) => ({
+    items: state.items || [],
+    openCart: state.openCart,
+  }));
+  const siteSettings = useAdminStore((state: any) => state.siteSettings) || { announcementText: '🎉 Free shipping on all orders over ₹999! 🎉' };
+
+  const cartItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,152 +38,198 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Shop', path: '/products' },
+    { name: 'About', path: '/about' },
+    { name: 'Contact', path: '/contact' },
+  ];
+
   return (
     <>
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
-
       {/* Announcement Bar */}
-      <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600 text-white text-xs md:text-sm py-2 px-4 text-center font-bold tracking-wide shadow-inner flex items-center justify-center gap-2">
-        <Sparkles className="w-4 h-4 animate-spin text-yellow-300" />
-        <span>🎨 Premium DIY Art & Craft Kits for Kids | Fast Pan-India Delivery</span>
-        <Sparkles className="w-4 h-4 animate-spin text-yellow-300" />
-      </div>
+      {siteSettings.announcementText && (
+        <div className="bg-gradient-to-r from-[var(--brand-orange)] to-[var(--brand-amber)] text-white text-center py-2 text-sm font-semibold tracking-wide">
+          {siteSettings.announcementText}
+        </div>
+      )}
 
-      {/* Main Sticky Navbar */}
-      <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'glass-nav py-2.5 shadow-md' : 'bg-[#FFF9F2] py-4'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      {/* Main Navbar */}
+      <nav
+        className={`sticky top-0 z-30 transition-all duration-300 ${
+          isScrolled
+            ? 'glass-panel mx-4 mt-2 mb-2 py-3 px-6 shadow-md'
+            : 'bg-transparent py-5 px-6'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           
-          {/* Brand Logo with Official Mascot Badge */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative hover:scale-105 transition-transform duration-300">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 z-50">
+            <motion.div whileHover={{ rotate: 10, scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}>
               <Image 
                 src="/logo.png" 
-                alt="Rangaroo - Where Creativity Comes to Life!" 
-                width={180} 
-                height={60} 
-                className="h-12 md:h-14 w-auto object-contain drop-shadow-sm" 
-                priority
+                alt="Rangaroo Logo" 
+                width={40} 
+                height={40} 
+                className="w-10 h-10 object-contain"
+                unoptimized
               />
-            </div>
+            </motion.div>
+            <span className="font-heading font-bold text-2xl text-[var(--brand-dark)] hidden sm:block">
+              Rangaroo
+            </span>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
-              Home
-            </Link>
-            <Link href="/products" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
-              Shop All Kits
-            </Link>
-            <Link href="/#collections" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
-              Collections
-            </Link>
-            <Link href="/about" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
-              Our Story
-            </Link>
-            <Link href="/faq" className="font-bold text-slate-700 hover:text-orange-500 transition-colors text-sm uppercase tracking-wider">
-              FAQ
-            </Link>
-          </nav>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-8 font-medium">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.path}
+                className={`hover:text-[var(--brand-orange)] transition-colors relative ${
+                  pathname === link.path ? 'text-[var(--brand-orange)]' : 'text-gray-700'
+                }`}
+              >
+                {link.name}
+                {pathname === link.path && (
+                  <motion.div
+                    layoutId="underline"
+                    className="absolute -bottom-1 left-0 w-full h-0.5 bg-[var(--brand-orange)] rounded-full"
+                  />
+                )}
+              </Link>
+            ))}
 
-          {/* Action Controls */}
-          <div className="flex items-center gap-3">
-            
-            {/* Customer Login / Account Button */}
+            {/* Collections Dropdown */}
+            <div 
+              className="relative group cursor-pointer"
+              onMouseEnter={() => setIsCollectionsOpen(true)}
+              onMouseLeave={() => setIsCollectionsOpen(false)}
+            >
+              <div className="flex items-center gap-1 text-gray-700 hover:text-[var(--brand-orange)] transition-colors">
+                Collections <ChevronDown size={16} />
+              </div>
+              <AnimatePresence>
+                {isCollectionsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 mt-2 w-48 glass-panel py-2 shadow-xl z-50"
+                  >
+                    <Link href="/products?collection=animals" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Animals</Link>
+                    <Link href="/products?collection=space" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Space</Link>
+                    <Link href="/products?collection=nature" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Nature</Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* User & Cart Area */}
+          <div className="flex items-center gap-4 sm:gap-6 z-50">
+            {user ? (
+              <div className="group relative">
+                <div className="flex items-center gap-2 cursor-pointer p-2 rounded-full hover:bg-white/50 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--brand-orange)] to-[var(--brand-amber)] flex items-center justify-center text-white font-bold text-sm">
+                    {(user.fullName || user.name) ? (user.fullName || user.name).charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <span className="hidden sm:block font-medium text-sm text-gray-700">{(user.fullName || user.name)?.split(' ')[0]}</span>
+                </div>
+                {/* Dropdown */}
+                <div className="absolute right-0 mt-2 w-48 glass-panel py-2 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <Link href="/profile" className="block px-4 py-2 hover:bg-white/50 text-gray-700">My Profile</Link>
+                  <Link href="/orders" className="block px-4 py-2 hover:bg-white/50 text-gray-700">My Orders</Link>
+                  {user.role === 'admin' && (
+                    <Link href="/admin" className="block px-4 py-2 hover:bg-white/50 text-[var(--brand-purple)] font-medium">Admin Dashboard</Link>
+                  )}
+                  <button onClick={signOut} className="w-full text-left px-4 py-2 hover:bg-white/50 text-red-500">
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => openAuthModal('login')}
+                className="hidden sm:flex items-center gap-2 btn-secondary py-1.5 px-4 text-sm"
+              >
+                <User size={16} /> Login
+              </button>
+            )}
+
+            {/* Cart Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={openCart}
+              className="relative p-2 rounded-full hover:bg-white/50 transition-colors"
+            >
+              <ShoppingBag size={24} className="text-gray-800" />
+              <AnimatePresence>
+                {cartItemCount > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -top-1 -right-1 bg-[var(--brand-orange)] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md"
+                  >
+                    {cartItemCount}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+
+            {/* Mobile Menu Toggle */}
             <button
-              onClick={() => setAuthModalOpen(true)}
-              className="p-3 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2 text-xs font-bold shadow-sm"
-              title="Customer Login / Signup"
+              className="md:hidden p-2 rounded-full hover:bg-white/50 transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <User className="w-5 h-5 text-orange-500" />
-              <span className="hidden sm:inline">Login / Sign Up</span>
-            </button>
-
-            <a 
-              href="https://wa.me/918793687379?text=Hi! I need help with an order on Rangaroo" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-2 rounded-2xl text-xs font-bold hover:bg-emerald-100 transition-all"
-            >
-              <PhoneCall className="w-3.5 h-3.5" />
-              <span>Need Help?</span>
-            </a>
-
-            {/* Cart Icon Button */}
-            <button 
-              onClick={toggleCart} 
-              className="relative p-3 rounded-2xl bg-white border border-orange-200 shadow-sm text-slate-800 hover:bg-orange-50 hover:border-orange-300 transition-all group"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingBag className="w-6 h-6 text-slate-800 group-hover:scale-110 transition-transform" />
-              {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white animate-bounce-slow">
-                  {itemCount}
-                </span>
-              )}
-            </button>
-
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              className="md:hidden p-3 rounded-2xl bg-white border border-slate-200 text-slate-800 hover:bg-slate-50"
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X size={24} className="text-gray-800" /> : <Menu size={24} className="text-gray-800" />}
             </button>
           </div>
         </div>
+      </nav>
 
-        {/* Mobile Navigation Drawer */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-slate-200 px-4 py-6 shadow-xl animate-fadeIn">
-            <div className="flex flex-col gap-4">
-              <button 
-                onClick={() => { setMobileMenuOpen(false); setAuthModalOpen(true); }}
-                className="font-heading text-lg text-orange-500 hover:text-orange-600 py-2 border-b border-slate-100 text-left flex items-center gap-2"
-              >
-                <User className="w-5 h-5" />
-                <span>Customer Login / Sign Up</span>
-              </button>
-              <Link 
-                href="/" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2 border-b border-slate-100"
-              >
-                🏠 Home
-              </Link>
-              <Link 
-                href="/products" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2 border-b border-slate-100"
-              >
-                🎨 Shop All Kits
-              </Link>
-              <Link 
-                href="/#collections" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2 border-b border-slate-100"
-              >
-                ✨ Collections
-              </Link>
-              <Link 
-                href="/about" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2 border-b border-slate-100"
-              >
-                🦘 Our Story
-              </Link>
-              <Link 
-                href="/faq" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-heading text-lg text-slate-900 hover:text-orange-500 py-2"
-              >
-                ❓ FAQ
-              </Link>
+      {/* Mobile Drawer Navigation */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: '100vh' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="fixed inset-0 top-0 pt-24 bg-white/95 backdrop-blur-xl z-20 md:hidden overflow-hidden"
+          >
+            <div className="flex flex-col items-center gap-6 p-8 text-xl font-heading font-semibold text-gray-800">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.path}
+                  className="w-full text-center py-3 border-b border-gray-100 hover:text-[var(--brand-orange)]"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              {!user && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    openAuthModal('login');
+                  }}
+                  className="mt-6 w-full btn-primary justify-center"
+                >
+                  Login / Sign Up
+                </button>
+              )}
             </div>
-          </div>
+          </motion.div>
         )}
-      </header>
+      </AnimatePresence>
     </>
   );
 }

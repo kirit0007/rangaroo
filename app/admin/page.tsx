@@ -1,467 +1,727 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { toast } from 'react-hot-toast';
 import { 
-  TrendingUp, ShoppingBag, Users, DollarSign, Package, 
-  Tag, MessageSquare, AlertTriangle, ArrowUpRight, CheckCircle2, 
-  Plus, Download, Search, Settings, Save, Edit3, Trash2, Lock, LogOut, Image as ImageIcon, Upload
+  TrendingUp, 
+  Package, 
+  CreditCard, 
+  Tag, 
+  LayoutDashboard, 
+  Settings, 
+  ShoppingBag, 
+  Ticket, 
+  ClipboardList,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  Lock
 } from 'lucide-react';
-import { products as initialProducts } from '@/data/products';
+import Image from 'next/image';
+import toast from 'react-hot-toast';
 
-export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [loginUsername, setLoginUsername] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  
-  const [activeTab, setActiveTab] = useState<'overview' | 'cms' | 'products' | 'orders'>('overview');
+import { useAuthStore } from '@/store/authStore';
+import { useAdminStore } from '@/store/adminStore';
+import { products, categories, formatPrice } from '@/data/products';
 
-  // Dynamic Site Settings State (CMS)
-  const [cmsSettings, setCmsSettings] = useState({
-    announcement: '🎨 Premium DIY Art & Craft Kits for Kids | Fast Pan-India Delivery',
-    heroTitle: 'Where Little Hands Create Big Smiles! 🎨',
-    heroSubtitle: 'Unbox creativity with thoughtfully designed DIY Paint Kits that encourage children to step away from screens and enjoy hands-on artistic adventures!',
-    contactEmail: 'rangaroo.co@gmail.com',
-    contactPhone: '+91 87936 87379',
+type TabType = 'dashboard' | 'cms' | 'products' | 'coupons' | 'orders';
+
+export default function AdminPage() {
+  const { user, signIn } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+
+  const {
+    siteSettings,
+    updateSiteSettings,
+    coupons,
+    addCoupon,
+    removeCoupon,
+    orders,
+    updateOrderStatus
+  } = useAdminStore();
+
+  // Local state for forms
+  const [cmsForm, setCmsForm] = useState(siteSettings);
+  const [couponForm, setCouponForm] = useState({
+    code: '',
+    discountType: 'percentage' as 'percentage' | 'fixed',
+    discountValue: 0,
+    minOrderAmount: 0,
+    maxDiscountAmount: 0
   });
 
-  // Dynamic Products Management State
-  const [productList, setProductList] = useState(initialProducts);
-
-  // New Product Form State
-  const [newProduct, setNewProduct] = useState({
-    name: '',
-    price: '',
-    categoryId: 'mini-kit',
-    collectionId: 'dinosaur',
-    figureCount: '2',
-    paintType: 'Tempera',
-    imageUrl: '/logo.png',
-  });
+  const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
+  const [productSearch, setProductSearch] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState('All');
 
   useEffect(() => {
-    const authStatus = sessionStorage.getItem('rangaroo_admin_authenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
+    setCmsForm(siteSettings);
+  }, [siteSettings]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      (loginUsername === 'admin' && loginPassword === 'rangaroo2026') ||
-      (loginUsername === 'admin' && loginPassword === 'admin123')
-    ) {
-      sessionStorage.setItem('rangaroo_admin_authenticated', 'true');
-      setIsAuthenticated(true);
-      toast.success('Welcome back, Admin! 🦘');
-    } else {
-      toast.error('Invalid Username or Password! Access Denied.');
+    try {
+      await signIn(email, password);
+      // Wait for auth state to update
+    } catch (error) {
+      toast.error('Login failed');
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('rangaroo_admin_authenticated');
-    setIsAuthenticated(false);
-    toast.success('Logged out successfully.');
+  const handleCmsSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateSiteSettings(cmsForm);
+    toast.success('Site settings updated');
   };
 
-  const handleSaveCMS = (e: React.FormEvent) => {
+  const handleAddCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('rangaroo_cms_settings', JSON.stringify(cmsSettings));
-    toast.success('Site content updated successfully! Live website reflects changes.');
-  };
-
-  const handleAddProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProduct.name || !newProduct.price) {
-      toast.error('Please enter product name and price');
+    if (!couponForm.code) {
+      toast.error('Coupon code is required');
       return;
     }
-    const created = {
-      id: 'prod-' + Date.now(),
-      name: newProduct.name,
-      slug: newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      description: 'Handcrafted premium DIY painting kit for kids.',
-      shortDescription: 'Fun screen-free painting kit with plaster figurines and paints.',
-      price: parseFloat(newProduct.price),
-      compareAtPrice: parseFloat(newProduct.price) * 1.3,
-      figureCount: parseInt(newProduct.figureCount),
-      paintType: newProduct.paintType,
-      categoryId: newProduct.categoryId,
-      collectionId: newProduct.collectionId,
-      isFeatured: true,
-      images: [newProduct.imageUrl || '/logo.png'],
-      kitContents: ['Plaster Figurines', '6 Paint Colors', '1 Paintbrush', 'Instruction Guide'],
-      stock: 50
-    };
-    setProductList([created, ...productList]);
-    setNewProduct({ name: '', price: '', categoryId: 'mini-kit', collectionId: 'dinosaur', figureCount: '2', paintType: 'Tempera', imageUrl: '/logo.png' });
-    toast.success(`${created.name} added to live catalog with custom image!`);
+    
+    addCoupon({
+      code: couponForm.code,
+      discountType: couponForm.discountType,
+      discountValue: couponForm.discountValue,
+      minOrderAmount: couponForm.minOrderAmount,
+      maxDiscountAmount: couponForm.discountType === 'percentage' ? couponForm.maxDiscountAmount : undefined,
+    });
+    
+    setCouponForm({
+      code: '',
+      discountType: 'percentage',
+      discountValue: 0,
+      minOrderAmount: 0,
+      maxDiscountAmount: 0
+    });
+    toast.success('Coupon added successfully');
   };
 
-  const handleDeleteProduct = (id: string) => {
-    setProductList(productList.filter(p => p.id !== id));
-    toast.success('Product deleted from catalog');
+  const toggleOrderExpansion = (orderId: string) => {
+    setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
-  // IF NOT AUTHENTICATED: SHOW ADMIN LOGIN SCREEN
-  if (!isAuthenticated) {
+  if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-body">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto text-3xl border border-orange-500/30">
-            <Lock className="w-8 h-8" />
+      <div className="min-h-screen flex items-center justify-center bg-cream/30 p-4">
+        <div className="max-w-md w-full bg-white/50 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl">
+          <div className="flex justify-center mb-6">
+            <div className="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center">
+              <Lock className="w-8 h-8 text-orange-500" />
+            </div>
           </div>
-
-          <div>
-            <Image src="/logo.png" alt="Rangaroo Logo" width={160} height={50} className="h-10 w-auto mx-auto object-contain mb-2" />
-            <h2 className="font-heading text-2xl text-white">Admin Authentication</h2>
-            <p className="text-xs text-slate-400 font-medium mt-1">Authorized personnel login required to access Rangaroo CMS & Dashboard.</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4 text-left">
+          <h1 className="text-2xl font-bold text-center mb-8 font-outfit text-gray-800">Admin Login</h1>
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Admin Username</label>
-              <input 
-                type="text" 
-                value={loginUsername}
-                onChange={(e) => setLoginUsername(e.target.value)}
-                placeholder="admin"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/70"
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
               />
             </div>
-
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Admin Password</label>
-              <input 
-                type="password" 
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="••••••••"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/70"
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
               />
             </div>
-
-            <button 
+            <button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white font-heading text-lg py-3.5 rounded-2xl shadow-fun transition-all"
+              className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors"
             >
-              Sign In to Admin Panel 🔒
+              Sign In
             </button>
           </form>
-
-          <p className="text-[11px] text-slate-500 font-mono">
-            Default credentials: <strong className="text-slate-300">admin</strong> / <strong className="text-slate-300">rangaroo2026</strong>
-          </p>
         </div>
       </div>
     );
   }
 
-  // IF AUTHENTICATED: SHOW FULL DASHBOARD
+  if (user.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cream/30 p-4">
+        <div className="max-w-md w-full bg-white/50 backdrop-blur-xl p-8 rounded-3xl border border-red-200 shadow-xl text-center">
+          <Lock className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h1>
+          <p className="text-gray-600">You do not have permission to access the admin panel.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Dashboard Stats
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+
+  // Filtered Products
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(productSearch.toLowerCase());
+    const matchesCategory = productCategoryFilter === 'All' || p.categoryId === productCategoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-body">
-      
-      {/* Admin Top Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Rangaroo Admin" width={140} height={45} className="h-10 w-auto object-contain" />
-            <span className="bg-purple-500/20 text-purple-300 font-heading text-xs px-2.5 py-1 rounded-full border border-purple-500/30">
-              CMS Admin Panel
-            </span>
-          </Link>
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-64 bg-gray-900 text-white md:min-h-screen flex flex-col">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold font-outfit text-white">Rangaroo<span className="text-orange-500">Admin</span></h2>
         </div>
-
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-2 rounded-xl">
-            View Live Website ↗
-          </Link>
-          <button 
-            onClick={handleLogout}
-            className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/50 border border-red-800/60 px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors"
+        <nav className="flex-1 px-4 pb-4 md:space-y-2 flex overflow-x-auto md:flex-col md:overflow-visible">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'dashboard' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Log Out</span>
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
           </button>
-        </div>
-      </header>
+          <button
+            onClick={() => setActiveTab('cms')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'cms' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <Settings size={20} />
+            <span>Site CMS</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'products' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <ShoppingBag size={20} />
+            <span>Products</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('coupons')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'coupons' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <Ticket size={20} />
+            <span>Coupons</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'orders' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <ClipboardList size={20} />
+            <span>Orders</span>
+          </button>
+        </nav>
+      </aside>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Main Content Area */}
+      <main className="flex-1 p-6 lg:p-8 overflow-y-auto bg-gray-50/50">
         
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 border-b border-slate-800 mb-8 pb-3">
-          {[
-            { id: 'overview', label: '📊 Dashboard Overview' },
-            { id: 'cms', label: '✍️ Site Content & CMS' },
-            { id: 'products', label: '🎨 Product Catalog & Images' },
-            { id: 'orders', label: '📦 Orders & Shipping' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === tab.id 
-                  ? 'bg-orange-500 text-white shadow-fun' 
-                  : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* OVERVIEW TAB */}
-        {activeTab === 'overview' && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { title: 'Total Sales Revenue', value: '₹1,48,900', icon: DollarSign, color: 'from-orange-500 to-amber-500' },
-                { title: 'Orders Received', value: '432 Orders', icon: ShoppingBag, color: 'from-purple-600 to-pink-500' },
-                { title: 'Conversion Rate', value: '4.2%', icon: TrendingUp, color: 'from-emerald-500 to-teal-500' },
-                { title: 'Active Catalog Kits', value: `${productList.length} Products`, icon: Package, color: 'from-blue-500 to-indigo-600' },
-              ].map((s, idx) => (
-                <div key={idx} className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{s.title}</div>
-                  <div className="font-heading text-3xl text-white font-extrabold">{s.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800">
-              <h3 className="font-heading text-xl text-white mb-4">Quick CMS Actions</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <button onClick={() => setActiveTab('cms')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
-                  <div className="font-heading text-base text-orange-400">Edit Hero Heading</div>
-                  <div className="text-xs text-slate-400 mt-1">Change main banner & tagline</div>
-                </button>
-                <button onClick={() => setActiveTab('products')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
-                  <div className="font-heading text-base text-amber-400">Add Product & Images</div>
-                  <div className="text-xs text-slate-400 mt-1">Add products, upload image URLs & change prices</div>
-                </button>
-                <button onClick={() => setActiveTab('orders')} className="bg-slate-800 hover:bg-slate-700 p-4 rounded-2xl text-left border border-slate-700">
-                  <div className="font-heading text-base text-emerald-400">View Customer Orders</div>
-                  <div className="text-xs text-slate-400 mt-1">Track payments & shipments</div>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CMS CONTENT MANAGER TAB */}
-        {activeTab === 'cms' && (
-          <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 max-w-3xl space-y-6">
-            <div>
-              <h3 className="font-heading text-2xl text-white">Live Storefront CMS Editor ✍️</h3>
-              <p className="text-xs text-slate-400 font-medium">Edit your site content below. Changes reflect on the live website instantly.</p>
-            </div>
-
-            <form onSubmit={handleSaveCMS} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Top Announcement Bar Text</label>
-                <input 
-                  type="text" 
-                  value={cmsSettings.announcement}
-                  onChange={(e) => setCmsSettings({ ...cmsSettings, announcement: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Main Hero Headline</label>
-                <input 
-                  type="text" 
-                  value={cmsSettings.heroTitle}
-                  onChange={(e) => setCmsSettings({ ...cmsSettings, heroTitle: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Hero Subtitle</label>
-                <textarea 
-                  rows={3}
-                  value={cmsSettings.heroSubtitle}
-                  onChange={(e) => setCmsSettings({ ...cmsSettings, heroSubtitle: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500"
-                />
-              </div>
-
-              <button 
-                type="submit"
-                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-heading text-sm px-6 py-3.5 rounded-2xl shadow-fun flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save Changes Live</span>
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* PRODUCTS & IMAGE MANAGEMENT TAB */}
-        {activeTab === 'products' && (
-          <div className="space-y-8">
-            
-            {/* Add New Product Form with Image URL & Image Preview */}
-            <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-6">
-              <div className="flex items-center justify-between">
+        {/* Tab 1: Dashboard */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Overview</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
                 <div>
-                  <h3 className="font-heading text-xl text-white">Add New DIY Kit with Image 🖼️</h3>
-                  <p className="text-xs text-slate-400 font-medium">Upload or enter image URL to display on product cards and product pages.</p>
+                  <p className="text-sm font-medium text-gray-500">Total Products</p>
+                  <p className="text-3xl font-bold text-gray-800">{products.length}</p>
+                </div>
+                <div className="p-4 bg-blue-100 rounded-2xl text-blue-600">
+                  <Package size={24} />
                 </div>
               </div>
               
-              <form onSubmit={handleAddProduct} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total Orders</p>
+                  <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
+                </div>
+                <div className="p-4 bg-purple-100 rounded-2xl text-purple-600">
+                  <TrendingUp size={24} />
+                </div>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Revenue</p>
+                  <p className="text-3xl font-bold text-gray-800">{formatPrice(totalRevenue)}</p>
+                </div>
+                <div className="p-4 bg-green-100 rounded-2xl text-green-600">
+                  <CreditCard size={24} />
+                </div>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Active Coupons</p>
+                  <p className="text-3xl font-bold text-gray-800">{coupons.length}</p>
+                </div>
+                <div className="p-4 bg-orange-100 rounded-2xl text-orange-600">
+                  <Tag size={24} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: CMS */}
+        {activeTab === 'cms' && (
+          <div className="space-y-6 max-w-4xl">
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Site CMS</h1>
+            <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/20 shadow-sm p-6 lg:p-8">
+              <form onSubmit={handleCmsSave} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Announcement Bar Text</label>
+                  <textarea
+                    value={cmsForm.announcementText}
+                    onChange={(e) => setCmsForm({ ...cmsForm, announcementText: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    rows={2}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Product Name *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. DIY Unicorn Paint Kit" 
-                      value={newProduct.name}
-                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Hero Title</label>
+                    <input
+                      type="text"
+                      value={cmsForm.heroTitle}
+                      onChange={(e) => setCmsForm({ ...cmsForm, heroTitle: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Price (₹) *</label>
-                    <input 
-                      type="number" 
-                      placeholder="299" 
-                      value={newProduct.price}
-                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Hero Subtitle</label>
+                    <textarea
+                      value={cmsForm.heroSubtitle}
+                      onChange={(e) => setCmsForm({ ...cmsForm, heroSubtitle: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      rows={2}
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Kit Tier</label>
-                    <select 
-                      value={newProduct.categoryId}
-                      onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
-                    >
-                      <option value="mini-kit">Mini Kit (₹149)</option>
-                      <option value="fun-kit">Fun Kit (₹199)</option>
-                      <option value="creative-kit">Creative Kit (₹299)</option>
-                      <option value="signature-collection">Signature (₹499)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Theme Collection</label>
-                    <select 
-                      value={newProduct.collectionId}
-                      onChange={(e) => setNewProduct({ ...newProduct, collectionId: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
-                    >
-                      <option value="dinosaur">Dinosaur 🦕</option>
-                      <option value="space">Space 🚀</option>
-                      <option value="princess">Princess 👸</option>
-                      <option value="vehicle">Vehicle 🚗</option>
-                    </select>
                   </div>
                 </div>
 
-                {/* Product Image Input & Live Preview Box */}
-                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row items-center gap-4">
-                  <div className="w-20 h-20 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                    <Image 
-                      src={newProduct.imageUrl || '/logo.png'} 
-                      alt="Preview" 
-                      width={80} 
-                      height={80} 
-                      className="w-full h-full object-contain p-1"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                    <input
+                      type="text"
+                      value={cmsForm.contactPhone}
+                      onChange={(e) => setCmsForm({ ...cmsForm, contactPhone: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
-
-                  <div className="flex-1 w-full space-y-1">
-                    <label className="block text-xs font-bold text-orange-400 flex items-center gap-1">
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      <span>Product Image URL / Asset Path:</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="/logo.png or https://example.com/kit-image.png" 
-                      value={newProduct.imageUrl}
-                      onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                    <input
+                      type="email"
+                      value={cmsForm.contactEmail}
+                      onChange={(e) => setCmsForm({ ...cmsForm, contactEmail: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
+                </div>
 
-                  <button 
+                <div className="pt-4">
+                  <button
                     type="submit"
-                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white font-heading text-xs px-6 py-3.5 rounded-xl shadow-fun shrink-0"
+                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
                   >
-                    + Add Product to Live Store
+                    Save Changes
                   </button>
                 </div>
               </form>
+
+              <div className="mt-12 pt-8 border-t border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Live Preview</h3>
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="bg-orange-500 text-white text-center py-2 px-4 text-sm font-medium">
+                    {cmsForm.announcementText}
+                  </div>
+                  <div className="p-8 bg-cream flex flex-col items-center justify-center text-center">
+                    <h2 className="text-3xl font-bold font-outfit text-gray-900 mb-4">{cmsForm.heroTitle}</h2>
+                    <p className="text-gray-600 max-w-md mx-auto">{cmsForm.heroSubtitle}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Products */}
+        {activeTab === 'products' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h1 className="text-3xl font-bold font-outfit text-gray-800">Products</h1>
+              <div className="flex space-x-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                  />
+                </div>
+                <select
+                  value={productCategoryFilter}
+                  onChange={(e) => setProductCategoryFilter(e.target.value)}
+                  className="px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                >
+                  <option value="All">All Categories</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* Existing Products List with Image Thumbnails */}
-            <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800">
-              <h3 className="font-heading text-xl text-white mb-4">Catalog Products ({productList.length})</h3>
-              <div className="space-y-3">
-                {productList.map((p) => (
-                  <div key={p.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-white p-1 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                        <Image 
-                          src={p.images && p.images.length > 0 ? p.images[0] : '/logo.png'} 
-                          alt={p.name} 
-                          width={48} 
-                          height={48} 
-                          className="w-full h-full object-contain"
-                        />
+            <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-xl text-sm flex items-start">
+              <span className="font-semibold mr-2">Note:</span> Product catalog is managed via code. Contact developer for changes.
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      <th className="p-4 font-semibold text-gray-600 text-sm">Product</th>
+                      <th className="p-4 font-semibold text-gray-600 text-sm">Category</th>
+                      <th className="p-4 font-semibold text-gray-600 text-sm">Price</th>
+                      <th className="p-4 font-semibold text-gray-600 text-sm">Stock</th>
+                      <th className="p-4 font-semibold text-gray-600 text-sm">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.map((product) => (
+                      <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td className="p-4 flex items-center space-x-3">
+                          <div className="h-10 w-10 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
+                            <Image 
+                              src={product.images[0]} 
+                              alt={product.name} 
+                              fill 
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                          <span className="font-medium text-gray-800 line-clamp-1">{product.name}</span>
+                        </td>
+                        <td className="p-4 text-gray-600 text-sm">
+                          {categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
+                        </td>
+                        <td className="p-4 text-gray-800 font-medium">
+                          {formatPrice(product.price)}
+                        </td>
+                        <td className="p-4 text-gray-600 text-sm">
+                          {product.stockQuantity}
+                        </td>
+                        <td className="p-4">
+                          <span className="inline-flex px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+                            Active
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Coupons */}
+        {activeTab === 'coupons' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Coupon Engine</h1>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Form */}
+              <div className="lg:col-span-1 bg-white/80 backdrop-blur-md rounded-3xl border border-white/20 shadow-sm p-6 h-fit">
+                <h2 className="text-xl font-semibold mb-6">Create New Coupon</h2>
+                <form onSubmit={handleAddCoupon} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                    <input
+                      type="text"
+                      value={couponForm.code}
+                      onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 uppercase"
+                      placeholder="SUMMER20"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+                    <select
+                      value={couponForm.discountType}
+                      onChange={(e) => setCouponForm({ ...couponForm, discountType: e.target.value as any })}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount (₹)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Discount Value {couponForm.discountType === 'percentage' ? '(%)' : '(₹)'}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={couponForm.discountValue || ''}
+                      onChange={(e) => setCouponForm({ ...couponForm, discountValue: Number(e.target.value) })}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Min Order Amount (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={couponForm.minOrderAmount || ''}
+                      onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: Number(e.target.value) })}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+
+                  {couponForm.discountType === 'percentage' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount Amount (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={couponForm.maxDiscountAmount || ''}
+                        onChange={(e) => setCouponForm({ ...couponForm, maxDiscountAmount: Number(e.target.value) })}
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full mt-4 px-4 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+                  >
+                    Add Coupon
+                  </button>
+                </form>
+              </div>
+
+              {/* List */}
+              <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden h-fit">
+                <div className="p-6 border-b border-gray-100">
+                  <h2 className="text-xl font-semibold">Active Coupons</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  {coupons.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">No coupons active.</div>
+                  ) : (
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100">
+                          <th className="p-4 font-semibold text-gray-600 text-sm">Code</th>
+                          <th className="p-4 font-semibold text-gray-600 text-sm">Value</th>
+                          <th className="p-4 font-semibold text-gray-600 text-sm">Conditions</th>
+                          <th className="p-4 font-semibold text-gray-600 text-sm w-16"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {coupons.map((coupon) => (
+                          <tr key={coupon.code} className="border-b border-gray-50">
+                            <td className="p-4">
+                              <span className="inline-flex px-3 py-1 bg-gray-100 text-gray-800 rounded-lg font-mono text-sm font-bold border border-gray-200">
+                                {coupon.code}
+                              </span>
+                            </td>
+                            <td className="p-4 font-medium text-gray-800">
+                              {coupon.discountType === 'percentage' 
+                                ? `${coupon.discountValue}% off` 
+                                : formatPrice(coupon.discountValue)}
+                            </td>
+                            <td className="p-4 text-sm text-gray-500">
+                              <div>Min: {formatPrice(coupon.minOrderAmount)}</div>
+                              {coupon.discountType === 'percentage' && coupon.maxDiscountAmount ? (
+                                <div>Max cap: {formatPrice(coupon.maxDiscountAmount)}</div>
+                              ) : null}
+                            </td>
+                            <td className="p-4">
+                              <button
+                                onClick={() => {
+                                  removeCoupon(coupon.code);
+                                  toast.success('Coupon removed');
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: Orders */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Orders</h1>
+            
+            {orders.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-gray-200 p-12 flex flex-col items-center justify-center text-center">
+                <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                  <Package className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">No orders yet</h3>
+                <p className="text-gray-500 max-w-sm">When customers place orders, they will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div key={order.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    {/* Header summary (clickable) */}
+                    <div 
+                      className="p-4 sm:p-6 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                      onClick={() => toggleOrderExpansion(order.id)}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-orange-50 rounded-xl text-orange-500">
+                          <ShoppingBag size={20} />
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-bold text-gray-900">#{order.id.split('_').pop()?.slice(0, 8)}</span>
+                            <span className="text-sm text-gray-500">•</span>
+                            <span className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-gray-600 text-sm mt-1">
+                            {order.shippingAddress?.fullName || 'Customer'} ({order.items.length} items)
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-heading text-white text-sm">{p.name}</h4>
-                        <p className="text-xs text-slate-400">₹{p.price} • {p.figureCount} Figures • {p.paintType} Paints</p>
+
+                      <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                        <div className="text-right flex-1 sm:flex-none">
+                          <p className="font-bold text-gray-900">{formatPrice(order.total)}</p>
+                          <div className="mt-1 flex gap-2 justify-end">
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                              order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
+                              order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {order.paymentStatus.toUpperCase()}
+                            </span>
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                              order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                              order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                              order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {order.status.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-gray-400">
+                          {expandedOrders[order.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => handleDeleteProduct(p.id)}
-                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg"
-                        title="Delete Product"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {/* Expanded details */}
+                    {expandedOrders[order.id] && (
+                      <div className="border-t border-gray-100 p-4 sm:p-6 bg-gray-50/50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div>
+                            <h4 className="font-semibold text-gray-800 mb-4">Order Items</h4>
+                            <div className="space-y-3">
+                              {order.items.map((item, idx) => {
+                                const product = products.find(p => p.id === item.productId);
+                                return (
+                                  <div key={idx} className="flex items-center space-x-3">
+                                    <div className="h-12 w-12 rounded bg-white border border-gray-200 overflow-hidden relative shrink-0">
+                                      {product && (
+                                        <Image src={product.images[0]} alt={product.name} fill className="object-cover" unoptimized />
+                                      )}
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-800 line-clamp-1">{product?.name || 'Unknown Product'}</p>
+                                      <p className="text-xs text-gray-500">Qty: {item.quantity} × {formatPrice(item.unitPrice)}</p>
+                                    </div>
+                                    <div className="font-medium text-sm text-gray-800">
+                                      {formatPrice(item.quantity * item.unitPrice)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            
+                            {order.couponCode && (
+                              <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between text-sm">
+                                <span className="text-gray-600">Discount ({order.couponCode})</span>
+                                <span className="text-green-600 font-medium">- {formatPrice(order.discountAmount || 0)}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-6">
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-3">Customer Details</h4>
+                              <div className="text-sm text-gray-600 space-y-1 bg-white p-4 rounded-xl border border-gray-200">
+                                <p><span className="font-medium">Name:</span> {order.shippingAddress?.fullName}</p>
+                                <p><span className="font-medium">Phone:</span> {order.shippingAddress?.phone}</p>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-3">Shipping Address</h4>
+                              <div className="text-sm text-gray-600 bg-white p-4 rounded-xl border border-gray-200">
+                                <p>{order.shippingAddress?.addressLine1}</p>
+                                {order.shippingAddress?.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
+                                <p>{order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.pincode}</p>
+                              </div>
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2">Update Status</h4>
+                              <select 
+                                value={order.status}
+                                onChange={(e) => {
+                                  updateOrderStatus(order.id, e.target.value as any);
+                                  toast.success('Order status updated');
+                                }}
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-            </div>
+            )}
           </div>
         )}
-
-        {/* ORDERS MANAGEMENT TAB */}
-        {activeTab === 'orders' && (
-          <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 space-y-4">
-            <h3 className="font-heading text-xl text-white">Customer Orders</h3>
-            <p className="text-xs text-slate-400">Manage Razorpay orders, view shipping addresses, and mark dispatch status.</p>
-            
-            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs font-semibold text-slate-300">
-              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                <span className="font-mono text-orange-400 font-bold">RNG-20260803-089</span>
-                <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">PAID</span>
-              </div>
-              <p className="mt-2 text-white font-bold">Ananya Sharma (Phone: 9876543210)</p>
-              <p className="text-slate-400">House 42, Green Avenue, Bengaluru, 560001</p>
-              <p className="mt-1 font-bold text-orange-400">Total: ₹998 (2 × Signature Collection Kit)</p>
-            </div>
-          </div>
-        )}
-
-      </div>
+      </main>
     </div>
   );
 }

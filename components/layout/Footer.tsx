@@ -1,117 +1,120 @@
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
-import { Heart, Mail, Phone, MapPin, Sparkles, Camera } from 'lucide-react';
+import Image from 'next/image';
+import { Globe, Heart, Play, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t-4 border-orange-500 relative overflow-hidden">
-      {/* Decorative Blob */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+    <footer className="bg-[#1a1a2e] text-white pt-16 pb-6 relative overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[var(--brand-orange)] to-[var(--brand-purple)] opacity-20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-[var(--brand-amber)] to-[var(--brand-pink)] opacity-20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           
-          {/* Brand Info */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-yellow-400 p-0.5 shadow-fun">
-                <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-2xl">
-                  🦘
-                </div>
-              </div>
-              <span className="font-heading text-3xl text-white tracking-wide">
-                RANGAROO
-              </span>
-            </div>
-            
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm font-medium">
-              India's favorite DIY art & craft brand inspiring creativity, hands-on learning, and screen-free fun for children and families.
+          {/* Brand Section */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.png" alt="Rangaroo Logo" width={48} height={48} unoptimized />
+              <span className="font-heading font-bold text-3xl text-white">Rangaroo</span>
+            </Link>
+            <p className="text-gray-400 italic text-sm">"Paint. Create. Imagine."</p>
+            <p className="text-gray-300 text-sm leading-relaxed max-w-xs">
+              Premium DIY Paint Kits for Kids. Sparking creativity and building fine motor skills one canvas at a time. Safe, non-toxic, and endlessly fun!
             </p>
-
-            <div className="flex items-center gap-3 pt-2">
-              <a 
-                href="https://instagram.com/ranga.roo" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-pink-600 text-slate-300 hover:text-white flex items-center justify-center transition-all shadow-md"
-                aria-label="Instagram"
-              >
-                <Camera className="w-5 h-5" />
+            <div className="flex items-center gap-4 pt-2">
+              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--brand-orange)] transition-colors">
+                <Globe size={18} />
               </a>
-              <a 
-                href="https://wa.me/918793687379" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white flex items-center justify-center transition-all shadow-md"
-                aria-label="WhatsApp"
-              >
-                <span className="text-lg">💬</span>
+              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--brand-orange)] transition-colors">
+                <Heart size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--brand-orange)] transition-colors">
+                <Play size={18} />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-heading text-lg text-white mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-orange-400" />
-              <span>Explore Kits</span>
-            </h4>
-            <ul className="space-y-2.5 text-sm font-semibold">
-              <li><Link href="/products" className="hover:text-orange-400 transition-colors">Shop All Kits</Link></li>
-              <li><Link href="/#collections" className="hover:text-orange-400 transition-colors">Dinosaur Collection 🦕</Link></li>
-              <li><Link href="/#collections" className="hover:text-orange-400 transition-colors">Space Collection 🚀</Link></li>
-              <li><Link href="/#collections" className="hover:text-orange-400 transition-colors">Princess Collection 👸</Link></li>
-              <li><Link href="/#collections" className="hover:text-orange-400 transition-colors">Harry Potter Kit ⚡</Link></li>
+            <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Quick Links</h4>
+            <ul className="space-y-3">
+              {['Home', 'Shop', 'About Us', 'Contact', 'FAQ', 'Blog'].map((item) => (
+                <li key={item}>
+                  <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-orange)]"></span>
+                    {item}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Customer Care */}
+          {/* Customer Service */}
           <div>
-            <h4 className="font-heading text-lg text-white mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span>Help & Support</span>
-            </h4>
-            <ul className="space-y-2.5 text-sm font-semibold">
-              <li><Link href="/about" className="hover:text-orange-400 transition-colors">About Rangaroo</Link></li>
-              <li><Link href="/faq" className="hover:text-orange-400 transition-colors">Frequently Asked Questions</Link></li>
-              <li><Link href="/contact" className="hover:text-orange-400 transition-colors">Contact Us</Link></li>
-              <li><Link href="/shipping-policy" className="hover:text-orange-400 transition-colors">Shipping & Delivery</Link></li>
-              <li><Link href="/refund-policy" className="hover:text-orange-400 transition-colors">Refund & Returns</Link></li>
+            <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Customer Care</h4>
+            <ul className="space-y-3">
+              {['Shipping Policy', 'Return Policy', 'Privacy Policy', 'Terms of Service', 'Track Order'].map((item) => (
+                <li key={item}>
+                  <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-orange)]"></span>
+                    {item}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Legal Pages */}
-          <div>
-            <h4 className="font-heading text-lg text-white mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <span>Legal</span>
-            </h4>
-            <ul className="space-y-2.5 text-sm font-semibold">
-              <li><Link href="/privacy-policy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-orange-400 transition-colors">Terms of Service</Link></li>
-              <li><Link href="/contact" className="hover:text-orange-400 transition-colors">Grievance Redressal</Link></li>
-            </ul>
+          {/* Newsletter & Contact */}
+          <div className="space-y-6">
+            <div>
+              <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Get in Touch</h4>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3 text-sm text-gray-300">
+                  <MapPin size={18} className="text-[var(--brand-orange)] shrink-0 mt-0.5" />
+                  <span>123 Creative Studio, Art District, Mumbai, India 400001</span>
+                </li>
+                <li className="flex items-center gap-3 text-sm text-gray-300">
+                  <Phone size={18} className="text-[var(--brand-orange)] shrink-0" />
+                  <span>+91 98765 43210</span>
+                </li>
+                <li className="flex items-center gap-3 text-sm text-gray-300">
+                  <Mail size={18} className="text-[var(--brand-orange)] shrink-0" />
+                  <span>hello@rangaroo.in</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="pt-2">
+              <p className="text-sm font-medium mb-3 text-white">Join our newsletter for 10% off!</p>
+              <div className="flex items-center w-full max-w-sm rounded-full bg-white/10 p-1 border border-white/20 focus-within:border-[var(--brand-orange)] transition-colors">
+                <input 
+                  type="email" 
+                  placeholder="Your email address" 
+                  className="bg-transparent text-white px-4 py-2 w-full text-sm outline-none placeholder-gray-400"
+                />
+                <button className="bg-[var(--brand-orange)] hover:bg-[var(--brand-amber)] transition-colors text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">
+                  Subscribe
+                </button>
+              </div>
+            </div>
           </div>
-
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
-          <div className="flex items-center gap-2">
-            <span>Made with</span>
-            <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-            <span>in India 🇮🇳</span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700 font-bold">UPI</span>
-            <span className="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700 font-bold">Google Pay</span>
-            <span className="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700 font-bold">PhonePe</span>
-            <span className="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700 font-bold">Cards & Netbanking</span>
-          </div>
-
-          <div>
-            © {new Date().getFullYear()} Rangaroo. All rights reserved.
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-gray-400 text-sm">
+            © 2026 Rangaroo. Made with <span className="text-red-500">❤️</span> in India.
+          </p>
+          <div className="flex items-center gap-3 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
+            {/* Payment Method Badges placeholders */}
+            <div className="h-8 w-12 bg-white rounded flex items-center justify-center text-[10px] font-bold text-black">UPI</div>
+            <div className="h-8 w-12 bg-white rounded flex items-center justify-center text-[10px] font-bold text-black">VISA</div>
+            <div className="h-8 w-12 bg-white rounded flex items-center justify-center text-[10px] font-bold text-blue-800">AMEX</div>
+            <div className="h-8 w-16 bg-white rounded flex items-center justify-center text-[10px] font-bold text-blue-500 border">Razorpay</div>
           </div>
         </div>
       </div>

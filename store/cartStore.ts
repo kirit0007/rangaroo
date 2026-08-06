@@ -4,7 +4,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, CartStore, Product } from '@/types';
 
-const FREE_SHIPPING_THRESHOLD = 499;
 const FLAT_SHIPPING_FEE = 60;
 
 export const useCartStore = create<CartStore>()(
@@ -34,7 +33,7 @@ export const useCartStore = create<CartStore>()(
                 name: product.name,
                 slug: product.slug,
                 price: product.price,
-                image: product.images[0] || '/images/placeholder.jpg',
+                image: product.images[0] || '/logo.png',
                 quantity: qtyToAdd,
               },
             ],
@@ -64,7 +63,6 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: () => set({ items: [] }),
-
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
@@ -87,8 +85,6 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((count, item) => count + item.quantity, 0);
       },
     }),
-    {
-      name: 'rangaroo-cart',
-    }
+    { name: 'rangaroo-cart' }
   )
 );

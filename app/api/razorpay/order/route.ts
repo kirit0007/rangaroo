@@ -1,58 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { amount, customerInfo } = await request.json();
-
-    if (!amount) {
-      return NextResponse.json({ success: false, error: 'Amount is required' }, { status: 400 });
-    }
-
-    const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-    if (!key_id || !key_secret) {
-      console.error('Razorpay keys are missing');
-      return NextResponse.json({ success: false, error: 'Payment gateway configuration error' }, { status: 500 });
-    }
-
-    const amountInPaise = Math.round(amount * 100);
-    const receipt = 'receipt_' + Date.now();
-
-    // Basic Auth
-    const basicAuth = Buffer.from(`${key_id}:${key_secret}`).toString('base64');
+    const body = await request.json();
+    const { amount, currency = 'INR', receipt } = body;
+    
+    // Create Razorpay order using fetch API
+    const auth = Buffer.from(
+      `${process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
+    ).toString('base64');
 
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${basicAuth}`
+        'Authorization': `Basic ${auth}`,
       },
       body: JSON.stringify({
-        amount: amountInPaise,
-        currency: 'INR',
-        receipt: receipt,
-      })
+        amount: amount * 100, // Convert to paise
+        currency,
+        receipt: receipt || `order_${Date.now()}`,
+      }),
     });
 
-    const data = await response.json();
-
+    const order = await response.json();
+    
     if (!response.ok) {
-      console.error('Razorpay order creation failed:', data);
-      return NextResponse.json({ success: false, error: data.error?.description || 'Failed to create order' }, { status: response.status });
+      return NextResponse.json({ error: order.error?.description || 'Failed to create order' }, { status: 400 });
     }
 
-    return NextResponse.json({
-      success: true,
-      orderId: data.id,
-      amount: data.amount,
-      currency: data.currency
-    });
-
+    return NextResponse.json(order);
   } catch (error) {
-    console.error('Error in Razorpay order route:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
