@@ -639,3 +639,11 @@ p {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Accessibility Focus Indicators */
+*:focus-visible {
+  outline: 3px solid var(--brand-orange);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+

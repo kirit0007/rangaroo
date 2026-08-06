@@ -74,7 +74,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleToggleWishlist}
             aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-            className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md shadow-md transition-transform active:scale-90 ${
+            className={`min-w-[48px] min-h-[48px] w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md shadow-md transition-transform active:scale-90 ${
               isInWishlist ? 'bg-rose-500 text-white' : 'bg-white/90 text-gray-600 hover:text-rose-500'
             }`}
           >

@@ -4,9 +4,12 @@ import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import CartDrawer from '@/components/cart/CartDrawer';
-import AuthModal from '@/components/auth/AuthModal';
-import WhatsAppButton from '@/components/shared/WhatsAppButton';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import dynamic from 'next/dynamic';
+
+const CartDrawer = dynamic(() => import('@/components/cart/CartDrawer'), { ssr: false });
+const AuthModal = dynamic(() => import('@/components/auth/AuthModal'), { ssr: false });
+const WhatsAppButton = dynamic(() => import('@/components/shared/WhatsAppButton'), { ssr: false });
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -93,7 +96,11 @@ export default function RootLayout({
       </head>
       <body className={`${outfit.variable} ${plusJakarta.variable} antialiased bg-[var(--brand-cream)] text-gray-900 font-body overflow-x-hidden min-h-screen flex flex-col`}>
         <Navbar />
-        <main className="flex-grow">{children}</main>
+        <main className="flex-grow">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </main>
         <Footer />
         <CartDrawer />
         <AuthModal />

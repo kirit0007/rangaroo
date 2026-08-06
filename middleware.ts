@@ -55,10 +55,19 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next();
 
+  // CORS settings
+  const origin = request.headers.get('origin');
+  if (origin && (origin.includes('rangaroo.store') || origin.includes('localhost') || origin.includes('vercel.app'))) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+  }
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-role');
+  response.headers.set('Access-Control-Allow-Credentials', 'true'); // Only allowed for trusted origins now
+
   // Additional security headers on every response
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
-  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   return response;
 }

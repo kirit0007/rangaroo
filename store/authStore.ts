@@ -34,167 +34,174 @@ interface AuthState {
   isAdmin: () => boolean;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      isLoading: true,
-      isAuthModalOpen: false,
-      authModalMode: 'login' as const,
+export const useAuthStore = create<AuthState>()((set, get) => ({
+  user: null,
+  isLoading: true,
+  isAuthModalOpen: false,
+  authModalMode: 'login' as const,
 
-      setUser: (user) => set({ user, isLoading: false }),
-      setLoading: (loading) => set({ isLoading: loading }),
-      openAuthModal: (mode = 'login') => set({ isAuthModalOpen: true, authModalMode: mode }),
-      closeAuthModal: () => set({ isAuthModalOpen: false }),
-      setAuthModalMode: (mode) => set({ authModalMode: mode }),
+  setUser: (user) => set({ user, isLoading: false }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  openAuthModal: (mode = 'login') => set({ isAuthModalOpen: true, authModalMode: mode }),
+  closeAuthModal: () => set({ isAuthModalOpen: false }),
+  setAuthModalMode: (mode) => set({ authModalMode: mode }),
 
-      signIn: async (email: string, password: string) => {
-        try {
-          const cleanEmail = email.trim().toLowerCase();
+  signIn: async (email: string, password: string) => {
+    try {
+      const cleanEmail = email.trim().toLowerCase();
 
-          if (!cleanEmail || !password) {
-            return { error: 'Please enter both email and password' };
-          }
+      if (!cleanEmail || !password) {
+        return { error: 'Please enter both email and password' };
+      }
 
-          // Admin Login Check
-          if ((cleanEmail === 'admin' || cleanEmail === 'admin@rangaroo.store') && password === 'rangaroo2026') {
-            const adminUser: AuthUser = {
-              id: 'admin-super-user',
-              email: 'admin@rangaroo.store',
-              fullName: 'Admin',
-              role: 'admin',
-            };
-            set({ user: adminUser, isAuthModalOpen: false });
-            return { error: null };
-          }
+      // Admin Login Check
+      if ((cleanEmail === 'admin' || cleanEmail === 'admin@rangaroo.store') && password === 'rangaroo2026') {
+        const adminUser: AuthUser = {
+          id: 'admin-super-user',
+          email: 'admin@rangaroo.store',
+          fullName: 'Admin',
+          role: 'admin',
+        };
+        set({ user: adminUser, isAuthModalOpen: false });
+        // Set secure cookie for middleware RBAC
+        document.cookie = `rangaroo_user=admin; path=/; max-age=86400; secure; samesite=strict`;
+        return { error: null };
+      }
 
-          if (password.length < 4) {
-            return { error: 'Invalid email or password' };
-          }
+      if (password.length < 4) {
+        return { error: 'Invalid email or password' };
+      }
 
-          const supabase = createClient();
-          const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-          
-          if (data?.user) {
-            const authUser: AuthUser = {
-              id: data.user.id,
-              email: data.user.email || cleanEmail,
-              fullName: data.user.user_metadata?.full_name || cleanEmail.split('@')[0],
-              role: data.user.user_metadata?.role || (cleanEmail.includes('admin') ? 'admin' : 'customer'),
-            };
-            set({ user: authUser, isAuthModalOpen: false });
-            return { error: null };
-          }
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      
+      if (data?.user) {
+        const authUser: AuthUser = {
+          id: data.user.id,
+          email: data.user.email || cleanEmail,
+          fullName: data.user.user_metadata?.full_name || cleanEmail.split('@')[0],
+          role: data.user.user_metadata?.role || (cleanEmail.includes('admin') ? 'admin' : 'customer'),
+        };
+        set({ user: authUser, isAuthModalOpen: false });
+        return { error: null };
+      }
 
-          if (error) {
-            // Customer sign in fallback if email confirmation is enabled in Supabase
-            if (error.message.includes('Invalid login credentials')) {
-              if (password.length >= 6) {
-                const customerUser: AuthUser = {
-                  id: `user-${Date.now()}`,
-                  email: cleanEmail,
-                  fullName: cleanEmail.split('@')[0],
-                  role: 'customer',
-                };
-                set({ user: customerUser, isAuthModalOpen: false });
-                return { error: null };
-              }
-              return { error: 'Invalid email or password' };
-            }
-            return { error: error.message };
-          }
-
-          return { error: 'Sign in failed' };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Sign in failed';
-          return { error: message };
-        }
-      },
-
-      signUp: async (email: string, password: string, fullName: string) => {
-        try {
-          const supabase = createClient();
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { full_name: fullName, role: 'customer' },
-            },
-          });
-          if (error) return { error: error.message };
-          if (data.user) {
-            const authUser: AuthUser = {
-              id: data.user.id,
-              email: data.user.email || email,
-              fullName: fullName,
+      if (error) {
+        // Customer sign in fallback
+        if (error.message.includes('Invalid login credentials')) {
+          if (password.length >= 6) {
+            const customerUser: AuthUser = {
+              id: `user-${Date.now()}`,
+              email: cleanEmail,
+              fullName: cleanEmail.split('@')[0],
               role: 'customer',
             };
-            set({ user: authUser, isAuthModalOpen: false });
+            set({ user: customerUser, isAuthModalOpen: false });
+            return { error: null };
           }
-          return { error: null };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Sign up failed';
-          return { error: message };
+          return { error: 'Invalid email or password' };
         }
-      },
+        return { error: error.message };
+      }
 
-      signInWithGoogle: async () => {
-        try {
-          const supabase = createClient();
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: `${window.location.origin}/auth/callback`,
-            },
-          });
-          if (error) return { error: error.message };
-          return { error: null };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Google sign in failed';
-          return { error: message };
-        }
-      },
-
-      signOut: async () => {
-        try {
-          const supabase = createClient();
-          await supabase.auth.signOut();
-          set({ user: null });
-        } catch {
-          set({ user: null });
-        }
-      },
-
-      refreshUser: async () => {
-        try {
-          const supabase = createClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            set({
-              user: {
-                id: user.id,
-                email: user.email || '',
-                fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
-                role: user.user_metadata?.role || 'customer',
-              },
-              isLoading: false,
-            });
-          } else {
-            set({ user: null, isLoading: false });
-          }
-        } catch {
-          set({ user: null, isLoading: false });
-        }
-      },
-
-      isAdmin: () => {
-        const user = get().user;
-        return user?.role === 'admin';
-      },
-    }),
-    {
-      name: 'rangaroo-auth',
-      partialize: (state) => ({ user: state.user }),
+      return { error: 'Sign in failed' };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Sign in failed';
+      return { error: message };
     }
-  )
-);
+  },
+
+  signUp: async (email: string, password: string, fullName: string) => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName, role: 'customer' },
+        },
+      });
+      if (error) return { error: error.message };
+      if (data.user) {
+        const authUser: AuthUser = {
+          id: data.user.id,
+          email: data.user.email || email,
+          fullName: fullName,
+          role: 'customer',
+        };
+        set({ user: authUser, isAuthModalOpen: false });
+      }
+      return { error: null };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Sign up failed';
+      return { error: message };
+    }
+  },
+
+  signInWithGoogle: async () => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        },
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Google sign in failed';
+      return { error: message };
+    }
+  },
+
+  signOut: async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      document.cookie = 'rangaroo_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      set({ user: null });
+    } catch {
+      document.cookie = 'rangaroo_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      set({ user: null });
+    }
+  },
+
+  refreshUser: async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        set({
+          user: {
+            id: user.id,
+            email: user.email || '',
+            fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            role: user.user_metadata?.role || 'customer',
+          },
+          isLoading: false,
+        });
+      } else {
+        // Fallback check for dummy admin session
+        const cookies = document.cookie.split(';');
+        const adminCookie = cookies.find(c => c.trim().startsWith('rangaroo_user=admin'));
+        if (adminCookie) {
+           set({ user: { id: 'admin', email: 'admin', fullName: 'Admin', role: 'admin' }, isLoading: false });
+        } else {
+           set({ user: null, isLoading: false });
+        }
+      }
+    } catch {
+      set({ user: null, isLoading: false });
+    }
+  },
+
+  isAdmin: () => {
+    const user = get().user;
+    return user?.role === 'admin';
+  },
+}));

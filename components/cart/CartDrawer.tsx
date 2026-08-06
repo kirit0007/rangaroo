@@ -109,6 +109,26 @@ export default function CartDrawer() {
               </button>
             </div>
 
+            {/* Free Shipping Progress */}
+            {items.length > 0 && (
+              <div className="px-6 py-4 bg-orange-50/50 border-b border-orange-100/50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-700">
+                    {cartSubtotal >= 999 
+                      ? "🎉 You've unlocked Free Shipping!" 
+                      : `Add ₹${(999 - cartSubtotal).toLocaleString('en-IN')} more for Free Shipping`}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (cartSubtotal / 999) * 100)}%` }}
+                    className="bg-[var(--brand-orange)] h-2 rounded-full transition-all duration-500 ease-out"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
               {items.length === 0 ? (
