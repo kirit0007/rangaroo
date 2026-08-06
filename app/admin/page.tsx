@@ -788,9 +788,19 @@ export default function AdminPage() {
                             
                             <select
                               value={order.status}
-                              onChange={(e) => {
-                                updateOrderStatus(order.id, e.target.value as any);
-                                toast.success(`Order ${order.orderNumber || order.id} status updated to ${e.target.value}`);
+                              onChange={async (e) => {
+                                const nextStatus = e.target.value;
+                                updateOrderStatus(order.id, nextStatus as any);
+                                try {
+                                  await fetch('/api/admin/orders', {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ orderId: order.id, status: nextStatus }),
+                                  });
+                                } catch (err) {
+                                  console.error('Failed to patch order status:', err);
+                                }
+                                toast.success(`Order ${order.orderNumber || order.id} status updated to ${nextStatus}`);
                               }}
                               className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm"
                             >
@@ -826,8 +836,17 @@ export default function AdminPage() {
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   updateOrderStatus(order.id, 'cancelled');
+                                  try {
+                                    await fetch('/api/admin/orders', {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ orderId: order.id, status: 'cancelled' }),
+                                    });
+                                  } catch (err) {
+                                    console.error('Failed to approve cancellation:', err);
+                                  }
                                   toast.success(`Order ${order.orderNumber || order.id} approved & cancelled`);
                                 }}
                                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
@@ -835,8 +854,17 @@ export default function AdminPage() {
                                 Approve & Cancel Order
                               </button>
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   updateOrderStatus(order.id, 'processing');
+                                  try {
+                                    await fetch('/api/admin/orders', {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ orderId: order.id, status: 'processing' }),
+                                    });
+                                  } catch (err) {
+                                    console.error('Failed to reject cancellation:', err);
+                                  }
                                   toast.success(`Cancellation request rejected for ${order.orderNumber || order.id}`);
                                 }}
                                 className="px-4 py-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-bold transition-colors"

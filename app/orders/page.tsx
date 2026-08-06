@@ -403,8 +403,18 @@ export default function MyOrdersPage() {
                 <p className="text-xs text-gray-500 mb-6">Are you sure you want to cancel or initiate a return for order #{showCancelModal.orderNumber}?</p>
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => {
-                      useAdminStore.getState().updateOrderStatus(showCancelModal.id, 'cancellation_requested');
+                    onClick={async () => {
+                      const targetId = showCancelModal.id;
+                      useAdminStore.getState().updateOrderStatus(targetId, 'cancellation_requested');
+                      try {
+                        await fetch('/api/admin/orders', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ orderId: targetId, status: 'cancellation_requested' }),
+                        });
+                      } catch (err) {
+                        console.error('Error sending cancellation request to server:', err);
+                      }
                       toast.success('Cancellation request submitted to support!');
                       setShowCancelModal(null);
                     }} 

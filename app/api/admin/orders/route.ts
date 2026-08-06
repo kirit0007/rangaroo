@@ -107,7 +107,7 @@ export async function PATCH(request: NextRequest) {
       await supabase
         .from('orders')
         .update({ status })
-        .eq('id', orderId);
+        .or(`id.eq.${orderId},order_number.eq.${orderId}`);
     } catch (dbErr) {
       console.warn('[Supabase Status Update Warning]', dbErr);
     }
