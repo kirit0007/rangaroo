@@ -21,17 +21,15 @@ export default function Navbar() {
     setMounted(true);
   }, []);
 
-  // Zustand stores
-  const { user, openAuthModal, signOut } = useAuthStore((state: any) => ({
-    user: state.user,
-    openAuthModal: state.openAuthModal,
-    signOut: state.signOut || state.logout,
-  }));
-  const { items, openCart } = useCartStore((state: any) => ({
-    items: state.items || [],
-    openCart: state.openCart,
-  }));
-  const siteSettings = useAdminStore((state: any) => state.siteSettings) || { announcementText: '🎉 Free shipping on all orders over ₹999! 🎉' };
+  // Zustand stores with atomic selectors to prevent infinite re-renders
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const signOut = useAuthStore((state: any) => state.signOut || state.logout);
+
+  const items = useCartStore((state) => state.items) || [];
+  const openCart = useCartStore((state) => state.openCart);
+
+  const siteSettings = useAdminStore((state) => state.siteSettings) || { announcementText: '🎉 Free shipping on all orders over ₹999! 🎉' };
 
   const cartItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
 
@@ -143,9 +141,9 @@ export default function Navbar() {
               <div className="group relative">
                 <div className="flex items-center gap-2 cursor-pointer p-2 rounded-full hover:bg-white/50 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--brand-orange)] to-[var(--brand-amber)] flex items-center justify-center text-white font-bold text-sm">
-                    {(user.fullName || user.name) ? (user.fullName || user.name).charAt(0).toUpperCase() : 'U'}
+                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
                   </div>
-                  <span className="hidden sm:block font-medium text-sm text-gray-700">{(user.fullName || user.name)?.split(' ')[0]}</span>
+                  <span className="hidden sm:block font-medium text-sm text-gray-700">{user.fullName?.split(' ')[0]}</span>
                 </div>
                 {/* Dropdown */}
                 <div className="absolute right-0 mt-2 w-48 glass-panel py-2 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">

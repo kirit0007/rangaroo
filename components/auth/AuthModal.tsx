@@ -8,23 +8,13 @@ import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 
 export default function AuthModal() {
-  const { 
-    isAuthModalOpen, 
-    authModalMode, 
-    closeAuthModal, 
-    setAuthModalMode,
-    signIn,
-    signUp,
-    signInWithGoogle
-  } = useAuthStore((state: any) => ({
-    isAuthModalOpen: state.isAuthModalOpen,
-    authModalMode: state.authModalMode,
-    closeAuthModal: state.closeAuthModal,
-    setAuthModalMode: state.setAuthModalMode,
-    signIn: state.signIn,
-    signUp: state.signUp,
-    signInWithGoogle: state.signInWithGoogle
-  }));
+  const isAuthModalOpen = useAuthStore((state) => state.isAuthModalOpen);
+  const authModalMode = useAuthStore((state) => state.authModalMode);
+  const closeAuthModal = useAuthStore((state) => state.closeAuthModal);
+  const setAuthModalMode = useAuthStore((state) => state.setAuthModalMode);
+  const signIn = useAuthStore((state) => state.signIn);
+  const signUp = useAuthStore((state) => state.signUp);
+  const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle);
 
   const [mounted, setMounted] = useState(false);
   const [name, setName] = useState('');
@@ -71,7 +61,7 @@ export default function AuthModal() {
         // mock forgot password
         await new Promise(resolve => setTimeout(resolve, 1000));
         toast.success('Password reset email sent to ' + email);
-        setAuthModalMode('LOGIN');
+        setAuthModalMode('login');
       }
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
@@ -122,173 +112,182 @@ export default function AuthModal() {
               <div className="text-center mb-6">
                 <div className="text-4xl mb-2 animate-bounceIn inline-block">🦘</div>
                 <h2 className="font-heading text-2xl font-bold text-gray-800">
-                  {authModalMode === 'LOGIN' && 'Welcome Back!'}
-                  {authModalMode === 'SIGNUP' && 'Join the Fun!'}
-                  {authModalMode === 'FORGOT' && 'Reset Password'}
+                  {authModalMode === 'login' && 'Welcome Back!'}
+                  {authModalMode === 'signup' && 'Join the Fun!'}
+                  {authModalMode === 'forgot' && 'Reset Password'}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  {authModalMode === 'LOGIN' && 'Sign in to access your orders and favorites.'}
-                  {authModalMode === 'SIGNUP' && 'Create an account to start your creative journey.'}
-                  {authModalMode === 'FORGOT' && "We'll send you a link to reset your password."}
+                  {authModalMode === 'login' && 'Sign in to access your orders and favorites.'}
+                  {authModalMode === 'signup' && 'Create an account to start your creative journey.'}
+                  {authModalMode === 'forgot' && "We'll send you a link to reset your password."}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {authModalMode === 'SIGNUP' && (
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                      type="text"
-                      placeholder="Full Name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20 transition-all text-sm"
-                    />
-                  </div>
-                )}
-
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20 transition-all text-sm"
-                  />
-                </div>
-
-                {authModalMode !== 'FORGOT' && (
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-10 outline-none focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20 transition-all text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                )}
-
-                {authModalMode === 'SIGNUP' && (
-                  <>
-                    {/* Password Strength Indicator */}
-                    {password.length > 0 && (
-                      <div className="flex items-center gap-2 mt-1 px-1">
-                        <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div className={`h-full ${strength.color} transition-all duration-300`} style={{ width: strength.label === 'Weak' ? '33%' : strength.label === 'Medium' ? '66%' : '100%' }}></div>
-                        </div>
-                        <span className="text-xs text-gray-500 font-medium">{strength.label}</span>
-                      </div>
-                    )}
-
+                {authModalMode === 'signup' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Confirm Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20 transition-all text-sm"
+                      <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        type="text"
+                        required
+                        placeholder="John Doe"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-[var(--brand-orange)] transition-colors text-gray-800"
                       />
                     </div>
-                    
-                    <label className="flex items-start gap-2 text-sm cursor-pointer mt-4">
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                  <div className="relative">
+                    <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-[var(--brand-orange)] transition-colors text-gray-800"
+                    />
+                  </div>
+                </div>
+
+                {authModalMode !== 'forgot' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                    <div className="relative">
+                      <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-[var(--brand-orange)] transition-colors text-gray-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {authModalMode === 'signup' && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Confirm Password</label>
+                      <div className="relative">
+                        <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input 
+                          type="password"
+                          required
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-[var(--brand-orange)] transition-colors text-gray-800"
+                        />
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2 cursor-pointer pt-1">
                       <input 
                         type="checkbox" 
                         checked={terms}
                         onChange={(e) => setTerms(e.target.checked)}
-                        className="custom-checkbox mt-0.5" 
+                        className="rounded text-[var(--brand-orange)] focus:ring-[var(--brand-orange)]"
                       />
                       <span className="text-gray-600 text-xs">
-                        I agree to the <Link href="/terms" className="text-[var(--brand-orange)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[var(--brand-orange)] hover:underline">Privacy Policy</Link>.
+                        I agree to the <Link href="/terms" className="text-[var(--brand-orange)] hover:underline">Terms & Conditions</Link>
                       </span>
                     </label>
                   </>
                 )}
 
-                {authModalMode === 'LOGIN' && (
+                {authModalMode === 'login' && (
                   <div className="flex justify-end">
-                    <button 
-                      type="button" 
-                      onClick={() => setAuthModalMode('FORGOT')}
-                      className="text-xs text-[var(--brand-orange)] hover:underline font-medium"
+                    <button
+                      type="button"
+                      onClick={() => setAuthModalMode('forgot')}
+                      className="text-xs text-[var(--brand-orange)] font-semibold hover:underline"
                     >
-                      Forgot Password?
+                      Forgot password?
                     </button>
                   </div>
                 )}
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isLoading}
-                  className="w-full btn-primary justify-center mt-2"
+                  className="w-full btn-primary py-3 justify-center text-sm font-semibold shadow-md mt-2 disabled:opacity-50"
                 >
                   {isLoading ? (
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      {authModalMode === 'LOGIN' && 'Sign In'}
-                      {authModalMode === 'SIGNUP' && 'Create Account'}
-                      {authModalMode === 'FORGOT' && 'Send Reset Link'}
+                      {authModalMode === 'login' && 'Sign In'}
+                      {authModalMode === 'signup' && 'Create Account'}
+                      {authModalMode === 'forgot' && 'Send Reset Link'}
                     </>
                   )}
                 </button>
               </form>
 
-              {authModalMode !== 'FORGOT' && (
+              {authModalMode !== 'forgot' && (
                 <>
-                  <div className="flex items-center gap-4 my-6">
-                    <div className="flex-1 h-px bg-gray-200"></div>
-                    <span className="text-xs text-gray-400 font-medium uppercase">Or continue with</span>
-                    <div className="flex-1 h-px bg-gray-200"></div>
+                  <div className="relative my-6 text-center">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <span className="relative bg-white px-3 text-xs text-gray-400 font-medium">Or continue with</span>
                   </div>
 
-                  <button 
+                  <button
                     onClick={handleGoogleLogin}
-                    className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full py-2.5 px-4 font-medium transition-colors text-sm shadow-sm"
+                    className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-gray-700 text-sm font-medium"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                     </svg>
                     Google
                   </button>
                 </>
               )}
 
-              <div className="mt-8 text-center">
-                {authModalMode === 'LOGIN' && (
-                  <p className="text-sm text-gray-600">
+              <div className="mt-6 text-center text-xs text-gray-500">
+                {authModalMode === 'login' && (
+                  <p>
                     Don't have an account?{' '}
-                    <button onClick={() => setAuthModalMode('SIGNUP')} className="text-[var(--brand-orange)] font-semibold hover:underline">
+                    <button onClick={() => setAuthModalMode('signup')} className="text-[var(--brand-orange)] font-semibold hover:underline">
                       Sign Up
                     </button>
                   </p>
                 )}
-                {authModalMode === 'SIGNUP' && (
-                  <p className="text-sm text-gray-600">
+
+                {authModalMode === 'signup' && (
+                  <p>
                     Already have an account?{' '}
-                    <button onClick={() => setAuthModalMode('LOGIN')} className="text-[var(--brand-orange)] font-semibold hover:underline">
-                      Login
+                    <button onClick={() => setAuthModalMode('login')} className="text-[var(--brand-orange)] font-semibold hover:underline">
+                      Sign In
                     </button>
                   </p>
                 )}
-                {authModalMode === 'FORGOT' && (
-                  <p className="text-sm text-gray-600">
-                    Remember your password?{' '}
-                    <button onClick={() => setAuthModalMode('LOGIN')} className="text-[var(--brand-orange)] font-semibold hover:underline">
-                      Back to Login
+
+                {authModalMode === 'forgot' && (
+                  <p>
+                    Remembered password?{' '}
+                    <button onClick={() => setAuthModalMode('login')} className="text-[var(--brand-orange)] font-semibold hover:underline">
+                      Back to Sign In
                     </button>
                   </p>
                 )}

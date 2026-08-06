@@ -11,7 +11,11 @@ import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, clearCart, getSubtotal, getTotal, getShippingFee } = useCartStore();
+  const items = useCartStore((state) => state.items) || [];
+  const clearCart = useCartStore((state) => state.clearCart);
+  const getSubtotal = useCartStore((state) => state.getSubtotal);
+  const getTotal = useCartStore((state) => state.getTotal);
+  const getShippingFee = useCartStore((state) => state.getShippingFee);
   
   const [step, setStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);

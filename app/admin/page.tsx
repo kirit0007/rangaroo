@@ -27,20 +27,20 @@ import { products, categories, formatPrice } from '@/data/products';
 type TabType = 'dashboard' | 'cms' | 'products' | 'coupons' | 'orders';
 
 export default function AdminPage() {
-  const { user, signIn } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const signIn = useAuthStore((state) => state.signIn);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
-  const {
-    siteSettings,
-    updateSiteSettings,
-    coupons,
-    addCoupon,
-    removeCoupon,
-    orders,
-    updateOrderStatus
-  } = useAdminStore();
+  const siteSettings = useAdminStore((state) => state.siteSettings);
+  const updateSiteSettings = useAdminStore((state) => state.updateSiteSettings);
+  const coupons = useAdminStore((state) => state.coupons);
+  const addCoupon = useAdminStore((state) => state.addCoupon);
+  const removeCoupon = useAdminStore((state) => state.removeCoupon);
+  const orders = useAdminStore((state) => state.orders);
+  const updateOrderStatus = useAdminStore((state) => state.updateOrderStatus);
 
   // Local state for forms
   const [cmsForm, setCmsForm] = useState(siteSettings);
@@ -55,10 +55,6 @@ export default function AdminPage() {
   const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('All');
-
-  useEffect(() => {
-    setCmsForm(siteSettings);
-  }, [siteSettings]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

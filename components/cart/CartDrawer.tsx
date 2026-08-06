@@ -10,21 +10,12 @@ import { useCartStore } from '@/store/cartStore';
 import { useAdminStore } from '@/store/adminStore';
 
 export default function CartDrawer() {
-  const { 
-    isCartOpen, 
-    closeCart, 
-    items, 
-    removeItem, 
-    updateQuantity 
-  } = useCartStore((state: any) => ({
-    isCartOpen: state.isOpen || state.isCartOpen,
-    closeCart: state.closeCart,
-    items: state.items || [],
-    removeItem: state.removeItem,
-    updateQuantity: state.updateQuantity
-  }));
-
-  const getCoupon = useAdminStore((state: any) => state.getCoupon);
+  const isCartOpen = useCartStore((state: any) => state.isOpen || state.isCartOpen);
+  const closeCart = useCartStore((state) => state.closeCart);
+  const items = useCartStore((state) => state.items) || [];
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const getCoupon = useAdminStore((state) => state.getCoupon);
 
   const [mounted, setMounted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -49,17 +40,12 @@ export default function CartDrawer() {
     if (!couponCode.trim()) return;
     
     // safe call to getCoupon, if undefined use a mock
-    let couponResult = null;
-    if (typeof getCoupon === 'function') {
-      couponResult = getCoupon(couponCode);
-    } else {
-      // Mock logic if store method missing
-      if (couponCode.toUpperCase() === 'RANGOO10') couponResult = { discount: 0.1 }; // 10%
-      if (couponCode.toUpperCase() === 'FLAT50') couponResult = { discount: 50 }; // ₹50 flat
-    }
-
-    if (couponResult) {
-      setAppliedCoupon({ code: couponCode.toUpperCase(), discount: couponResult.discount });
+    const coupon = typeof getCoupon === 'function' ? getCoupon(couponCode) : undefined;
+    if (coupon) {
+      const discountVal = coupon.discountType === 'percentage'
+        ? (coupon.discountValue > 1 ? coupon.discountValue / 100 : coupon.discountValue)
+        : coupon.discountValue;
+      setAppliedCoupon({ code: coupon.code, discount: discountVal });
       toast.success('Coupon applied successfully!');
     } else {
       toast.error('Invalid or expired coupon code');
