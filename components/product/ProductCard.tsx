@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -16,6 +16,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const [imgError, setImgError] = useState(false);
   
   const discount = product.compareAtPrice 
     ? calculateDiscount(product.price, product.compareAtPrice) 
@@ -55,13 +56,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Image */}
-        <div className="relative h-[200px] w-full bg-cream overflow-hidden">
-          <Image
-            src={product.images?.[0] || '/logo.png'}
+        <div className="relative h-[200px] w-full bg-cream overflow-hidden flex items-center justify-center select-none text-[0px]">
+          <img
+            src={!imgError && product.images?.[0] ? product.images[0] : '/logo.png'}
             alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            unoptimized={true}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 block"
           />
         </div>
 

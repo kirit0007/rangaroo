@@ -33,6 +33,26 @@ import { Product } from '@/types';
 
 type TabType = 'dashboard' | 'cms' | 'products' | 'coupons' | 'orders';
 
+function SafeProductThumbnail({ src, alt }: { src?: string; alt: string }) {
+  const [hasError, setHasError] = useState(false);
+  const cleanSrc = src && src.trim() ? src : '/logo.png';
+
+  return (
+    <div className="h-12 w-12 rounded-xl overflow-hidden relative bg-gray-100 shrink-0 border border-gray-200 flex items-center justify-center select-none text-[0px] font-sans">
+      {!hasError ? (
+        <img
+          src={cleanSrc}
+          alt={alt}
+          onError={() => setHasError(true)}
+          className="w-full h-full object-cover block"
+        />
+      ) : (
+        <Package className="w-5 h-5 text-gray-400" />
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const user = useAuthStore((state) => state.user);
   const signIn = useAuthStore((state) => state.signIn);
@@ -72,8 +92,9 @@ export default function AdminPage() {
   // Product Modal State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  // Fetch all system-wide orders from central API endpoint
+  // Fetch all system-wide orders and custom products from central API endpoints
   useEffect(() => {
     fetch('/api/admin/orders')
       .then((res) => res.json())
@@ -83,7 +104,17 @@ export default function AdminPage() {
         }
       })
       .catch((err) => console.error('Error fetching admin orders:', err));
+
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          useAdminStore.setState({ products: data.products });
+        }
+      })
+      .catch((err) => console.error('Error fetching system products:', err));
   }, []);
+
   const [productForm, setProductForm] = useState({
     name: '',
     price: 199,
@@ -195,75 +226,105 @@ export default function AdminPage() {
     const slug = productForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const contentsArray = productForm.kitContents.split(',').map(s => s.trim()).filter(Boolean);
 
+    const targetProduct: Product = editingProduct ? {
+      ...editingProduct,
+      name: productForm.name,
+      slug,
+      price: Number(productForm.price),
+      compareAtPrice: Number(productForm.compareAtPrice),
+      categoryId: productForm.categoryId,
+      collectionId: productForm.collectionId,
+      stockQuantity: Number(productForm.stockQuantity),
+      ageGroup: productForm.ageGroup,
+      images: [productForm.imageUrl || '/logo.png'],
+      shortDescription: productForm.shortDescription,
+      description: productForm.description,
+      kitContents: contentsArray,
+      isFeatured: productForm.isFeatured,
+      isActive: productForm.isActive,
+    } : {
+      id: `prod-${Date.now()}`,
+      name: productForm.name,
+      slug,
+      price: Number(productForm.price),
+      compareAtPrice: Number(productForm.compareAtPrice),
+      categoryId: productForm.categoryId,
+      collectionId: productForm.collectionId,
+      stockQuantity: Number(productForm.stockQuantity),
+      ageGroup: productForm.ageGroup,
+      images: [productForm.imageUrl || '/logo.png'],
+      shortDescription: productForm.shortDescription,
+      description: productForm.description,
+      kitContents: contentsArray,
+      difficulty: 'beginner',
+      paintType: 'Tempera (Washable)',
+      figureCount: 1,
+      figureSize: 'medium',
+      weightGrams: 250,
+      isFeatured: productForm.isFeatured,
+      isActive: productForm.isActive,
+      tags: [productForm.categoryId, productForm.collectionId],
+    };
+
     if (editingProduct) {
-      updateProduct(editingProduct.id, {
-        name: productForm.name,
-        slug,
-        price: Number(productForm.price),
-        compareAtPrice: Number(productForm.compareAtPrice),
-        categoryId: productForm.categoryId,
-        collectionId: productForm.collectionId,
-        stockQuantity: Number(productForm.stockQuantity),
-        ageGroup: productForm.ageGroup,
-        images: [productForm.imageUrl || '/logo.png'],
-        shortDescription: productForm.shortDescription,
-        description: productForm.description,
-        kitContents: contentsArray,
-        isFeatured: productForm.isFeatured,
-        isActive: productForm.isActive,
-      });
+      updateProduct(editingProduct.id, targetProduct);
       toast.success('Product updated successfully');
     } else {
-      const newProduct: Product = {
-        id: `prod-${Date.now()}`,
-        name: productForm.name,
-        slug,
-        price: Number(productForm.price),
-        compareAtPrice: Number(productForm.compareAtPrice),
-        categoryId: productForm.categoryId,
-        collectionId: productForm.collectionId,
-        stockQuantity: Number(productForm.stockQuantity),
-        ageGroup: productForm.ageGroup,
-        images: [productForm.imageUrl || '/logo.png'],
-        shortDescription: productForm.shortDescription,
-        description: productForm.description,
-        kitContents: contentsArray,
-        difficulty: 'beginner',
-        paintType: 'Tempera (Washable)',
-        figureCount: 1,
-        figureSize: 'medium',
-        weightGrams: 250,
-        isFeatured: productForm.isFeatured,
-        isActive: productForm.isActive,
-        tags: [productForm.categoryId, productForm.collectionId],
-      };
-      addProduct(newProduct);
+      addProduct(targetProduct);
       toast.success('Product created & added to storefront');
     }
+
+    // Sync product globally to server API
+    fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product: targetProduct }),
+    }).catch(err => console.error('Failed to sync product to server:', err));
 
     setIsProductModalOpen(false);
   };
 
-  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image file size must be under 5MB');
-        return;
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image file size must be under 10MB');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const toastId = toast.loading('Uploading image to cloud storage...');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && (data.publicUrl || data.url)) {
+        const publicUrl = data.publicUrl || data.url;
+        setProductForm(prev => ({ ...prev, imageUrl: publicUrl }));
+        toast.success('Image uploaded & public URL generated!', { id: toastId });
+      } else {
+        toast.error(data.error || 'Failed to upload image', { id: toastId });
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setProductForm(prev => ({ ...prev, imageUrl: base64String }));
-        toast.success('Image uploaded from device!');
-      };
-      reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('Image upload error:', err);
+      toast.error('Image upload failed', { id: toastId });
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
   const handleDeleteProduct = (productId: string, productName: string) => {
     if (confirm(`Are you sure you want to delete "${productName}"?`)) {
       deleteProduct(productId);
+      fetch(`/api/products?id=${productId}`, { method: 'DELETE' }).catch(err => console.error(err));
       toast.success('Product deleted from storefront');
     }
   };
@@ -582,15 +643,7 @@ export default function AdminPage() {
                       filteredProducts.map((product) => (
                         <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                           <td className="p-4 flex items-center space-x-3">
-                            <div className="h-12 w-12 rounded-xl overflow-hidden relative bg-gray-100 shrink-0 border border-gray-200">
-                              <Image 
-                                src={product.images[0] || '/logo.png'} 
-                                alt={product.name} 
-                                fill 
-                                className="object-cover"
-                                unoptimized
-                              />
-                            </div>
+                            <SafeProductThumbnail src={product.images[0]} alt={product.name} />
                             <div>
                               <span className="font-semibold text-gray-800 line-clamp-1 text-sm">{product.name}</span>
                               <span className="text-xs text-gray-400">ID: {product.id}</span>
