@@ -93,13 +93,13 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
               className="space-y-8 text-center lg:text-left"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100/80 border border-orange-200 text-orange-700 font-bold text-xs shadow-sm">
-                <Sparkles className="w-4 h-4 text-orange-500" /> Premium DIY Craft Kits For Kids
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 border border-purple-200 text-purple-700 font-bold text-xs shadow-sm w-max">
+                <Sparkles className="w-4 h-4 text-purple-500" /> Premium DIY Craft Kits for Kids
               </div>
 
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-outfit font-extrabold text-gray-900 leading-tight tracking-tight">
                 Where Little Hands <br />
-                Create <span className="font-outfit italic font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 pr-2">
+                Create <span className="font-outfit italic font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 pr-2">
                   Big Smiles
                 </span>
               </h1>
@@ -109,30 +109,30 @@ export default function HomePage() {
               </p>
               
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                <Link href="/products" className="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all shadow-[0_10px_25px_rgba(255,87,34,0.3)] hover:shadow-[0_15px_30px_rgba(255,87,34,0.4)] hover:-translate-y-0.5 flex items-center gap-2">
+                <Link href="/products" className="px-7 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full font-bold text-base sm:text-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-200 hover:-translate-y-0.5 flex items-center gap-2">
                   Shop All Kits <ArrowRight className="w-5 h-5" />
                 </Link>
-                <Link href="/collections" className="px-8 py-4 bg-white/90 backdrop-blur-md text-gray-800 border-2 border-orange-200/80 rounded-full font-bold text-lg hover:border-orange-500 hover:bg-white transition-all shadow-sm">
+                <Link href="/collections" className="px-7 py-3 bg-white text-purple-700 border-2 border-purple-200 rounded-full font-bold text-base sm:text-lg hover:border-purple-300 hover:bg-purple-50 transition-all">
                   Explore Collections
                 </Link>
               </div>
 
-              {/* Colorful Pill Trust Badges */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-4">
-                <div className="px-3.5 py-2 rounded-full bg-emerald-100/90 border border-emerald-200/80 text-emerald-800 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
-                  <Shield className="w-4 h-4 text-emerald-600" /> Non-Toxic Colors
+              {/* Colorful Pill Trust Badges Container */}
+              <div className="mt-8 bg-white/80 backdrop-blur-md rounded-full p-2.5 shadow-sm border border-gray-100 flex flex-wrap items-center justify-center lg:justify-start gap-3 w-fit">
+                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                  <Shield className="w-4 h-4 text-emerald-500" /> 100% Non-Toxic
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-amber-100/90 border border-amber-200/80 text-amber-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
-                  <Heart className="w-4 h-4 text-rose-500" /> Made in India
+                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                  <span className="text-sm">🇮🇳</span> Made in India
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-pink-100/90 border border-pink-200/80 text-pink-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
-                  <Gift className="w-4 h-4 text-pink-600" /> Gift Packaging
+                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                  <Gift className="w-4 h-4 text-pink-500" /> Gift Packaging
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-blue-100/90 border border-blue-200/80 text-blue-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
-                  <Star className="w-4 h-4 text-amber-500 fill-amber-400" /> Parent Approved
+                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                  <span className="text-sm">👨‍👩‍👧</span> Parent Approved
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-purple-100/90 border border-purple-200/80 text-purple-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
-                  <Sparkles className="w-4 h-4 text-purple-600" /> Screen-Free Fun
+                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                  <Shield className="w-4 h-4 text-purple-500" /> Safe & Premium
                 </div>
               </div>
             </motion.div>
@@ -149,19 +149,31 @@ export default function HomePage() {
 
               {/* Floating Ambient Craft Badges */}
               <motion.div 
-                animate={{ y: [-8, 8, -8], rotate: [-3, 3, -3] }}
+                animate={{ y: [-8, 8, -8], rotate: [-2, 2, -2] }}
                 transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute top-4 left-2 sm:left-8 z-20 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-orange-100/80 flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-gray-800 pointer-events-none select-none"
+                className="absolute top-10 right-4 sm:-right-4 lg:-right-12 z-20 bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-[0_15px_35px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center gap-3 pointer-events-none select-none"
               >
-                <span className="text-lg">🎨</span> 100% Non-Toxic
+                <div className="bg-emerald-50 rounded-full w-10 h-10 flex items-center justify-center">
+                  <span className="text-xl">🍃</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-gray-900 text-base leading-tight">100%</span>
+                  <span className="text-xs text-gray-500 font-semibold">Non-Toxic</span>
+                </div>
               </motion.div>
 
               <motion.div 
-                animate={{ y: [8, -8, 8], rotate: [3, -3, 3] }}
+                animate={{ y: [8, -8, 8], rotate: [2, -2, 2] }}
                 transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-                className="absolute bottom-8 right-2 sm:right-8 z-20 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-purple-100/80 flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-purple-900 pointer-events-none select-none"
+                className="absolute bottom-12 right-0 sm:right-4 lg:-right-8 z-20 bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-[0_15px_35px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center gap-3 pointer-events-none select-none"
               >
-                <span className="text-lg">🎁</span> Gift-Ready Kits
+                <div className="bg-pink-50 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">🎁</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-gray-900 text-sm leading-tight">Gift Ready</span>
+                  <span className="text-xs text-gray-500 font-semibold max-w-[120px] leading-tight mt-0.5">Perfect for every little artist!</span>
+                </div>
               </motion.div>
 
               {/* Floating Decorative Elements: Sparkles, Paint Splatters, Stars */}
@@ -247,48 +259,143 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Theme Collections */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-5xl font-outfit font-extrabold text-gray-900 mb-4">Explore Collections</h2>
-          <p className="text-gray-600 text-base sm:text-lg">Pick the perfect theme for your little artist</p>
+      {/* Explore Our Collections */}
+      <section className="pt-20 pb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h2 className="text-2xl sm:text-3xl font-outfit font-extrabold text-gray-900 flex items-center gap-2">
+            Explore Our <span className="text-purple-700">Collections</span> <Sparkles className="w-6 h-6 text-amber-400 fill-amber-400" />
+          </h2>
+          <Link href="/collections" className="text-purple-700 font-bold hover:text-purple-800 flex items-center gap-1.5 text-sm sm:text-base">
+            View All <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {collections.map((col, idx) => (
-            <Link key={idx} href={`/collections/${col.slug}`}>
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -4 }}
-                className="bg-white/80 backdrop-blur-xl border border-orange-100 rounded-3xl p-6 flex flex-col items-center text-center shadow-sm hover:shadow-lg hover:border-orange-300 transition-all duration-300 cursor-pointer h-full"
-              >
-                <span className="text-4xl mb-3">{col.emoji}</span>
-                <h3 className="font-bold text-gray-900 text-base mb-1">{col.name}</h3>
-                <p className="text-xs text-gray-500">{col.desc}</p>
-              </motion.div>
-            </Link>
-          ))}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Collection 1 */}
+          <Link href="/collections/plaster-figurines" className="group">
+            <div className="bg-[#f5f3ff] rounded-[2rem] p-5 h-full flex flex-col justify-between relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md border border-transparent hover:border-purple-100">
+              <div className="relative z-10 w-3/4">
+                <h3 className="font-outfit font-extrabold text-gray-900 text-lg leading-tight mb-4 group-hover:text-purple-800 transition-colors">Plaster<br/>Figurines</h3>
+                <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -right-4 text-8xl drop-shadow-xl transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                🧸
+              </div>
+            </div>
+          </Link>
+
+          {/* Collection 2 */}
+          <Link href="/collections/paint-sets" className="group">
+            <div className="bg-[#fff7ed] rounded-[2rem] p-5 h-full flex flex-col justify-between relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md border border-transparent hover:border-orange-100">
+              <div className="relative z-10 w-3/4">
+                <h3 className="font-outfit font-extrabold text-gray-900 text-lg leading-tight mb-4 group-hover:text-orange-600 transition-colors">Paint<br/>Sets</h3>
+                <div className="w-8 h-8 rounded-full bg-orange-400 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -bottom-2 -right-4 text-7xl drop-shadow-xl transform group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500">
+                🎨
+              </div>
+            </div>
+          </Link>
+
+          {/* Collection 3 */}
+          <Link href="/collections/diy-kits" className="group">
+            <div className="bg-[#f0fdf4] rounded-[2rem] p-5 h-full flex flex-col justify-between relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md border border-transparent hover:border-emerald-100">
+              <div className="relative z-10 w-3/4">
+                <h3 className="font-outfit font-extrabold text-gray-900 text-lg leading-tight mb-4 group-hover:text-emerald-700 transition-colors">DIY<br/>Kits</h3>
+                <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -bottom-2 -right-2 text-7xl drop-shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                🏠
+              </div>
+            </div>
+          </Link>
+
+          {/* Collection 4 */}
+          <Link href="/collections/combo-packs" className="group">
+            <div className="bg-[#f0f9ff] rounded-[2rem] p-5 h-full flex flex-col justify-between relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md border border-transparent hover:border-blue-100">
+              <div className="relative z-10 w-3/4">
+                <h3 className="font-outfit font-extrabold text-gray-900 text-lg leading-tight mb-4 group-hover:text-blue-700 transition-colors">Combo<br/>Packs</h3>
+                <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -bottom-2 -right-2 text-7xl drop-shadow-xl transform group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                🎁
+              </div>
+            </div>
+          </Link>
+
+          {/* Collection 5 */}
+          <Link href="/collections/accessories" className="group">
+            <div className="bg-[#fdf2f8] rounded-[2rem] p-5 h-full flex flex-col justify-between relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md border border-transparent hover:border-pink-100">
+              <div className="relative z-10 w-3/4">
+                <h3 className="font-outfit font-extrabold text-gray-900 text-lg leading-tight mb-4 group-hover:text-pink-600 transition-colors">Accessories</h3>
+                <div className="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm mt-4">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -bottom-2 -right-2 text-7xl drop-shadow-xl transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                🖌️
+              </div>
+            </div>
+          </Link>
         </div>
       </section>
 
-      {/* Why Rangaroo (USP) */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-5xl font-outfit font-extrabold text-gray-900 mb-4">Why Parents Choose Rangaroo</h2>
-          <p className="text-gray-600 text-base sm:text-lg">Crafted with safety, quality, and boundless joy in mind</p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {usps.map((usp, idx) => (
-            <div key={idx} className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-sm border border-gray-100 flex items-start gap-5 hover:shadow-md transition-all">
-              <div className={`w-14 h-14 rounded-2xl ${usp.color} flex items-center justify-center flex-shrink-0`}>
-                <usp.icon className="w-7 h-7" />
+      {/* Features USP Banner */}
+      <section className="pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+            {/* Feature 1 */}
+            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-outfit font-bold text-lg text-gray-900 mb-1">{usp.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{usp.desc}</p>
+                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Safe for Kids</h4>
+                <p className="text-xs text-gray-500 font-medium">Non-toxic & child safe</p>
               </div>
             </div>
-          ))}
+            
+            {/* Feature 2 */}
+            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
+              <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+                <Palette className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Boosts Creativity</h4>
+                <p className="text-xs text-gray-500 font-medium">Encourages imagination</p>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
+              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
+                <Star className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Quality You Trust</h4>
+                <p className="text-xs text-gray-500 font-medium">Premium materials</p>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
+              <div className="w-12 h-12 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">Delivered with Love</h4>
+                <p className="text-xs text-gray-500 font-medium">Carefully packed gifts</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
