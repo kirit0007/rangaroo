@@ -105,14 +105,18 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 z-50">
-            <motion.div whileHover={{ rotate: 10, scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}>
+          <Link href="/" className="flex items-center gap-2.5 z-50">
+            <motion.div 
+              whileHover={{ rotate: 10, scale: 1.1 }} 
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 via-amber-50 to-pink-50 p-1 border border-orange-200/80 shadow-sm flex items-center justify-center overflow-hidden shrink-0"
+            >
               <Image 
                 src="/logo.png" 
                 alt="Rangaroo Logo" 
-                width={40} 
-                height={40} 
-                className="w-10 h-10 object-contain"
+                width={38} 
+                height={38} 
+                className="w-full h-full object-contain"
                 unoptimized
               />
             </motion.div>

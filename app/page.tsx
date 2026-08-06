@@ -125,23 +125,52 @@ export default function HomePage() {
               </div>
             </motion.div>
 
+            {/* Right Column: Floating Mascot & Ambient Craft Elements */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative h-[380px] sm:h-[480px] lg:h-[540px] flex items-center justify-center"
+              className="relative h-[420px] sm:h-[500px] lg:h-[560px] flex items-center justify-center"
             >
-              <div className="relative z-10 w-full h-full flex items-center justify-center">
+              {/* Colorful Glow Background behind Mascot */}
+              <div className="absolute inset-2 bg-gradient-to-tr from-orange-400/30 via-pink-400/25 to-purple-400/30 rounded-full blur-3xl -z-10 animate-pulse"></div>
+
+              {/* Floating Ambient Craft Badges */}
+              <motion.div 
+                animate={{ y: [-8, 8, -8], rotate: [-3, 3, -3] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute top-4 left-2 sm:left-8 z-20 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-orange-100/80 flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-gray-800 pointer-events-none select-none"
+              >
+                <span className="text-lg">🎨</span> 100% Non-Toxic
+              </motion.div>
+
+              <motion.div 
+                animate={{ y: [8, -8, 8], rotate: [3, -3, 3] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                className="absolute bottom-8 right-2 sm:right-8 z-20 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-purple-100/80 flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-purple-900 pointer-events-none select-none"
+              >
+                <span className="text-lg">🎁</span> Gift-Ready Kits
+              </motion.div>
+
+              {/* Floating Decorative Elements: Sparkles, Paint Splatters, Stars */}
+              <div className="absolute top-8 right-10 w-4 h-4 bg-orange-400 rounded-full blur-[1px] animate-ping opacity-75"></div>
+              <div className="absolute bottom-16 left-10 w-3 h-3 bg-purple-500 rounded-full animate-bounce"></div>
+              <div className="absolute top-1/2 -right-2 text-2xl animate-spin-slow select-none opacity-85">🎨</div>
+              <div className="absolute top-1/3 -left-4 text-2xl animate-bounce select-none opacity-85">✨</div>
+              <div className="absolute bottom-1/3 right-6 text-xl animate-pulse select-none opacity-80">⭐</div>
+
+              {/* Clean Floating Mascot Character Image (No Square Box) */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
                 <Image 
                   src="/rangoo.png" 
                   alt="Rangoo Mascot" 
-                  width={420} 
-                  height={520} 
-                  className="object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                  width={460} 
+                  height={540} 
+                  className="object-contain drop-shadow-[0_20px_35px_rgba(255,87,34,0.25)] animate-float hover:scale-105 transition-transform duration-500"
                   priority
+                  unoptimized
                 />
               </div>
-              <div className="absolute inset-4 bg-gradient-to-tr from-orange-300/40 via-pink-300/30 to-purple-300/40 rounded-full blur-3xl -z-10"></div>
             </motion.div>
           </div>
         </div>
