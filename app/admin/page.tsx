@@ -730,47 +730,62 @@ export default function AdminPage() {
         {/* Tab 5: Orders */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-outfit text-gray-800">Orders ({orders.length})</h1>
-            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 className="text-3xl font-bold font-outfit text-gray-800">Order Management ({orders.length})</h1>
+                <p className="text-gray-500 text-sm mt-1">Track customer purchases, manage order fulfillment, and handle cancellation requests</p>
+              </div>
+            </div>
+
             <div className="bg-white rounded-3xl border border-gray-200/80 shadow-sm overflow-hidden">
               {orders.length === 0 ? (
                 <div className="p-12 text-center text-gray-500">
-                  No customer orders recorded yet.
+                  No customer orders recorded yet. Orders placed during checkout starting at #1001 will appear here.
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
                   {orders.map((order) => {
                     const isExpanded = expandedOrders[order.id];
+                    const isCancellationRequested = order.status === 'cancellation_requested';
+
                     return (
-                      <div key={order.id} className="p-6">
+                      <div key={order.id} className={`p-6 transition-colors ${isCancellationRequested ? 'bg-red-50/30' : ''}`}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div>
                             <div className="flex items-center gap-3">
-                              <span className="font-bold text-gray-900">{order.orderNumber}</span>
+                              <span className="font-outfit font-extrabold text-lg text-gray-900">{order.orderNumber || order.id}</span>
                               <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize ${
                                 order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                                 order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                                order.status === 'cancellation_requested' ? 'bg-red-100 text-red-800 font-bold border border-red-200' :
+                                order.status === 'cancelled' ? 'bg-gray-100 text-gray-700' :
                                 'bg-yellow-100 text-yellow-700'
                               }`}>
-                                {order.status}
+                                {order.status === 'cancellation_requested' ? '⚠️ Cancellation Requested' : order.status}
                               </span>
                             </div>
                             <p className="text-sm text-gray-500 mt-1">
-                              Customer: {order.shippingAddress?.fullName} ({order.shippingAddress?.phone})
+                              Customer: <strong>{order.shippingAddress?.fullName}</strong> ({order.shippingAddress?.phone || 'No Phone'}) • Date: {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </p>
                           </div>
 
                           <div className="flex items-center gap-4">
-                            <span className="font-bold text-lg text-gray-900">{formatPrice(order.total)}</span>
+                            <span className="font-bold text-lg text-orange-600">{formatPrice(order.total)}</span>
                             
                             <select
                               value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
-                              className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold bg-white"
+                              onChange={(e) => {
+                                updateOrderStatus(order.id, e.target.value as any);
+                                toast.success(`Order ${order.orderNumber || order.id} status updated to ${e.target.value}`);
+                              }}
+                              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm"
                             >
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
                               <option value="processing">Processing</option>
                               <option value="shipped">Shipped</option>
                               <option value="delivered">Delivered</option>
+                              <option value="cancellation_requested">Cancellation Requested ⚠️</option>
                               <option value="cancelled">Cancelled</option>
                             </select>
 
@@ -783,14 +798,50 @@ export default function AdminPage() {
                           </div>
                         </div>
 
+                        {/* Customer Cancellation Request Highlight Banner */}
+                        {isCancellationRequested && (
+                          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 my-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                                <Trash2 size={20} />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-red-900 text-sm">Customer Cancellation Requested</h4>
+                                <p className="text-xs text-red-700">The customer submitted a cancellation request for this order. Choose to approve or reject.</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => {
+                                  updateOrderStatus(order.id, 'cancelled');
+                                  toast.success(`Order ${order.orderNumber || order.id} approved & cancelled`);
+                                }}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+                              >
+                                Approve & Cancel Order
+                              </button>
+                              <button
+                                onClick={() => {
+                                  updateOrderStatus(order.id, 'processing');
+                                  toast.success(`Cancellation request rejected for ${order.orderNumber || order.id}`);
+                                }}
+                                className="px-4 py-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-bold transition-colors"
+                              >
+                                Reject Request
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
                         {isExpanded && (
                           <div className="mt-4 pt-4 border-t border-gray-100 text-sm space-y-3 bg-gray-50 p-4 rounded-2xl">
-                            <p><strong>Shipping Address:</strong> {order.shippingAddress?.addressLine1}, {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
+                            <p><strong>Razorpay Payment ID:</strong> <span className="font-mono text-xs bg-gray-200 px-2 py-0.5 rounded">{order.razorpayPaymentId || 'N/A'}</span></p>
+                            <p><strong>Shipping Address:</strong> {order.shippingAddress?.addressLine1}, {order.shippingAddress?.addressLine2 ? `${order.shippingAddress.addressLine2}, ` : ''}{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
                             <p><strong>Items Ordered:</strong></p>
                             <ul className="list-disc pl-5 space-y-1">
                               {order.items?.map((item: any, idx: number) => (
                                 <li key={idx}>
-                                  {item.productName} x {item.quantity} - ₹{item.totalPrice}
+                                  <strong>{item.productName}</strong> × {item.quantity} — ₹{item.unitPrice} each (Total: ₹{item.totalPrice})
                                 </li>
                               ))}
                             </ul>

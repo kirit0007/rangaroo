@@ -49,6 +49,8 @@ export default function MyOrdersPage() {
         return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold"><Clock size={14} /> Processing</span>;
       case 'confirmed':
         return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold"><CheckCircle2 size={14} /> Order Confirmed</span>;
+      case 'cancellation_requested':
+        return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold"><AlertCircle size={14} /> Cancellation Requested</span>;
       case 'cancelled':
         return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold"><XCircle size={14} /> Cancelled</span>;
       default:
@@ -287,7 +289,7 @@ export default function MyOrdersPage() {
               <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6 pb-4 border-b">
                   <div>
-                    <h3 className="font-outfit font-extrabold text-2xl text-gray-900">Tax Invoice</h3>
+                    <h3 className="font-outfit font-extrabold text-2xl text-gray-900">Invoice</h3>
                     <p className="text-xs text-gray-500">Receipt #{showInvoiceModal.orderNumber}</p>
                   </div>
                   <button onClick={() => setShowInvoiceModal(null)} className="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
@@ -298,7 +300,6 @@ export default function MyOrdersPage() {
                     <div>
                       <p className="text-xs font-bold uppercase text-gray-400">Sold By</p>
                       <p className="font-bold text-gray-900">Rangaroo Crafts India</p>
-                      <p className="text-xs text-gray-500">GSTIN: 27AABCR9841C1Z4</p>
                     </div>
                     <div>
                       <p className="text-xs font-bold uppercase text-gray-400">Billed To</p>
@@ -403,6 +404,7 @@ export default function MyOrdersPage() {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => {
+                      useAdminStore.getState().updateOrderStatus(showCancelModal.id, 'cancellation_requested');
                       toast.success('Cancellation request submitted to support!');
                       setShowCancelModal(null);
                     }} 

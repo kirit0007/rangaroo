@@ -131,9 +131,11 @@ export default function CheckoutPage() {
         image: '/logo.png',
         // order_id: orderData.id, 
         handler: function (response: any) {
+          const currentOrders = useAdminStore.getState().orders || [];
+          const nextSeq = 1001 + currentOrders.length;
           const newOrder = {
-            id: `ord-${Date.now()}`,
-            orderNumber: `RANG-${Math.floor(100000 + Math.random() * 900000)}`,
+            id: `ord-${nextSeq}`,
+            orderNumber: `#${nextSeq}`,
             status: 'confirmed' as const,
             paymentStatus: 'paid' as const,
             createdAt: new Date().toISOString(),
