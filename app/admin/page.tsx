@@ -232,6 +232,23 @@ export default function AdminPage() {
     setIsProductModalOpen(false);
   };
 
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image file size must be under 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setProductForm(prev => ({ ...prev, imageUrl: base64String }));
+        toast.success('Image uploaded from device!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDeleteProduct = (productId: string, productName: string) => {
     if (confirm(`Are you sure you want to delete "${productName}"?`)) {
       deleteProduct(productId);
@@ -883,24 +900,48 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Product Image URL</label>
-                <div className="flex gap-3 items-center">
-                  <input
-                    type="text"
-                    required
-                    placeholder="/images/products/unicorn-kit.jpg or https://..."
-                    value={productForm.imageUrl}
-                    onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                  />
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 relative overflow-hidden shrink-0">
-                    <Image
-                      src={productForm.imageUrl || '/logo.png'}
-                      alt="Preview"
-                      fill
-                      className="object-cover"
-                      unoptimized
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Product Image (Upload from PC / Device)</label>
+                
+                <div className="space-y-3">
+                  {/* File Upload Zone */}
+                  <div 
+                    className="border-2 border-dashed border-gray-200 hover:border-orange-500 transition-all rounded-2xl p-4 bg-gray-50/50 flex flex-col items-center justify-center text-center cursor-pointer group"
+                    onClick={() => document.getElementById('product-image-file-input')?.click()}
+                  >
+                    <input
+                      id="product-image-file-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageFileUpload}
                     />
+                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform mb-2">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      Choose Image File from PC / Device
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Select any photo from your laptop, desktop, or mobile device (Max 5MB)</p>
+                  </div>
+
+                  {/* Or enter image URL fallback */}
+                  <div className="flex gap-3 items-center pt-1">
+                    <input
+                      type="text"
+                      placeholder="Or paste external Image URL (https://...)"
+                      value={productForm.imageUrl}
+                      onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs bg-white"
+                    />
+                    <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 relative overflow-hidden shrink-0 shadow-sm">
+                      <Image
+                        src={productForm.imageUrl || '/logo.png'}
+                        alt="Preview"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
