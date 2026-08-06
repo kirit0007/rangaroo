@@ -162,9 +162,10 @@ export default function Navbar() {
                     exit={{ opacity: 0, y: 10 }}
                     className="absolute top-full left-0 mt-2 w-48 glass-panel py-2 shadow-xl z-50"
                   >
-                    <Link href="/products?collection=animals" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Animals</Link>
-                    <Link href="/products?collection=space" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Space</Link>
-                    <Link href="/products?collection=nature" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Nature</Link>
+                    <Link href="/collections/animal-collection" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Animals</Link>
+                    <Link href="/collections/space-collection" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Space</Link>
+                    <Link href="/collections/dinosaur-collection" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Dinosaurs</Link>
+                    <Link href="/collections" className="block px-4 py-2 mt-1 border-t border-gray-100 font-medium hover:bg-white/50 text-[var(--brand-orange)] transition-colors">View All &rarr;</Link>
                   </motion.div>
                 )}
               </AnimatePresence>
