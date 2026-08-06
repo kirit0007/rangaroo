@@ -154,7 +154,7 @@ export default function ProductDetailPage() {
               
               <ProductHeaderRating productId={product.id} />
 
-              <div className="flex items-end gap-3 mb-6">
+              <div className="flex items-end gap-3 mb-4">
                 <span className="text-4xl font-bold text-orange-600">
                   {formatPrice(product.price)}
                 </span>
@@ -163,6 +163,19 @@ export default function ProductDetailPage() {
                     {formatPrice(product.compareAtPrice)}
                   </span>
                 )}
+              </div>
+
+              {/* Stock Urgency & Delivery Calculator */}
+              <div className="space-y-2 mb-6 p-3.5 bg-orange-50/80 rounded-2xl border border-orange-100/80">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-orange-700">
+                  <span className="animate-pulse">🔥</span> Only 4 left in stock — Order soon!
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <Truck className="w-4 h-4 text-emerald-600 shrink-0" /> 
+                  <span>
+                    Get it by <strong className="text-gray-900">{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</strong> if ordered in the next 2 hrs!
+                  </span>
+                </div>
               </div>
 
               <p className="text-gray-600 text-lg mb-8 leading-relaxed">
@@ -288,7 +301,55 @@ export default function ProductDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Mobile Sticky Add to Cart Bar */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-gray-200 z-50 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div>
+            <p className="text-[10px] text-gray-500 font-medium tracking-wide">Total Price ({quantity} {quantity > 1 ? 'items' : 'item'})</p>
+            <p className="text-lg font-extrabold text-orange-600 leading-tight">
+              {formatPrice(product.price * quantity)}
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="line-through text-xs text-gray-400 font-normal ml-1.5">
+                  {formatPrice(product.compareAtPrice * quantity)}
+                </span>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-md hover:from-orange-600 hover:to-amber-600 active:scale-95 transition-all text-sm flex items-center gap-2"
+          >
+            <ShoppingCart className="w-4 h-4" /> Add to Cart
+          </button>
+        </div>
       </div>
+
+      {/* Structured Data (JSON-LD) for Search & AI Engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org/',
+            '@type': 'Product',
+            name: product.name,
+            image: productImages.map((img: string) => (img.startsWith('http') ? img : `https://www.rangaroo.store${img}`)),
+            description: product.description,
+            sku: product.id,
+            brand: {
+              '@type': 'Brand',
+              name: 'Rangaroo',
+            },
+            offers: {
+              '@type': 'Offer',
+              url: `https://www.rangaroo.store/products/${product.slug}`,
+              priceCurrency: 'INR',
+              price: product.price,
+              availability: 'https://schema.org/InStock',
+              itemCondition: 'https://schema.org/NewCondition',
+            },
+          }),
+        }}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Palette, Shield, Gift, Star, Heart, ArrowRight, Brush, Sparkles, CheckCircle2 } from 'lucide-react';
 import { getFeaturedProducts } from '@/data/products';
 import ProductCard from '@/components/product/ProductCard';
+import ReviewSkeleton from '@/components/reviews/ReviewSkeleton';
 
 export default function HomePage() {
   const featuredProducts = getFeaturedProducts().slice(0, 4);
@@ -365,7 +366,7 @@ function HomepageReviewsSection() {
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-400">Loading verified customer reviews...</div>
+          <ReviewSkeleton />
         ) : fiveStarReviews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {fiveStarReviews.map((rev) => (

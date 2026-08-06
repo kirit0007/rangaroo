@@ -13,7 +13,8 @@ export default function WhatsAppButton() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.23)] hover:bg-[#20bd5a] transition-all duration-300 flex items-center justify-center"
+      aria-label="Chat with Rangaroo Support on WhatsApp"
+      className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.23)] hover:bg-[#20bd5a] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 transition-all duration-300 flex items-center justify-center"
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       initial={{ y: 100, opacity: 0 }}
@@ -30,11 +31,13 @@ export default function WhatsAppButton() {
           repeatDelay: 3
         }}
       >
-        <MessageCircle size={28} className="fill-current" />
+        <MessageCircle size={28} className="fill-current" aria-hidden="true" />
       </motion.div>
+
+      <span className="sr-only">Chat with us on WhatsApp</span>
       
       {/* Pulse rings */}
-      <span className="absolute w-full h-full rounded-full border-2 border-[#25D366] opacity-0 animate-ping"></span>
+      <span className="absolute w-full h-full rounded-full border-2 border-[#25D366] opacity-0 animate-ping pointer-events-none"></span>
     </motion.a>
   );
 }

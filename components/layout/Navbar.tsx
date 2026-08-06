@@ -131,7 +131,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.path}
-                className={`hover:text-[var(--brand-orange)] transition-colors relative ${
+                className={`hover:text-[var(--brand-orange)] transition-colors relative focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-md px-1 ${
                   pathname === link.path ? 'text-[var(--brand-orange)]' : 'text-gray-700'
                 }`}
               >
