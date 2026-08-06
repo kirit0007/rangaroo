@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -280,27 +280,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-gradient-to-b from-transparent to-orange-50/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-5xl font-outfit font-extrabold text-gray-900 text-center mb-14">Loved By Families Across India</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((test, idx) => (
-              <div key={idx} className="bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all">
-                <div className="flex text-amber-400 mb-4">
-                  {[...Array(test.rating)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
-                </div>
-                <p className="text-gray-700 italic text-sm sm:text-base mb-6 leading-relaxed">"{test.text}"</p>
-                <div>
-                  <p className="font-bold text-gray-900">{test.name}</p>
-                  <p className="text-xs text-gray-500">{test.location}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Dynamic 5-Star Customer Reviews */}
+      <HomepageReviewsSection />
 
       {/* Call to Action Banner */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -317,5 +298,88 @@ export default function HomePage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function HomepageReviewsSection() {
+  const [fiveStarReviews, setFiveStarReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/reviews?featured=true&minRating=5')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.reviews) {
+          setFiveStarReviews(data.reviews);
+        }
+      })
+      .catch((err) => console.error('Error fetching homepage reviews:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-transparent via-orange-50/50 to-purple-50/40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-3">
+            <Star className="w-4 h-4 fill-current text-amber-500" /> Verified Customer Reviews
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-outfit font-extrabold text-gray-900">
+            Loved By Families Across India
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base mt-3">
+            Real feedback and 5-star ratings from parents and young artists.
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="py-12 text-center text-gray-400">Loading verified customer reviews...</div>
+        ) : fiveStarReviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {fiveStarReviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="bg-white/90 backdrop-blur-xl border border-orange-100/80 rounded-3xl p-7 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <div className="flex text-amber-400">
+                      {[...Array(rev.rating || 5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-current" />
+                      ))}
+                    </div>
+                    <span className="px-2.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">
+                      ✔ Verified Buyer
+                    </span>
+                  </div>
+                  {rev.title && <h4 className="font-bold text-gray-900 text-base mb-2">{rev.title}</h4>}
+                  <p className="text-gray-700 text-sm italic leading-relaxed mb-6">"{rev.comment}"</p>
+                </div>
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                  <span className="font-bold text-gray-900">{rev.customerName}</span>
+                  <span className="text-gray-400">
+                    {new Date(rev.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-dashed border-orange-200 p-10 text-center max-w-xl mx-auto shadow-sm">
+            <span className="text-4xl mb-3 block">🎨</span>
+            <h3 className="text-xl font-bold font-outfit text-gray-900 mb-2">Be the First to Leave a 5-Star Review!</h3>
+            <p className="text-gray-600 text-xs sm:text-sm mb-6 leading-relaxed">
+              We have cleaned up all fake seed reviews. Purchase any DIY paint kit and share your child's masterpiece on the product page!
+            </p>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full font-bold text-xs uppercase tracking-wider hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
+            >
+              Explore DIY Kits & Leave Review
+            </Link>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

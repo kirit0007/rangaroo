@@ -121,6 +121,7 @@ export interface Review {
   id: string;
   productId: string;
   customerName: string;
+  title?: string;
   rating: number;
   comment: string;
   images?: string[];
