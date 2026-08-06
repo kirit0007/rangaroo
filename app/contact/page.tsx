@@ -8,10 +8,10 @@ export const metadata = {
 
 export default function ContactPage() {
   const contactMethods = [
-    { title: 'Email Us', info: 'hello@rangaroo.in', desc: 'We aim to reply within 24 hours.', icon: Mail, color: 'text-blue-500' },
-    { title: 'Call Us', info: '+91 98765 43210', desc: 'Mon-Fri, 10am - 6pm IST', icon: Phone, color: 'text-green-500' },
-    { title: 'WhatsApp', info: '+91 98765 43210', desc: 'For quick queries and bulk orders.', icon: MessageSquare, color: 'text-emerald-500' },
-    { title: 'Visit Us', info: 'Mumbai, Maharashtra', desc: 'By appointment only.', icon: MapPin, color: 'text-orange-500' },
+    { title: 'Email Us', info: 'hello@rangaroo.store', desc: 'We aim to reply within 24 hours.', icon: Mail, color: 'text-blue-500' },
+    { title: 'Call Us', info: '+91 87936 87379', desc: 'Mon-Sat, 10am - 7pm IST', icon: Phone, color: 'text-green-500' },
+    { title: 'WhatsApp Support', info: '+91 87936 87379', desc: 'Instant chat for quick queries & bulk orders.', icon: MessageSquare, color: 'text-emerald-500' },
+    { title: 'Location', info: 'India', desc: 'Shipping nationwide across India 🇮🇳', icon: MapPin, color: 'text-orange-500' },
   ];
 
   return (

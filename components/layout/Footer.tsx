@@ -80,38 +80,24 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter & Contact */}
+          {/* Contact Section */}
           <div className="space-y-6">
             <div>
               <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Get in Touch</h4>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm text-gray-300">
                   <MapPin size={18} className="text-[var(--brand-orange)] shrink-0 mt-0.5" />
-                  <span>123 Creative Studio, Art District, Mumbai, India 400001</span>
+                  <span>India 🇮🇳 (Shipping Nationwide)</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-gray-300">
                   <Phone size={18} className="text-[var(--brand-orange)] shrink-0" />
-                  <span>+91 98765 43210</span>
+                  <span>+91 87936 87379</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-gray-300">
                   <Mail size={18} className="text-[var(--brand-orange)] shrink-0" />
-                  <span>hello@rangaroo.in</span>
+                  <span>hello@rangaroo.store</span>
                 </li>
               </ul>
-            </div>
-            
-            <div className="pt-2">
-              <p className="text-sm font-medium mb-3 text-white">Join our newsletter for 10% off!</p>
-              <div className="flex items-center w-full max-w-sm rounded-full bg-white/10 p-1 border border-white/20 focus-within:border-[var(--brand-orange)] transition-colors">
-                <input 
-                  type="email" 
-                  placeholder="Your email address" 
-                  className="bg-transparent text-white px-4 py-2 w-full text-sm outline-none placeholder-gray-400"
-                />
-                <button className="bg-[var(--brand-orange)] hover:bg-[var(--brand-amber)] transition-colors text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">
-                  Subscribe
-                </button>
-              </div>
             </div>
           </div>
         </div>

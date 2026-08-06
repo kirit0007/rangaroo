@@ -753,7 +753,13 @@ export function getCategoryBySlug(slug: string): Category | undefined {
 }
 
 export function getCollectionBySlug(slug: string): Collection | undefined {
-  return collections.find(c => c.slug === slug);
+  const cleanSlug = slug.toLowerCase();
+  return collections.find(
+    c => c.slug === cleanSlug || 
+         c.id === cleanSlug || 
+         c.slug === `${cleanSlug}-collection` || 
+         c.id === cleanSlug.replace('-collection', '')
+  );
 }
 
 export function formatPrice(price: number): string {
