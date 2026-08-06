@@ -43,23 +43,30 @@ export default function AuthModal() {
     setIsLoading(true);
 
     try {
-      const mode = (authModalMode || '').toUpperCase();
-      if (mode === 'LOGIN') {
+      const mode = (authModalMode || '').toLowerCase();
+      if (mode === 'login') {
         if (!email || !password) throw new Error('Please fill all fields');
-        await signIn?.(email, password);
+        const res = await signIn?.(email, password);
+        if (res?.error) {
+          toast.error(res.error);
+          return;
+        }
         toast.success('Successfully logged in!');
         closeAuthModal();
-      } else if (mode === 'SIGNUP') {
+      } else if (mode === 'signup') {
         if (!name || !email || !password || !confirmPassword) throw new Error('Please fill all fields');
         if (password !== confirmPassword) throw new Error('Passwords do not match');
         if (!terms) throw new Error('You must accept terms and conditions');
-        await signUp?.(email, password, name);
+        const res = await signUp?.(email, password, name);
+        if (res?.error) {
+          toast.error(res.error);
+          return;
+        }
         toast.success('Account created successfully!');
         closeAuthModal();
-      } else if (mode === 'FORGOT') {
+      } else if (mode === 'forgot') {
         if (!email) throw new Error('Please enter your email');
-        // mock forgot password
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
         toast.success('Password reset email sent to ' + email);
         setAuthModalMode('login');
       }
@@ -72,9 +79,12 @@ export default function AuthModal() {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithGoogle?.();
-      toast.success('Logged in with Google');
-      closeAuthModal();
+      const res = await signInWithGoogle?.();
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success('Redirecting to Google Sign-In...');
     } catch (err: any) {
       toast.error('Google login failed');
     }
