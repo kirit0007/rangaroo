@@ -64,7 +64,7 @@ export default function HomePage() {
     { title: 'Non-Toxic Washable Paints', desc: 'Child-safe, 100% non-toxic tempera colors', icon: Shield, color: 'bg-emerald-100 text-emerald-600' },
     { title: 'Gift-Ready Premium Box', desc: 'Beautifully packaged with brushes & thank you card', icon: Gift, color: 'bg-pink-100 text-pink-600' },
     { title: 'Ideal Return Gifts', desc: 'Loved by parents & kids for birthday celebrations', icon: Heart, color: 'bg-rose-100 text-rose-600' },
-    { title: '4.9/5 Parent Rating', desc: 'Over 10,000+ happy young artists across India', icon: Star, color: 'bg-amber-100 text-amber-600' },
+    { title: 'Parent Approved Quality', desc: 'Loved by parents and young artists across India', icon: Star, color: 'bg-amber-100 text-amber-600' },
     { title: 'Proudly Made in India', desc: 'Handcrafted with care by local artisans', icon: CheckCircle2, color: 'bg-orange-100 text-orange-600' },
   ];
 
@@ -121,7 +121,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Shield className="w-4 h-4 text-emerald-500" /> Non-Toxic Colors</div>
                 <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Heart className="w-4 h-4 text-rose-500" /> Made in India</div>
                 <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Gift className="w-4 h-4 text-pink-500" /> Gift Packaging</div>
-                <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Star className="w-4 h-4 text-amber-500" /> 4.9/5 Star Rating</div>
+                <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Star className="w-4 h-4 text-amber-500" /> Parent Approved</div>
               </div>
             </motion.div>
 
@@ -369,7 +369,7 @@ function HomepageReviewsSection() {
             <span className="text-4xl mb-3 block">🎨</span>
             <h3 className="text-xl font-bold font-outfit text-gray-900 mb-2">Be the First to Leave a 5-Star Review!</h3>
             <p className="text-gray-600 text-xs sm:text-sm mb-6 leading-relaxed">
-              We have cleaned up all fake seed reviews. Purchase any DIY paint kit and share your child's masterpiece on the product page!
+              Purchase any DIY paint kit and share your child's masterpiece on the product page!
             </p>
             <Link
               href="/products"

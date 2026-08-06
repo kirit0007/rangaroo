@@ -144,12 +144,7 @@ export default function ProductDetailPage() {
                 {product.name}
               </h1>
               
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
-                </div>
-                <span className="text-sm text-gray-500 font-medium">4.9 (128 reviews)</span>
-              </div>
+              <ProductHeaderRating productId={product.id} />
 
               <div className="flex items-end gap-3 mb-6">
                 <span className="text-4xl font-bold text-orange-600">
@@ -286,6 +281,52 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ProductHeaderRating({ productId }: { productId: string }) {
+  const [summary, setSummary] = useState({ averageRating: 0, totalReviews: 0 });
+
+  useEffect(() => {
+    if (productId) {
+      fetch(`/api/reviews?productId=${productId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.summary) setSummary(data.summary);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [productId]);
+
+  if (summary.totalReviews === 0) {
+    return (
+      <div className="flex items-center gap-2 mb-6">
+        <div className="flex text-gray-300">
+          {[...Array(5)].map((_, i) => (
+            <Star key={i} className="w-4 h-4" />
+          ))}
+        </div>
+        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+          No reviews yet
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <div className="flex text-amber-400">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            className={`w-5 h-5 ${i < Math.round(summary.averageRating) ? 'fill-current' : 'text-gray-200'}`}
+          />
+        ))}
+      </div>
+      <span className="text-sm font-bold text-gray-700">
+        {summary.averageRating} ({summary.totalReviews} {summary.totalReviews === 1 ? 'review' : 'reviews'})
+      </span>
     </div>
   );
 }
