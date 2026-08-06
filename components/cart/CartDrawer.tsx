@@ -8,8 +8,11 @@ import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Lock } from 'lucide-re
 import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/cartStore';
 import { useAdminStore } from '@/store/adminStore';
+import { useAuthStore } from '@/store/authStore';
 
 export default function CartDrawer() {
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const isCartOpen = useCartStore((state: any) => state.isOpen || state.isCartOpen);
   const closeCart = useCartStore((state) => state.closeCart);
   const items = useCartStore((state) => state.items) || [];
@@ -27,6 +30,15 @@ export default function CartDrawer() {
 
   const cartSubtotal = items.reduce((acc: number, item: any) => acc + (item.price * (item.quantity || 1)), 0);
   const shippingFee = cartSubtotal > 999 || items.length === 0 ? 0 : 60;
+
+  const handleCheckoutClick = (e: React.MouseEvent) => {
+    closeCart();
+    if (!user) {
+      e.preventDefault();
+      toast.error('Please login or create an account to proceed to checkout');
+      openAuthModal('login');
+    }
+  };
   
   // Calculate discount based on subtotal (assume flat rate for now or percentage if < 1)
   const discountAmount = appliedCoupon 
@@ -251,7 +263,7 @@ export default function CartDrawer() {
 
                 <Link 
                   href="/checkout"
-                  onClick={closeCart}
+                  onClick={handleCheckoutClick}
                   className="w-full btn-primary justify-center text-lg py-3 flex items-center gap-2 group"
                 >
                   Proceed to Checkout 

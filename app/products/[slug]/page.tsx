@@ -9,12 +9,15 @@ import { ChevronRight, Star, Plus, Minus, ShoppingCart, Zap, CheckCircle2, Shiel
 import { getProductBySlug, getProductsByCollection, products as defaultProducts, categories, formatPrice, calculateDiscount } from '@/data/products';
 import { useAdminStore } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
+import { useAuthStore } from '@/store/authStore';
 import ProductCard from '@/components/product/ProductCard';
 import toast from 'react-hot-toast';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const addItem = useCartStore((state) => state.addItem);
   const storeProducts = useAdminStore((state) => state.products) || defaultProducts;
   
@@ -55,6 +58,11 @@ export default function ProductDetailPage() {
   };
 
   const handleBuyNow = () => {
+    if (!user) {
+      toast.error('Please login or create an account to place an order');
+      openAuthModal('login');
+      return;
+    }
     addItem(product, quantity);
     router.push('/checkout');
   };

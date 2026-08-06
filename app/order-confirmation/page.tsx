@@ -1,22 +1,25 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Check, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Check, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { useAdminStore } from '@/store/adminStore';
 
-export default function OrderConfirmationPage() {
+function ConfirmationContent() {
+  const searchParams = useSearchParams();
   const clearCart = useCartStore((state) => state.clearCart);
-  const [orderId, setOrderId] = useState('');
+  const storeOrders = useAdminStore((state) => state.orders);
+
+  const queryOrderNumber = searchParams.get('orderNumber');
+  const latestOrderNumber = storeOrders && storeOrders.length > 0 ? storeOrders[storeOrders.length - 1].orderNumber : '#1001';
+  const displayOrderId = queryOrderNumber || latestOrderNumber;
 
   useEffect(() => {
-    // Generate random order ID
-    const randomId = 'RNG-' + Math.floor(100000 + Math.random() * 900000);
-    setOrderId(randomId);
-
     // Trigger confetti
     const duration = 3 * 1000;
     const animationEnd = Date.now() + duration;
@@ -65,7 +68,7 @@ export default function OrderConfirmationPage() {
         </p>
 
         <div className="inline-block bg-gray-50 px-6 py-3 rounded-full text-sm font-medium text-gray-700 border border-gray-200 mb-10">
-          Order ID: <span className="font-bold text-gray-900 ml-1">{orderId}</span>
+          Order ID: <span className="font-bold text-gray-900 ml-1">{displayOrderId}</span>
         </div>
 
         <div className="relative h-48 w-full mb-10">
@@ -83,12 +86,20 @@ export default function OrderConfirmationPage() {
           <Link href="/products" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-orange-500 text-white rounded-xl font-bold text-lg hover:bg-orange-600 transition-colors shadow-md">
             <ShoppingBag className="w-5 h-5" /> Continue Shopping
           </Link>
-          <Link href="/" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-gray-700 border-2 border-gray-200 rounded-xl font-bold text-lg hover:border-gray-300 hover:bg-gray-50 transition-colors">
-            Back to Home
+          <Link href="/orders" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-gray-700 border-2 border-gray-200 rounded-xl font-bold text-lg hover:border-gray-300 hover:bg-gray-50 transition-colors">
+            View My Orders
           </Link>
         </div>
 
       </motion.div>
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FFF9F2] pt-32 text-center text-gray-500">Loading order confirmation...</div>}>
+      <ConfirmationContent />
+    </Suspense>
   );
 }

@@ -8,10 +8,13 @@ import { Check, ChevronRight, Truck, CreditCard, ShoppingBag, ShieldCheck, Arrow
 import { useCartStore } from '@/store/cartStore';
 import { formatPrice } from '@/data/products';
 import { useAdminStore } from '@/store/adminStore';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const items = useCartStore((state) => state.items) || [];
   const clearCart = useCartStore((state) => state.clearCart);
   const getSubtotal = useCartStore((state) => state.getSubtotal);
@@ -24,9 +27,9 @@ export default function CheckoutPage() {
   
   // Shipping Form State
   const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
+    fullName: user?.fullName || (user as any)?.name || '',
+    phone: user?.phone || '',
+    email: user?.email || '',
     address1: '',
     address2: '',
     pincode: '',
@@ -36,13 +39,22 @@ export default function CheckoutPage() {
 
   const [isFetchingPincode, setIsFetchingPincode] = useState(false);
 
+  // Require user authentication for placing orders
+  useEffect(() => {
+    if (!user) {
+      toast.error('Please login or create an account to proceed to checkout');
+      openAuthModal('login');
+      router.push('/products');
+    }
+  }, [user, openAuthModal, router]);
+
   // Redirect if empty cart
   useEffect(() => {
-    if (items.length === 0 && !isLoading) {
+    if (items.length === 0 && !isLoading && user) {
       toast.error('Your cart is empty');
       router.push('/products');
     }
-  }, [items, router, isLoading]);
+  }, [items, router, isLoading, user]);
 
   // Handle Pincode Auto-fill
   useEffect(() => {
@@ -182,7 +194,7 @@ export default function CheckoutPage() {
           }).catch(err => console.error('Brevo order confirmation email trigger failed:', err));
 
           clearCart();
-          router.push('/order-confirmation');
+          router.push(`/order-confirmation?orderNumber=${encodeURIComponent(newOrder.orderNumber)}`);
         },
         prefill: {
           name: formData.fullName,
