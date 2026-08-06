@@ -10,6 +10,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useAdminStore } from '@/store/adminStore';
 
+import { createClient } from '@/lib/supabase/client';
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,6 +21,36 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
+
+    const supabase = createClient();
+
+    // Check current Supabase session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        useAuthStore.getState().setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          role: session.user.user_metadata?.role || 'customer',
+        });
+      }
+    });
+
+    // Listen for OAuth login returns, session refreshes, and auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        useAuthStore.getState().setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          role: session.user.user_metadata?.role || 'customer',
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Zustand stores with atomic selectors to prevent infinite re-renders
