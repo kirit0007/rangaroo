@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function WhatsAppButton() {
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919876543210';
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '918793687379';
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hi%20Rangaroo!%20I%20have%20a%20question%20about%20your%20paint%20kits.`;
 
   return (

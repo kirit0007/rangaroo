@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Globe, Heart, Play, Mail, Phone, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -25,15 +25,47 @@ export default function Footer() {
             <p className="text-gray-300 text-sm leading-relaxed max-w-xs">
               Premium DIY Paint Kits for Kids. Sparking creativity and building fine motor skills one canvas at a time. Safe, non-toxic, and endlessly fun!
             </p>
-            <div className="flex items-center gap-4 pt-2">
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--brand-orange)] transition-colors">
-                <Globe size={18} />
+            
+            {/* Social Logos matching Image 1 */}
+            <div className="flex items-center gap-3 pt-2">
+              {/* WhatsApp */}
+              <a 
+                href="https://wa.me/918793687379" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-md"
+                title="WhatsApp Support +91 87936 87379"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.636-1.155 4.218 4.319-1.132.58.345zm11.758-5.748c-.296-.148-1.747-.862-2.017-.96-.27-.099-.467-.148-.665.149-.197.296-.764.96-.937 1.157-.173.198-.345.223-.641.074-.296-.149-1.252-.462-2.386-1.475-.882-.788-1.48-1.761-1.653-2.058-.173-.297-.018-.458.13-.606.134-.133.296-.347.444-.521.148-.173.197-.296.296-.495.099-.198.05-.371-.025-.52-.075-.148-.665-1.604-.911-2.198-.24-.579-.487-.501-.665-.51-.172-.009-.37-.01-.567-.01-.198 0-.52.074-.79.371-.27.296-1.035 1.013-1.035 2.471s1.06 2.866 1.207 3.064c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.271-.198-.567-.347z"/>
+                </svg>
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--brand-orange)] transition-colors">
-                <Heart size={18} />
+
+              {/* Instagram */}
+              <a 
+                href="https://www.instagram.com/ranga.roo/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#fccc63] via-[#fba756] via-[#d62976] via-[#962fbf] to-[#4f5bd5] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-md"
+                title="Instagram @ranga.roo"
+              >
+                <svg className="w-5 h-5 fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--brand-orange)] transition-colors">
-                <Play size={18} />
+
+              {/* Email */}
+              <a 
+                href="mailto:rangaroo.co@gmail.com" 
+                className="w-10 h-10 rounded-full bg-black border border-white/20 flex items-center justify-center text-white hover:scale-110 transition-transform shadow-md"
+                title="Email rangaroo.co@gmail.com"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="M22 6l-10 7L2 6"/>
+                </svg>
               </a>
             </div>
           </div>
@@ -68,7 +100,7 @@ export default function Footer() {
                 { name: 'Return Policy', path: '/refund-policy' },
                 { name: 'Privacy Policy', path: '/privacy-policy' },
                 { name: 'Terms of Service', path: '/terms' },
-                { name: 'Track Order', path: '/checkout' },
+                { name: 'Track Order', path: '/orders' },
               ].map((link) => (
                 <li key={link.name}>
                   <Link href={link.path} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">
@@ -80,22 +112,65 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact Section */}
+          {/* Contact Section matching Image 1 */}
           <div className="space-y-6">
             <div>
               <h4 className="font-heading font-semibold text-lg mb-6 text-white border-b border-white/20 pb-2 inline-block">Get in Touch</h4>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm text-gray-300">
                   <MapPin size={18} className="text-[var(--brand-orange)] shrink-0 mt-0.5" />
-                  <span>India 🇮🇳 (Shipping Nationwide)</span>
+                  <span>India IN (Shipping Nationwide)</span>
                 </li>
+
+                {/* WhatsApp / Phone */}
                 <li className="flex items-center gap-3 text-sm text-gray-300">
-                  <Phone size={18} className="text-[var(--brand-orange)] shrink-0" />
-                  <span>+91 87936 87379</span>
+                  <a href="https://wa.me/918793687379" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-emerald-400 transition-colors group">
+                    <div className="w-7 h-7 rounded-full bg-[#25D366] flex items-center justify-center text-white shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.636-1.155 4.218 4.319-1.132.58.345zm11.758-5.748c-.296-.148-1.747-.862-2.017-.96-.27-.099-.467-.148-.665.149-.197.296-.764.96-.937 1.157-.173.198-.345.223-.641.074-.296-.149-1.252-.462-2.386-1.475-.882-.788-1.48-1.761-1.653-2.058-.173-.297-.018-.458.13-.606.134-.133.296-.347.444-.521.148-.173.197-.296.296-.495.099-.198.05-.371-.025-.52-.075-.148-.665-1.604-.911-2.198-.24-.579-.487-.501-.665-.51-.172-.009-.37-.01-.567-.01-.198 0-.52.074-.79.371-.27.296-1.035 1.013-1.035 2.471s1.06 2.866 1.207 3.064c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.271-.198-.567-.347z"/>
+                      </svg>
+                    </div>
+                    <span className="font-semibold text-white group-hover:text-emerald-400">+91 87936 87379</span>
+                  </a>
                 </li>
+
+                {/* Instagram Handle */}
                 <li className="flex items-center gap-3 text-sm text-gray-300">
-                  <Mail size={18} className="text-[var(--brand-orange)] shrink-0" />
-                  <span>hello@rangaroo.store</span>
+                  <a href="https://www.instagram.com/ranga.roo/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-pink-400 transition-colors group">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#fccc63] via-[#fba756] via-[#d62976] via-[#962fbf] to-[#4f5bd5] flex items-center justify-center text-white shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                      <svg className="w-4 h-4 fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                      </svg>
+                    </div>
+                    <span className="font-semibold text-white group-hover:text-pink-400">ranga.roo</span>
+                  </a>
+                </li>
+
+                {/* Email Address */}
+                <li className="flex items-center gap-3 text-sm text-gray-300">
+                  <a href="mailto:rangaroo.co@gmail.com" className="flex items-center gap-3 hover:text-orange-400 transition-colors group">
+                    <div className="w-7 h-7 rounded-full bg-black border border-white/20 flex items-center justify-center text-white shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="M22 6l-10 7L2 6"/>
+                      </svg>
+                    </div>
+                    <span className="font-semibold text-white group-hover:text-orange-400">rangaroo.co@gmail.com</span>
+                  </a>
+                </li>
+
+                {/* Phone Direct Call */}
+                <li className="flex items-center gap-3 text-sm text-gray-300">
+                  <a href="tel:+918793687379" className="flex items-center gap-3 hover:text-emerald-400 transition-colors group">
+                    <div className="w-7 h-7 rounded-full bg-[#25D366] flex items-center justify-center text-white shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.636-1.155 4.218 4.319-1.132.58.345zm11.758-5.748c-.296-.148-1.747-.862-2.017-.96-.27-.099-.467-.148-.665.149-.197.296-.764.96-.937 1.157-.173.198-.345.223-.641.074-.296-.149-1.252-.462-2.386-1.475-.882-.788-1.48-1.761-1.653-2.058-.173-.297-.018-.458.13-.606.134-.133.296-.347.444-.521.148-.173.197-.296.296-.495.099-.198.05-.371-.025-.52-.075-.148-.665-1.604-.911-2.198-.24-.579-.487-.501-.665-.51-.172-.009-.37-.01-.567-.01-.198 0-.52.074-.79.371-.27.296-1.035 1.013-1.035 2.471s1.06 2.866 1.207 3.064c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.271-.198-.567-.347z"/>
+                      </svg>
+                    </div>
+                    <span className="font-semibold text-white group-hover:text-emerald-400">+91 87936 87379</span>
+                  </a>
                 </li>
               </ul>
             </div>
@@ -107,12 +182,11 @@ export default function Footer() {
           <p className="text-gray-400 text-sm">
             © 2026 Rangaroo. Made with <span className="text-red-500">❤️</span> in India.
           </p>
-          <div className="flex items-center gap-3 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
-            {/* Payment Method Badges placeholders */}
-            <div className="h-8 w-12 bg-white rounded flex items-center justify-center text-[10px] font-bold text-black">UPI</div>
-            <div className="h-8 w-12 bg-white rounded flex items-center justify-center text-[10px] font-bold text-black">VISA</div>
-            <div className="h-8 w-12 bg-white rounded flex items-center justify-center text-[10px] font-bold text-blue-800">AMEX</div>
-            <div className="h-8 w-16 bg-white rounded flex items-center justify-center text-[10px] font-bold text-blue-500 border">Razorpay</div>
+          <div className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-all duration-300">
+            <div className="h-8 w-12 bg-white/10 rounded flex items-center justify-center text-[10px] font-bold text-white border border-white/10">UPI</div>
+            <div className="h-8 w-12 bg-white/10 rounded flex items-center justify-center text-[10px] font-bold text-white border border-white/10">VISA</div>
+            <div className="h-8 w-12 bg-white/10 rounded flex items-center justify-center text-[10px] font-bold text-white border border-white/10">RuPay</div>
+            <div className="h-8 w-16 bg-white/10 rounded flex items-center justify-center text-[10px] font-bold text-white border border-white/10">Razorpay</div>
           </div>
         </div>
       </div>

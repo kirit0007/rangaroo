@@ -38,7 +38,7 @@ const defaultSettings: SiteSettings = {
   heroTitle: 'Where Little Hands Create Big Smiles',
   heroSubtitle: 'Premium DIY Paint Kits for Kids — Plaster Figurines, Non-Toxic Colors & Beautiful Gift Packaging',
   contactPhone: '+91 87936 87379',
-  contactEmail: 'hello@rangaroo.store',
+  contactEmail: 'rangaroo.co@gmail.com',
   freeShippingThreshold: 0,
 };
 
