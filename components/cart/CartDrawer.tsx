@@ -119,63 +119,66 @@ export default function CartDrawer() {
                   {/* Cart Items */}
                   <div className="space-y-4">
                     <AnimatePresence>
-                      {items.map((item: any) => (
-                        <motion.div 
-                          key={item.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className="flex gap-4 p-3 bg-white/60 rounded-2xl border border-white/40 shadow-sm"
-                        >
-                          <div className="w-20 h-20 bg-white rounded-xl overflow-hidden relative shrink-0">
-                            <Image 
-                              src={item.image || '/logo.png'} 
-                              alt={item.name}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                            />
-                          </div>
-                          <div className="flex-1 flex flex-col justify-between py-1">
-                            <div className="flex justify-between items-start gap-2">
-                              <Link 
-                                href={`/products/${item.slug || item.id}`}
-                                onClick={closeCart}
-                                className="font-semibold text-sm text-gray-800 hover:text-[var(--brand-orange)] line-clamp-2"
-                              >
-                                {item.name}
-                              </Link>
-                              <button 
-                                onClick={() => removeItem(item.id)}
-                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                      {items.map((item: any) => {
+                        const id = item.productId || item.id;
+                        return (
+                          <motion.div 
+                            key={id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="flex gap-4 p-3 bg-white/60 rounded-2xl border border-white/40 shadow-sm"
+                          >
+                            <div className="w-20 h-20 bg-white rounded-xl overflow-hidden relative shrink-0">
+                              <Image 
+                                src={item.image || '/logo.png'} 
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
                             </div>
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="font-bold text-[var(--brand-orange)]">
-                                ₹{item.price.toLocaleString('en-IN')}
-                              </span>
-                              <div className="flex items-center gap-3 bg-white/80 rounded-full px-2 py-1 border border-gray-100">
-                                <button 
-                                  onClick={() => updateQuantity(item.id, Math.max(1, (item.quantity || 1) - 1))}
-                                  className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                            <div className="flex-1 flex flex-col justify-between py-1">
+                              <div className="flex justify-between items-start gap-2">
+                                <Link 
+                                  href={`/products/${item.slug || id}`}
+                                  onClick={closeCart}
+                                  className="font-semibold text-sm text-gray-800 hover:text-[var(--brand-orange)] line-clamp-2"
                                 >
-                                  <Minus size={12} />
-                                </button>
-                                <span className="text-xs font-semibold w-4 text-center">{item.quantity || 1}</span>
+                                  {item.name}
+                                </Link>
                                 <button 
-                                  onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
-                                  className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                  onClick={() => removeItem(id)}
+                                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
                                 >
-                                  <Plus size={12} />
+                                  <Trash2 size={16} />
                                 </button>
                               </div>
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="font-bold text-[var(--brand-orange)]">
+                                  ₹{item.price.toLocaleString('en-IN')}
+                                </span>
+                                <div className="flex items-center gap-3 bg-white/80 rounded-full px-2 py-1 border border-gray-100">
+                                  <button 
+                                    onClick={() => updateQuantity(id, Math.max(1, (item.quantity || 1) - 1))}
+                                    className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                  >
+                                    <Minus size={12} />
+                                  </button>
+                                  <span className="text-xs font-semibold w-4 text-center">{item.quantity || 1}</span>
+                                  <button 
+                                    onClick={() => updateQuantity(id, (item.quantity || 1) + 1)}
+                                    className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        );
+                      })}
                     </AnimatePresence>
                   </div>
 
