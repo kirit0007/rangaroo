@@ -99,8 +99,8 @@ export default function HomePage() {
 
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-outfit font-extrabold text-gray-900 leading-tight tracking-tight">
                 Where Little Hands <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600">
-                  Create Big Smiles
+                Create <span className="font-outfit italic font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 pr-2">
+                  Big Smiles
                 </span>
               </h1>
               
@@ -112,16 +112,28 @@ export default function HomePage() {
                 <Link href="/products" className="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all shadow-[0_10px_25px_rgba(255,87,34,0.3)] hover:shadow-[0_15px_30px_rgba(255,87,34,0.4)] hover:-translate-y-0.5 flex items-center gap-2">
                   Shop All Kits <ArrowRight className="w-5 h-5" />
                 </Link>
-                <Link href="/collections" className="px-8 py-4 bg-white/80 backdrop-blur-md text-gray-800 border-2 border-orange-200/80 rounded-full font-bold text-lg hover:border-orange-500 hover:bg-white transition-all shadow-sm">
+                <Link href="/collections" className="px-8 py-4 bg-white/90 backdrop-blur-md text-gray-800 border-2 border-orange-200/80 rounded-full font-bold text-lg hover:border-orange-500 hover:bg-white transition-all shadow-sm">
                   Explore Collections
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-semibold text-gray-700 pt-4 border-t border-orange-100">
-                <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Shield className="w-4 h-4 text-emerald-500" /> Non-Toxic Colors</div>
-                <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Heart className="w-4 h-4 text-rose-500" /> Made in India</div>
-                <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Gift className="w-4 h-4 text-pink-500" /> Gift Packaging</div>
-                <div className="flex items-center gap-1.5 justify-center lg:justify-start"><Star className="w-4 h-4 text-amber-500" /> Parent Approved</div>
+              {/* Colorful Pill Trust Badges */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-4">
+                <div className="px-3.5 py-2 rounded-full bg-emerald-100/90 border border-emerald-200/80 text-emerald-800 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
+                  <Shield className="w-4 h-4 text-emerald-600" /> Non-Toxic Colors
+                </div>
+                <div className="px-3.5 py-2 rounded-full bg-amber-100/90 border border-amber-200/80 text-amber-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
+                  <Heart className="w-4 h-4 text-rose-500" /> Made in India
+                </div>
+                <div className="px-3.5 py-2 rounded-full bg-pink-100/90 border border-pink-200/80 text-pink-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
+                  <Gift className="w-4 h-4 text-pink-600" /> Gift Packaging
+                </div>
+                <div className="px-3.5 py-2 rounded-full bg-blue-100/90 border border-blue-200/80 text-blue-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-400" /> Parent Approved
+                </div>
+                <div className="px-3.5 py-2 rounded-full bg-purple-100/90 border border-purple-200/80 text-purple-900 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-transform hover:scale-105">
+                  <Sparkles className="w-4 h-4 text-purple-600" /> Screen-Free Fun
+                </div>
               </div>
             </motion.div>
 
