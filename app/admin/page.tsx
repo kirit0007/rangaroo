@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   Package, 
@@ -72,6 +72,20 @@ export default function AdminPage() {
   // Product Modal State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Fetch all system-wide orders from central API endpoint
+  useEffect(() => {
+    fetch('/api/admin/orders')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.orders && Array.isArray(data.orders)) {
+          data.orders.forEach((ord: any) => {
+            useAdminStore.getState().addOrder(ord);
+          });
+        }
+      })
+      .catch((err) => console.error('Error fetching admin orders:', err));
+  }, []);
   const [productForm, setProductForm] = useState({
     name: '',
     price: 199,

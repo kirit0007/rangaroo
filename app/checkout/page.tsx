@@ -164,7 +164,14 @@ export default function CheckoutPage() {
           };
           addOrder(newOrder);
 
-          // Trigger Brevo Order Confirmation Email
+          // 1. Sync order to central system store for Admin Orders Panel
+          fetch('/api/admin/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order: newOrder }),
+          }).catch(err => console.error('Admin order sync error:', err));
+
+          // 2. Trigger Brevo Order Confirmation Email
           fetch('/api/email/order-confirmation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
