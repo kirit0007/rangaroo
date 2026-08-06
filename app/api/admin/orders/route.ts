@@ -89,16 +89,27 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { orderId, status } = body;
+    const { orderId, status, order } = body;
 
     if (!orderId || !status) {
       return NextResponse.json({ error: 'Missing orderId or status' }, { status: 400 });
     }
 
+    const cleanId = orderId.toString().trim();
+
     // Update in global memory store
-    const targetOrder = globalOrdersStore.find(o => o.id === orderId || o.orderNumber === orderId);
+    let targetOrder = globalOrdersStore.find(o => 
+      o.id === cleanId || 
+      o.orderNumber === cleanId ||
+      o.id.replace('ord-', '') === cleanId.replace('ord-', '') ||
+      (o.orderNumber && o.orderNumber.replace('#', '') === cleanId.replace('#', ''))
+    );
+
     if (targetOrder) {
       targetOrder.status = status;
+    } else if (order) {
+      const newOrderPayload: Order = { ...order, status };
+      globalOrdersStore.unshift(newOrderPayload);
     }
 
     // Update in Supabase DB if available
@@ -107,12 +118,12 @@ export async function PATCH(request: NextRequest) {
       await supabase
         .from('orders')
         .update({ status })
-        .or(`id.eq.${orderId},order_number.eq.${orderId}`);
+        .or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
     } catch (dbErr) {
       console.warn('[Supabase Status Update Warning]', dbErr);
     }
 
-    return NextResponse.json({ success: true, orderId, status });
+    return NextResponse.json({ success: true, orderId: cleanId, status });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

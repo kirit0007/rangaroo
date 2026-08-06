@@ -34,6 +34,16 @@ export default function MyOrdersPage() {
 
   useEffect(() => {
     setMounted(true);
+    fetch('/api/admin/orders')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
+          data.orders.forEach((ord: any) => {
+            useAdminStore.getState().addOrder(ord);
+          });
+        }
+      })
+      .catch((err) => console.error('Error syncing orders:', err));
   }, []);
 
   if (!mounted) return null;
@@ -404,13 +414,17 @@ export default function MyOrdersPage() {
                 <div className="flex gap-2">
                   <button 
                     onClick={async () => {
-                      const targetId = showCancelModal.id;
-                      useAdminStore.getState().updateOrderStatus(targetId, 'cancellation_requested');
+                      const targetOrder = showCancelModal;
+                      useAdminStore.getState().updateOrderStatus(targetOrder.id, 'cancellation_requested');
                       try {
                         await fetch('/api/admin/orders', {
                           method: 'PATCH',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ orderId: targetId, status: 'cancellation_requested' }),
+                          body: JSON.stringify({ 
+                            orderId: targetOrder.id, 
+                            status: 'cancellation_requested',
+                            order: { ...targetOrder, status: 'cancellation_requested' }
+                          }),
                         });
                       } catch (err) {
                         console.error('Error sending cancellation request to server:', err);

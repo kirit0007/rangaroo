@@ -24,6 +24,7 @@ interface AdminStore {
   addCoupon: (coupon: Coupon) => void;
   removeCoupon: (code: string) => void;
   getCoupon: (code: string) => Coupon | undefined;
+  setOrders: (orders: Order[]) => void;
   addOrder: (order: Order) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
 
@@ -92,15 +93,21 @@ export const useAdminStore = create<AdminStore>()(
         return get().coupons.find(c => c.code.toUpperCase() === code.toUpperCase());
       },
 
+      setOrders: (orders) =>
+        set(() => ({ orders })),
+
       addOrder: (order) =>
-        set((state) => ({
-          orders: [order, ...state.orders],
-        })),
+        set((state) => {
+          const filtered = state.orders.filter(
+            o => o.id !== order.id && o.orderNumber !== order.orderNumber
+          );
+          return { orders: [order, ...filtered] };
+        }),
 
       updateOrderStatus: (orderId, status) =>
         set((state) => ({
           orders: state.orders.map(o =>
-            o.id === orderId ? { ...o, status } : o
+            (o.id === orderId || o.orderNumber === orderId) ? { ...o, status } : o
           ),
         })),
 

@@ -79,9 +79,7 @@ export default function AdminPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.orders && Array.isArray(data.orders)) {
-          data.orders.forEach((ord: any) => {
-            useAdminStore.getState().addOrder(ord);
-          });
+          useAdminStore.getState().setOrders(data.orders);
         }
       })
       .catch((err) => console.error('Error fetching admin orders:', err));
