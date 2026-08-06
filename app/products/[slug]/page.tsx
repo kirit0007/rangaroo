@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronRight, Star, Plus, Minus, ShoppingCart, Zap, CheckCircle2, Shield, Truck, Package, RotateCcw } from 'lucide-react';
-import { getProductBySlug, getProductsByCollection, categories, formatPrice, calculateDiscount } from '@/data/products';
+import { getProductBySlug, getProductsByCollection, products as defaultProducts, categories, formatPrice, calculateDiscount } from '@/data/products';
+import { useAdminStore } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
 import ProductCard from '@/components/product/ProductCard';
 import toast from 'react-hot-toast';
@@ -15,25 +16,26 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
+  const storeProducts = useAdminStore((state) => state.products) || defaultProducts;
   
-  const [product, setProduct] = useState<ReturnType<typeof getProductBySlug>>(undefined);
+  const [product, setProduct] = useState<any>(undefined);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     if (typeof slug === 'string') {
-      const foundProduct = getProductBySlug(slug);
+      const foundProduct = storeProducts.find(p => p.slug === slug || p.id === slug) || getProductBySlug(slug);
       setProduct(foundProduct);
       
       if (foundProduct && foundProduct.collectionId) {
-        const related = getProductsByCollection(foundProduct.collectionId)
-          .filter(p => p.id !== foundProduct.id)
+        const related = storeProducts
+          .filter(p => p.collectionId === foundProduct.collectionId && p.id !== foundProduct.id)
           .slice(0, 4);
         setRelatedProducts(related);
       }
     }
-  }, [slug]);
+  }, [slug, storeProducts]);
 
   if (!product) {
     return (
@@ -109,7 +111,7 @@ export default function ProductDetailPage() {
               
               {productImages.length > 1 && (
                 <div className="grid grid-cols-4 gap-4">
-                  {productImages.map((img, idx) => (
+                  {productImages.map((img: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}
@@ -187,7 +189,7 @@ export default function ProductDetailPage() {
                 <div className="mb-8">
                   <h3 className="font-semibold text-gray-900 mb-3 font-outfit text-lg">What's inside the box?</h3>
                   <ul className="space-y-2 bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
-                    {product.kitContents.map((item, idx) => (
+                    {product.kitContents.map((item: string, idx: number) => (
                       <li key={idx} className="flex items-start text-gray-700">
                         <CheckCircle2 className="w-5 h-5 text-orange-500 mr-3 flex-shrink-0 mt-0.5" />
                         <span>{item}</span>

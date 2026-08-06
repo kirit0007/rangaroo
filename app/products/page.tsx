@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { products, categories } from '@/data/products';
+import { products as defaultProducts, categories } from '@/data/products';
+import { useAdminStore } from '@/store/adminStore';
 import ProductCard from '@/components/product/ProductCard';
 import { Filter, ChevronDown, PackageX } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -18,6 +19,9 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category');
   
+  const adminProducts = useAdminStore((state) => state.products);
+  const products = adminProducts && adminProducts.length > 0 ? adminProducts : defaultProducts;
+
   const [activeCategory, setActiveCategory] = useState<string>(
     initialCategory ? CATEGORIES.find(c => c.toLowerCase().replace(' ', '-') === initialCategory) || 'All' : 'All'
   );
@@ -26,9 +30,9 @@ function ProductsContent() {
 
   const filteredAndSortedProducts = useMemo(() => {
     // Filter
-    let filtered = products;
+    let filtered = products.filter(p => p.isActive !== false);
     if (activeCategory !== 'All') {
-      filtered = products.filter(p => {
+      filtered = filtered.filter(p => {
         const catName = categories.find(c => c.id === p.categoryId)?.name || '';
         return catName.toLowerCase().includes(activeCategory.toLowerCase()) || p.categoryId.toLowerCase().includes(activeCategory.toLowerCase().replace(' ', '-'));
       });
@@ -43,7 +47,7 @@ function ProductsContent() {
     }
 
     return sorted;
-  }, [activeCategory, sortBy]);
+  }, [products, activeCategory, sortBy]);
 
   return (
     <div className="min-h-screen bg-[#FFF9F2] pt-24 pb-20">

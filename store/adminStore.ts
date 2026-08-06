@@ -2,7 +2,8 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Coupon, Order } from '@/types';
+import { Coupon, Order, Product } from '@/types';
+import { products as initialProducts } from '@/data/products';
 
 interface SiteSettings {
   announcementText: string;
@@ -17,6 +18,7 @@ interface AdminStore {
   siteSettings: SiteSettings;
   coupons: Coupon[];
   orders: Order[];
+  products: Product[];
 
   updateSiteSettings: (settings: Partial<SiteSettings>) => void;
   addCoupon: (coupon: Coupon) => void;
@@ -24,6 +26,11 @@ interface AdminStore {
   getCoupon: (code: string) => Coupon | undefined;
   addOrder: (order: Order) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
+
+  // Product management actions
+  addProduct: (product: Product) => void;
+  updateProduct: (productId: string, updatedProduct: Partial<Product>) => void;
+  deleteProduct: (productId: string) => void;
 }
 
 const defaultSettings: SiteSettings = {
@@ -64,6 +71,7 @@ export const useAdminStore = create<AdminStore>()(
       siteSettings: defaultSettings,
       coupons: defaultCoupons,
       orders: [],
+      products: initialProducts,
 
       updateSiteSettings: (settings) =>
         set((state) => ({
@@ -94,6 +102,24 @@ export const useAdminStore = create<AdminStore>()(
           orders: state.orders.map(o =>
             o.id === orderId ? { ...o, status } : o
           ),
+        })),
+
+      // Product management implementations
+      addProduct: (product) =>
+        set((state) => ({
+          products: [product, ...state.products],
+        })),
+
+      updateProduct: (productId, updatedProduct) =>
+        set((state) => ({
+          products: state.products.map(p =>
+            p.id === productId ? { ...p, ...updatedProduct } : p
+          ),
+        })),
+
+      deleteProduct: (productId) =>
+        set((state) => ({
+          products: state.products.filter(p => p.id !== productId),
         })),
     }),
     { name: 'rangaroo-admin' }

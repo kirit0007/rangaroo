@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   TrendingUp, 
   Package, 
   CreditCard, 
-  Tag, 
   LayoutDashboard, 
   Settings, 
   ShoppingBag, 
@@ -15,14 +14,22 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
-  Lock
+  Lock,
+  Plus,
+  Edit2,
+  X,
+  CheckCircle2,
+  XCircle,
+  Tag,
+  Upload
 } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 import { useAuthStore } from '@/store/authStore';
 import { useAdminStore } from '@/store/adminStore';
-import { products, categories, formatPrice } from '@/data/products';
+import { products as initialProducts, categories, collections, formatPrice } from '@/data/products';
+import { Product } from '@/types';
 
 type TabType = 'dashboard' | 'cms' | 'products' | 'coupons' | 'orders';
 
@@ -42,6 +49,12 @@ export default function AdminPage() {
   const orders = useAdminStore((state) => state.orders);
   const updateOrderStatus = useAdminStore((state) => state.updateOrderStatus);
 
+  // Dynamic products state from store
+  const storeProducts = useAdminStore((state) => state.products) || initialProducts;
+  const addProduct = useAdminStore((state) => state.addProduct);
+  const updateProduct = useAdminStore((state) => state.updateProduct);
+  const deleteProduct = useAdminStore((state) => state.deleteProduct);
+
   // Local state for forms
   const [cmsForm, setCmsForm] = useState(siteSettings);
   const [couponForm, setCouponForm] = useState({
@@ -56,11 +69,34 @@ export default function AdminPage() {
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('All');
 
+  // Product Modal State
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productForm, setProductForm] = useState({
+    name: '',
+    price: 199,
+    compareAtPrice: 299,
+    categoryId: 'fun-paint-kit',
+    collectionId: 'dinosaur',
+    stockQuantity: 50,
+    ageGroup: '5+',
+    imageUrl: '/logo.png',
+    shortDescription: '',
+    description: '',
+    kitContents: '1 Plaster Figurine, 6 Colors, 1 Brush',
+    isFeatured: true,
+    isActive: true,
+  });
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signIn(email, password);
-      // Wait for auth state to update
+      const res = await signIn(email, password);
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success('Welcome Admin');
+      }
     } catch (error) {
       toast.error('Login failed');
     }
@@ -97,14 +133,120 @@ export default function AdminPage() {
     toast.success('Coupon added successfully');
   };
 
+  const openAddProductModal = () => {
+    setEditingProduct(null);
+    setProductForm({
+      name: '',
+      price: 199,
+      compareAtPrice: 299,
+      categoryId: 'fun-paint-kit',
+      collectionId: 'dinosaur',
+      stockQuantity: 50,
+      ageGroup: '5+',
+      imageUrl: '/logo.png',
+      shortDescription: 'Custom DIY paint kit',
+      description: 'Full kit containing plaster figurines, non-toxic tempera paints, and painting accessories.',
+      kitContents: '1 Plaster Figurine, 6 Colors, 1 Brush, Instruction Guide',
+      isFeatured: true,
+      isActive: true,
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const openEditProductModal = (product: Product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      price: product.price,
+      compareAtPrice: product.compareAtPrice || product.price + 100,
+      categoryId: product.categoryId,
+      collectionId: product.collectionId || 'dinosaur',
+      stockQuantity: product.stockQuantity,
+      ageGroup: product.ageGroup || '5+',
+      imageUrl: product.images[0] || '/logo.png',
+      shortDescription: product.shortDescription || '',
+      description: product.description || '',
+      kitContents: product.kitContents ? product.kitContents.join(', ') : '1 Plaster Figurine, 6 Colors, 1 Brush',
+      isFeatured: product.isFeatured || false,
+      isActive: product.isActive !== false,
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const handleSaveProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productForm.name.trim()) {
+      toast.error('Product title is required');
+      return;
+    }
+
+    const slug = productForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const contentsArray = productForm.kitContents.split(',').map(s => s.trim()).filter(Boolean);
+
+    if (editingProduct) {
+      updateProduct(editingProduct.id, {
+        name: productForm.name,
+        slug,
+        price: Number(productForm.price),
+        compareAtPrice: Number(productForm.compareAtPrice),
+        categoryId: productForm.categoryId,
+        collectionId: productForm.collectionId,
+        stockQuantity: Number(productForm.stockQuantity),
+        ageGroup: productForm.ageGroup,
+        images: [productForm.imageUrl || '/logo.png'],
+        shortDescription: productForm.shortDescription,
+        description: productForm.description,
+        kitContents: contentsArray,
+        isFeatured: productForm.isFeatured,
+        isActive: productForm.isActive,
+      });
+      toast.success('Product updated successfully');
+    } else {
+      const newProduct: Product = {
+        id: `prod-${Date.now()}`,
+        name: productForm.name,
+        slug,
+        price: Number(productForm.price),
+        compareAtPrice: Number(productForm.compareAtPrice),
+        categoryId: productForm.categoryId,
+        collectionId: productForm.collectionId,
+        stockQuantity: Number(productForm.stockQuantity),
+        ageGroup: productForm.ageGroup,
+        images: [productForm.imageUrl || '/logo.png'],
+        shortDescription: productForm.shortDescription,
+        description: productForm.description,
+        kitContents: contentsArray,
+        difficulty: 'beginner',
+        paintType: 'Tempera (Washable)',
+        figureCount: 1,
+        figureSize: 'medium',
+        weightGrams: 250,
+        isFeatured: productForm.isFeatured,
+        isActive: productForm.isActive,
+        tags: [productForm.categoryId, productForm.collectionId],
+      };
+      addProduct(newProduct);
+      toast.success('Product created & added to storefront');
+    }
+
+    setIsProductModalOpen(false);
+  };
+
+  const handleDeleteProduct = (productId: string, productName: string) => {
+    if (confirm(`Are you sure you want to delete "${productName}"?`)) {
+      deleteProduct(productId);
+      toast.success('Product deleted from storefront');
+    }
+  };
+
   const toggleOrderExpansion = (orderId: string) => {
     setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream/30 p-4">
-        <div className="max-w-md w-full bg-white/50 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl">
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2] p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
           <div className="flex justify-center mb-6">
             <div className="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center">
               <Lock className="w-8 h-8 text-orange-500" />
@@ -113,12 +255,13 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-center mb-8 font-outfit text-gray-800">Admin Login</h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/70"
+                placeholder="admin@rangaroo.store"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
                 required
               />
             </div>
@@ -128,15 +271,16 @@ export default function AdminPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/70"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors"
+              className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors shadow-md"
             >
-              Sign In
+              Sign In to Admin
             </button>
           </form>
         </div>
@@ -146,8 +290,8 @@ export default function AdminPage() {
 
   if (user.role !== 'admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream/30 p-4">
-        <div className="max-w-md w-full bg-white/50 backdrop-blur-xl p-8 rounded-3xl border border-red-200 shadow-xl text-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2] p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-red-100 shadow-xl text-center">
           <Lock className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h1>
           <p className="text-gray-600">You do not have permission to access the admin panel.</p>
@@ -160,77 +304,80 @@ export default function AdminPage() {
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
 
   // Filtered Products
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = storeProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(productSearch.toLowerCase());
     const matchesCategory = productCategoryFilter === 'All' || p.categoryId === productCategoryFilter;
     return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-body">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-gray-900 text-white md:min-h-screen flex flex-col">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold font-outfit text-white">Rangaroo<span className="text-orange-500">Admin</span></h2>
+      <aside className="w-full md:w-64 bg-gray-900 text-white md:min-h-screen flex flex-col shrink-0">
+        <div className="p-6 border-b border-gray-800">
+          <h2 className="text-2xl font-bold font-outfit text-white tracking-wide">
+            Rangaroo<span className="text-orange-500">Admin</span>
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">Management Portal</p>
         </div>
-        <nav className="flex-1 px-4 pb-4 md:space-y-2 flex overflow-x-auto md:flex-col md:overflow-visible">
+        <nav className="flex-1 px-4 py-4 md:space-y-2 flex overflow-x-auto md:flex-col md:overflow-visible">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'dashboard' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'dashboard' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </button>
           <button
             onClick={() => setActiveTab('cms')}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'cms' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'cms' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             <Settings size={20} />
             <span>Site CMS</span>
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'products' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'products' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             <ShoppingBag size={20} />
-            <span>Products</span>
+            <span>Products Catalog</span>
           </button>
           <button
             onClick={() => setActiveTab('coupons')}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'coupons' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'coupons' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             <Ticket size={20} />
             <span>Coupons</span>
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'orders' ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'orders' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             <ClipboardList size={20} />
-            <span>Orders</span>
+            <span>Orders ({orders.length})</span>
           </button>
         </nav>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto bg-gray-50/50">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-gray-50/50">
         
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <h1 className="text-3xl font-bold font-outfit text-gray-800">Overview</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Total Products</p>
-                  <p className="text-3xl font-bold text-gray-800">{products.length}</p>
+                  <p className="text-3xl font-bold text-gray-800">{storeProducts.length}</p>
                 </div>
                 <div className="p-4 bg-blue-100 rounded-2xl text-blue-600">
                   <Package size={24} />
                 </div>
               </div>
               
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Total Orders</p>
                   <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
@@ -240,7 +387,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Revenue</p>
                   <p className="text-3xl font-bold text-gray-800">{formatPrice(totalRevenue)}</p>
@@ -250,13 +397,13 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-sm flex items-center justify-between">
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Active Coupons</p>
                   <p className="text-3xl font-bold text-gray-800">{coupons.length}</p>
                 </div>
                 <div className="p-4 bg-orange-100 rounded-2xl text-orange-600">
-                  <Tag size={24} />
+                  <Ticket size={24} />
                 </div>
               </div>
             </div>
@@ -265,23 +412,24 @@ export default function AdminPage() {
 
         {/* Tab 2: CMS */}
         {activeTab === 'cms' && (
-          <div className="space-y-6 max-w-4xl">
-            <h1 className="text-3xl font-bold font-outfit text-gray-800">Site CMS</h1>
-            <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/20 shadow-sm p-6 lg:p-8">
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Site CMS & Settings</h1>
+            
+            <div className="bg-white rounded-3xl border border-gray-200/80 shadow-sm p-6 max-w-4xl">
               <form onSubmit={handleCmsSave} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Announcement Bar Text</label>
-                  <textarea
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Announcement Banner Text</label>
+                  <input
+                    type="text"
                     value={cmsForm.announcementText}
                     onChange={(e) => setCmsForm({ ...cmsForm, announcementText: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    rows={2}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Hero Title</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Hero Headline</label>
                     <input
                       type="text"
                       value={cmsForm.heroTitle}
@@ -291,11 +439,11 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Hero Subtitle</label>
-                    <textarea
+                    <input
+                      type="text"
                       value={cmsForm.heroSubtitle}
                       onChange={(e) => setCmsForm({ ...cmsForm, heroSubtitle: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      rows={2}
                     />
                   </div>
                 </div>
@@ -324,25 +472,12 @@ export default function AdminPage() {
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors shadow-md"
                   >
-                    Save Changes
+                    Save CMS Changes
                   </button>
                 </div>
               </form>
-
-              <div className="mt-12 pt-8 border-t border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Live Preview</h3>
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
-                  <div className="bg-orange-500 text-white text-center py-2 px-4 text-sm font-medium">
-                    {cmsForm.announcementText}
-                  </div>
-                  <div className="p-8 bg-cream flex flex-col items-center justify-center text-center">
-                    <h2 className="text-3xl font-bold font-outfit text-gray-900 mb-4">{cmsForm.heroTitle}</h2>
-                    <p className="text-gray-600 max-w-md mx-auto">{cmsForm.heroSubtitle}</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -351,24 +486,41 @@ export default function AdminPage() {
         {activeTab === 'products' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h1 className="text-3xl font-bold font-outfit text-gray-800">Products</h1>
-              <div className="flex space-x-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={productSearch}
-                    onChange={(e) => setProductSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                  />
-                </div>
+              <div>
+                <h1 className="text-3xl font-bold font-outfit text-gray-800">Product Management</h1>
+                <p className="text-gray-500 text-sm mt-1">Add, edit, assign categories, and sync items with storefront</p>
+              </div>
+
+              <button
+                onClick={openAddProductModal}
+                className="px-5 py-2.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2 shadow-md shrink-0"
+              >
+                <Plus size={18} />
+                <span>Add New Product</span>
+              </button>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search products by title or tag..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-50/50 text-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Category:</span>
                 <select
                   value={productCategoryFilter}
                   onChange={(e) => setProductCategoryFilter(e.target.value)}
-                  className="px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                  className="w-full md:w-auto px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm font-medium"
                 >
-                  <option value="All">All Categories</option>
+                  <option value="All">All Categories ({storeProducts.length})</option>
                   {categories.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -376,53 +528,93 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-xl text-sm flex items-start">
-              <span className="font-semibold mr-2">Note:</span> Product catalog is managed via code. Contact developer for changes.
-            </div>
-
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+            {/* Products Table */}
+            <div className="bg-white rounded-3xl border border-gray-200/80 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="p-4 font-semibold text-gray-600 text-sm">Product</th>
-                      <th className="p-4 font-semibold text-gray-600 text-sm">Category</th>
-                      <th className="p-4 font-semibold text-gray-600 text-sm">Price</th>
-                      <th className="p-4 font-semibold text-gray-600 text-sm">Stock</th>
-                      <th className="p-4 font-semibold text-gray-600 text-sm">Status</th>
+                      <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Product</th>
+                      <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Category</th>
+                      <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Price</th>
+                      <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Stock</th>
+                      <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">Status</th>
+                      <th className="p-4 font-semibold text-gray-600 text-xs uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td className="p-4 flex items-center space-x-3">
-                          <div className="h-10 w-10 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
-                            <Image 
-                              src={product.images[0]} 
-                              alt={product.name} 
-                              fill 
-                              className="object-cover"
-                              unoptimized
-                            />
-                          </div>
-                          <span className="font-medium text-gray-800 line-clamp-1">{product.name}</span>
-                        </td>
-                        <td className="p-4 text-gray-600 text-sm">
-                          {categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
-                        </td>
-                        <td className="p-4 text-gray-800 font-medium">
-                          {formatPrice(product.price)}
-                        </td>
-                        <td className="p-4 text-gray-600 text-sm">
-                          {product.stockQuantity}
-                        </td>
-                        <td className="p-4">
-                          <span className="inline-flex px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
-                            Active
-                          </span>
+                    {filteredProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-12 text-center text-gray-500">
+                          No products found matching your search.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredProducts.map((product) => (
+                        <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                          <td className="p-4 flex items-center space-x-3">
+                            <div className="h-12 w-12 rounded-xl overflow-hidden relative bg-gray-100 shrink-0 border border-gray-200">
+                              <Image 
+                                src={product.images[0] || '/logo.png'} 
+                                alt={product.name} 
+                                fill 
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                            <div>
+                              <span className="font-semibold text-gray-800 line-clamp-1 text-sm">{product.name}</span>
+                              <span className="text-xs text-gray-400">ID: {product.id}</span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-gray-600 text-sm font-medium">
+                            <span className="px-2.5 py-1 bg-orange-50 text-orange-700 rounded-lg text-xs font-semibold">
+                              {categories.find(c => c.id === product.categoryId)?.name || product.categoryId}
+                            </span>
+                          </td>
+                          <td className="p-4 text-gray-800 font-bold text-sm">
+                            {formatPrice(product.price)}
+                            {product.compareAtPrice && product.compareAtPrice > product.price && (
+                              <span className="text-xs text-gray-400 line-through ml-2 font-normal">
+                                {formatPrice(product.compareAtPrice)}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4 text-gray-600 text-sm font-medium">
+                            {product.stockQuantity} units
+                          </td>
+                          <td className="p-4">
+                            {product.isActive !== false ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-semibold">
+                                <CheckCircle2 size={12} /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold">
+                                <XCircle size={12} /> Inactive
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => openEditProductModal(product)}
+                                className="p-2 bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-xl transition-colors"
+                                title="Edit Product"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(product.id, product.name)}
+                                className="p-2 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl transition-colors"
+                                title="Delete Product"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -437,7 +629,7 @@ export default function AdminPage() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Form */}
-              <div className="lg:col-span-1 bg-white/80 backdrop-blur-md rounded-3xl border border-white/20 shadow-sm p-6 h-fit">
+              <div className="lg:col-span-1 bg-white rounded-3xl border border-gray-200/80 shadow-sm p-6 h-fit">
                 <h2 className="text-xl font-semibold mb-6">Create New Coupon</h2>
                 <form onSubmit={handleAddCoupon} className="space-y-4">
                   <div>
@@ -446,124 +638,72 @@ export default function AdminPage() {
                       type="text"
                       value={couponForm.code}
                       onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 uppercase"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 uppercase"
                       placeholder="SUMMER20"
-                      required
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
                     <select
                       value={couponForm.discountType}
                       onChange={(e) => setCouponForm({ ...couponForm, discountType: e.target.value as any })}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
                     >
                       <option value="percentage">Percentage (%)</option>
                       <option value="fixed">Fixed Amount (₹)</option>
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Discount Value {couponForm.discountType === 'percentage' ? '(%)' : '(₹)'}
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Discount Value</label>
                     <input
                       type="number"
-                      min="1"
-                      value={couponForm.discountValue || ''}
+                      value={couponForm.discountValue}
                       onChange={(e) => setCouponForm({ ...couponForm, discountValue: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      required
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Min Order Amount (₹)</label>
                     <input
                       type="number"
-                      min="0"
-                      value={couponForm.minOrderAmount || ''}
+                      value={couponForm.minOrderAmount}
                       onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
-
-                  {couponForm.discountType === 'percentage' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount Amount (₹)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={couponForm.maxDiscountAmount || ''}
-                        onChange={(e) => setCouponForm({ ...couponForm, maxDiscountAmount: Number(e.target.value) })}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      />
-                    </div>
-                  )}
-
                   <button
                     type="submit"
-                    className="w-full mt-4 px-4 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+                    className="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors shadow-md"
                   >
                     Add Coupon
                   </button>
                 </form>
               </div>
 
-              {/* List */}
-              <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden h-fit">
-                <div className="p-6 border-b border-gray-100">
-                  <h2 className="text-xl font-semibold">Active Coupons</h2>
-                </div>
-                <div className="overflow-x-auto">
-                  {coupons.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500">No coupons active.</div>
-                  ) : (
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
-                          <th className="p-4 font-semibold text-gray-600 text-sm">Code</th>
-                          <th className="p-4 font-semibold text-gray-600 text-sm">Value</th>
-                          <th className="p-4 font-semibold text-gray-600 text-sm">Conditions</th>
-                          <th className="p-4 font-semibold text-gray-600 text-sm w-16"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {coupons.map((coupon) => (
-                          <tr key={coupon.code} className="border-b border-gray-50">
-                            <td className="p-4">
-                              <span className="inline-flex px-3 py-1 bg-gray-100 text-gray-800 rounded-lg font-mono text-sm font-bold border border-gray-200">
-                                {coupon.code}
-                              </span>
-                            </td>
-                            <td className="p-4 font-medium text-gray-800">
-                              {coupon.discountType === 'percentage' 
-                                ? `${coupon.discountValue}% off` 
-                                : formatPrice(coupon.discountValue)}
-                            </td>
-                            <td className="p-4 text-sm text-gray-500">
-                              <div>Min: {formatPrice(coupon.minOrderAmount)}</div>
-                              {coupon.discountType === 'percentage' && coupon.maxDiscountAmount ? (
-                                <div>Max cap: {formatPrice(coupon.maxDiscountAmount)}</div>
-                              ) : null}
-                            </td>
-                            <td className="p-4">
-                              <button
-                                onClick={() => {
-                                  removeCoupon(coupon.code);
-                                  toast.success('Coupon removed');
-                                }}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
+              {/* Coupon List */}
+              <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200/80 shadow-sm p-6">
+                <h2 className="text-xl font-semibold mb-6">Active Coupons</h2>
+                <div className="space-y-4">
+                  {coupons.map((coupon) => (
+                    <div key={coupon.code} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <div>
+                        <span className="font-bold text-orange-600 bg-orange-100 px-3 py-1 rounded-lg text-sm">{coupon.code}</span>
+                        <p className="text-sm text-gray-600 mt-2">
+                          {coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`} 
+                          {coupon.minOrderAmount ? ` on orders above ₹${coupon.minOrderAmount}` : ''}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          removeCoupon(coupon.code);
+                          toast.success('Coupon removed');
+                        }}
+                        className="text-gray-400 hover:text-red-500 transition-colors p-2"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -573,151 +713,261 @@ export default function AdminPage() {
         {/* Tab 5: Orders */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-outfit text-gray-800">Orders</h1>
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Orders ({orders.length})</h1>
             
-            {orders.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-gray-200 p-12 flex flex-col items-center justify-center text-center">
-                <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                  <Package className="w-10 h-10 text-gray-400" />
+            <div className="bg-white rounded-3xl border border-gray-200/80 shadow-sm overflow-hidden">
+              {orders.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">
+                  No customer orders recorded yet.
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">No orders yet</h3>
-                <p className="text-gray-500 max-w-sm">When customers place orders, they will appear here.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <div key={order.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    {/* Header summary (clickable) */}
-                    <div 
-                      className="p-4 sm:p-6 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                      onClick={() => toggleOrderExpansion(order.id)}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="p-3 bg-orange-50 rounded-xl text-orange-500">
-                          <ShoppingBag size={20} />
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-bold text-gray-900">#{order.id.split('_').pop()?.slice(0, 8)}</span>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
-                          </div>
-                          <p className="text-gray-600 text-sm mt-1">
-                            {order.shippingAddress?.fullName || 'Customer'} ({order.items.length} items)
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                        <div className="text-right flex-1 sm:flex-none">
-                          <p className="font-bold text-gray-900">{formatPrice(order.total)}</p>
-                          <div className="mt-1 flex gap-2 justify-end">
-                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                              order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
-                              order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {order.paymentStatus.toUpperCase()}
-                            </span>
-                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                              order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                              order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                              order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
-                              {order.status.toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-gray-400">
-                          {expandedOrders[order.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Expanded details */}
-                    {expandedOrders[order.id] && (
-                      <div className="border-t border-gray-100 p-4 sm:p-6 bg-gray-50/50">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {orders.map((order) => {
+                    const isExpanded = expandedOrders[order.id];
+                    return (
+                      <div key={order.id} className="p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div>
-                            <h4 className="font-semibold text-gray-800 mb-4">Order Items</h4>
-                            <div className="space-y-3">
-                              {order.items.map((item, idx) => {
-                                const product = products.find(p => p.id === item.productId);
-                                return (
-                                  <div key={idx} className="flex items-center space-x-3">
-                                    <div className="h-12 w-12 rounded bg-white border border-gray-200 overflow-hidden relative shrink-0">
-                                      {product && (
-                                        <Image src={product.images[0]} alt={product.name} fill className="object-cover" unoptimized />
-                                      )}
-                                    </div>
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium text-gray-800 line-clamp-1">{product?.name || 'Unknown Product'}</p>
-                                      <p className="text-xs text-gray-500">Qty: {item.quantity} × {formatPrice(item.unitPrice)}</p>
-                                    </div>
-                                    <div className="font-medium text-sm text-gray-800">
-                                      {formatPrice(item.quantity * item.unitPrice)}
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-gray-900">{order.orderNumber}</span>
+                              <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize ${
+                                order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                                order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {order.status}
+                              </span>
                             </div>
-                            
-                            {order.couponCode && (
-                              <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between text-sm">
-                                <span className="text-gray-600">Discount ({order.couponCode})</span>
-                                <span className="text-green-600 font-medium">- {formatPrice(order.discountAmount || 0)}</span>
-                              </div>
-                            )}
+                            <p className="text-sm text-gray-500 mt-1">
+                              Customer: {order.shippingAddress?.fullName} ({order.shippingAddress?.phone})
+                            </p>
                           </div>
-                          
-                          <div className="space-y-6">
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-3">Customer Details</h4>
-                              <div className="text-sm text-gray-600 space-y-1 bg-white p-4 rounded-xl border border-gray-200">
-                                <p><span className="font-medium">Name:</span> {order.shippingAddress?.fullName}</p>
-                                <p><span className="font-medium">Phone:</span> {order.shippingAddress?.phone}</p>
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-3">Shipping Address</h4>
-                              <div className="text-sm text-gray-600 bg-white p-4 rounded-xl border border-gray-200">
-                                <p>{order.shippingAddress?.addressLine1}</p>
-                                {order.shippingAddress?.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
-                                <p>{order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.pincode}</p>
-                              </div>
-                            </div>
 
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-2">Update Status</h4>
-                              <select 
-                                value={order.status}
-                                onChange={(e) => {
-                                  updateOrderStatus(order.id, e.target.value as any);
-                                  toast.success('Order status updated');
-                                }}
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
-                              </select>
-                            </div>
+                          <div className="flex items-center gap-4">
+                            <span className="font-bold text-lg text-gray-900">{formatPrice(order.total)}</span>
+                            
+                            <select
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                              className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold bg-white"
+                            >
+                              <option value="processing">Processing</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+
+                            <button
+                              onClick={() => toggleOrderExpansion(order.id)}
+                              className="p-2 hover:bg-gray-100 rounded-xl text-gray-500"
+                            >
+                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </button>
                           </div>
                         </div>
+
+                        {isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-gray-100 text-sm space-y-3 bg-gray-50 p-4 rounded-2xl">
+                            <p><strong>Shipping Address:</strong> {order.shippingAddress?.addressLine1}, {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
+                            <p><strong>Items Ordered:</strong></p>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {order.items?.map((item: any, idx: number) => (
+                                <li key={idx}>
+                                  {item.productName} x {item.quantity} - ₹{item.totalPrice}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>
+
+      {/* Add / Edit Product Modal */}
+      {isProductModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto my-auto">
+            <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
+              <h2 className="text-2xl font-bold font-outfit text-gray-900">
+                {editingProduct ? 'Edit Product' : 'Add New Product'}
+              </h2>
+              <button
+                onClick={() => setIsProductModalOpen(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProduct} className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Product Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Magic Unicorn & Castle Painting Kit"
+                  value={productForm.name}
+                  onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Category Assignment</label>
+                  <select
+                    value={productForm.categoryId}
+                    onChange={(e) => setProductForm({ ...productForm, categoryId: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-sm"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Theme Collection</label>
+                  <select
+                    value={productForm.collectionId}
+                    onChange={(e) => setProductForm({ ...productForm, collectionId: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-sm"
+                  >
+                    {collections.map(col => (
+                      <option key={col.id} value={col.id}>{col.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Selling Price (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">MRP / Compare (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={productForm.compareAtPrice}
+                    onChange={(e) => setProductForm({ ...productForm, compareAtPrice: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Stock Quantity</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={productForm.stockQuantity}
+                    onChange={(e) => setProductForm({ ...productForm, stockQuantity: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Product Image URL</label>
+                <div className="flex gap-3 items-center">
+                  <input
+                    type="text"
+                    required
+                    placeholder="/images/products/unicorn-kit.jpg or https://..."
+                    value={productForm.imageUrl}
+                    onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                  />
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 relative overflow-hidden shrink-0">
+                    <Image
+                      src={productForm.imageUrl || '/logo.png'}
+                      alt="Preview"
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Kit Contents (comma-separated)</label>
+                <input
+                  type="text"
+                  placeholder="2 Plaster Figurines, 6 Colors, 1 Brush, Instruction Card"
+                  value={productForm.kitContents}
+                  onChange={(e) => setProductForm({ ...productForm, kitContents: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Short Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="Brief catchy summary for product card..."
+                  value={productForm.shortDescription}
+                  onChange={(e) => setProductForm({ ...productForm, shortDescription: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-6 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={productForm.isFeatured}
+                    onChange={(e) => setProductForm({ ...productForm, isFeatured: e.target.checked })}
+                    className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                  />
+                  <span>Show in Bestsellers (Featured)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={productForm.isActive}
+                    onChange={(e) => setProductForm({ ...productForm, isActive: e.target.checked })}
+                    className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                  />
+                  <span>Active on Storefront</span>
+                </label>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsProductModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors shadow-md"
+                >
+                  {editingProduct ? 'Save Changes' : 'Create Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
