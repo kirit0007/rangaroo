@@ -34,18 +34,7 @@ export default function ProfilePage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
   // Address book states
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: 'addr-1',
-      fullName: 'Isha Sharma',
-      phone: '+91 87936 87379',
-      addressLine1: 'Flat 402, Sunshine Heights, Baner',
-      addressLine2: 'Near D-Mart',
-      city: 'Pune',
-      state: 'Maharashtra',
-      pincode: '411045'
-    }
-  ]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [addressForm, setAddressForm] = useState<Address>({
@@ -59,10 +48,7 @@ export default function ProfilePage() {
   });
 
   // Saved Payment Methods
-  const [savedPayments, setSavedPayments] = useState([
-    { id: 'pay-1', type: 'card', label: 'HDFC Bank Credit Card', details: '•••• •••• •••• 4321', isDefault: true },
-    { id: 'pay-2', type: 'upi', label: 'Google Pay UPI', details: 'isha@okicici', isDefault: false }
-  ]);
+  const [savedPayments, setSavedPayments] = useState<any[]>([]);
 
   // Communication Preferences
   const [preferences, setPreferences] = useState({
@@ -253,7 +239,7 @@ export default function ProfilePage() {
                       <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">Phone Number</label>
                       <input 
                         type="tel" 
-                        placeholder="+91 87936 87379"
+                        placeholder="Enter your phone number (e.g. +91 9876543210)"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 text-sm font-medium"
@@ -359,45 +345,56 @@ export default function ProfilePage() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {addresses.map((addr, idx) => (
-                      <div key={addr.id || idx} className="p-5 rounded-2xl border border-gray-200 hover:border-orange-300 transition-all bg-gray-50/50 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-bold text-gray-900 text-sm">{addr.fullName}</span>
-                            {idx === 0 && (
-                              <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold text-[10px]">
-                                Default Shipping
-                              </span>
-                            )}
+                  {addresses.length === 0 ? (
+                    <div className="text-center py-12 px-4 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+                      <MapPin className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                      <p className="text-sm font-semibold text-gray-600 mb-1">No saved addresses yet</p>
+                      <p className="text-xs text-gray-400 mb-4">Add your shipping address for a faster checkout experience.</p>
+                      <button onClick={() => setShowAddressModal(true)} className="btn-primary py-2 px-4 text-xs font-bold inline-flex items-center gap-1.5">
+                        <Plus size={14} /> Add Address
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {addresses.map((addr, idx) => (
+                        <div key={addr.id || idx} className="p-5 rounded-2xl border border-gray-200 hover:border-orange-300 transition-all bg-gray-50/50 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-bold text-gray-900 text-sm">{addr.fullName}</span>
+                              {idx === 0 && (
+                                <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold text-[10px]">
+                                  Default Shipping
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}<br />
+                              {addr.city}, {addr.state} - {addr.pincode}<br />
+                              Phone: {addr.phone}
+                            </p>
                           </div>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}<br />
-                            {addr.city}, {addr.state} - {addr.pincode}<br />
-                            Phone: {addr.phone}
-                          </p>
+                          <div className="flex items-center gap-3 pt-4 mt-4 border-t border-gray-200/80">
+                            <button 
+                              onClick={() => {
+                                setEditingAddress(addr);
+                                setAddressForm(addr);
+                                setShowAddressModal(true);
+                              }}
+                              className="text-xs font-semibold text-gray-700 hover:text-orange-500 flex items-center gap-1"
+                            >
+                              <Edit2 size={14} /> Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteAddress(addr.id || '')}
+                              className="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1"
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 pt-4 mt-4 border-t border-gray-200/80">
-                          <button 
-                            onClick={() => {
-                              setEditingAddress(addr);
-                              setAddressForm(addr);
-                              setShowAddressModal(true);
-                            }}
-                            className="text-xs font-semibold text-gray-700 hover:text-orange-500 flex items-center gap-1"
-                          >
-                            <Edit2 size={14} /> Edit
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteAddress(addr.id || '')}
-                            className="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1"
-                          >
-                            <Trash2 size={14} /> Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -408,34 +405,42 @@ export default function ProfilePage() {
                     <CreditCard className="text-orange-500" /> Saved Payment Methods
                   </h2>
 
-                  <div className="space-y-4 max-w-xl">
-                    {savedPayments.map((pay) => (
-                      <div key={pay.id} className="p-4 rounded-2xl border border-gray-200 flex items-center justify-between bg-gray-50/50">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                            <CreditCard size={20} />
+                  {savedPayments.length === 0 ? (
+                    <div className="text-center py-12 px-4 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50 max-w-xl">
+                      <CreditCard className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                      <p className="text-sm font-semibold text-gray-600 mb-1">No saved payment methods</p>
+                      <p className="text-xs text-gray-400">Payment methods are saved securely during checkout.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 max-w-xl">
+                      {savedPayments.map((pay) => (
+                        <div key={pay.id} className="p-4 rounded-2xl border border-gray-200 flex items-center justify-between bg-gray-50/50">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                              <CreditCard size={20} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                                {pay.label}
+                                {pay.isDefault && (
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                    Default
+                                  </span>
+                                )}
+                              </h4>
+                              <p className="text-xs text-gray-500 font-mono mt-0.5">{pay.details}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                              {pay.label}
-                              {pay.isDefault && (
-                                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
-                                  Default
-                                </span>
-                              )}
-                            </h4>
-                            <p className="text-xs text-gray-500 font-mono mt-0.5">{pay.details}</p>
-                          </div>
+                          <button 
+                            onClick={() => handleRemovePayment(pay.id)}
+                            className="text-xs text-red-500 font-semibold hover:underline"
+                          >
+                            Remove
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => handleRemovePayment(pay.id)}
-                          className="text-xs text-red-500 font-semibold hover:underline"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
 

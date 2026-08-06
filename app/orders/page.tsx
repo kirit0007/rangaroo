@@ -30,73 +30,7 @@ export default function MyOrdersPage() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
 
-  // Sample initial orders if empty so customer always sees demo purchase history
-  const sampleOrders: Order[] = [
-    {
-      id: 'ord-101',
-      orderNumber: 'RANG-984210',
-      status: 'shipped',
-      paymentStatus: 'paid',
-      createdAt: '2026-08-04T10:30:00.000Z',
-      subtotal: 598,
-      shippingFee: 0,
-      discountAmount: 50,
-      total: 548,
-      trackingNumber: 'DELHIVERY-98471204',
-      courierName: 'Delhivery Express',
-      shippingAddress: {
-        fullName: user?.fullName || 'Isha Sharma',
-        phone: '+91 87936 87379',
-        addressLine1: 'Flat 402, Sunshine Heights, Baner',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411045'
-      },
-      items: [
-        {
-          productId: 'dino-1',
-          productName: 'T-Rex & Triceratops Duo Kit',
-          productImage: '/images/products/dino-duo.jpg',
-          quantity: 2,
-          unitPrice: 299,
-          totalPrice: 598
-        }
-      ]
-    },
-    {
-      id: 'ord-102',
-      orderNumber: 'RANG-972104',
-      status: 'delivered',
-      paymentStatus: 'paid',
-      createdAt: '2026-07-28T14:15:00.000Z',
-      subtotal: 199,
-      shippingFee: 60,
-      discountAmount: 0,
-      total: 259,
-      trackingNumber: 'BLUEDART-771204',
-      courierName: 'Blue Dart Surface',
-      shippingAddress: {
-        fullName: user?.fullName || 'Isha Sharma',
-        phone: '+91 87936 87379',
-        addressLine1: 'Flat 402, Sunshine Heights, Baner',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411045'
-      },
-      items: [
-        {
-          productId: 'fun-1',
-          productName: 'Space Rocket & Astronaut Kit',
-          productImage: '/images/products/space-rocket.jpg',
-          quantity: 1,
-          unitPrice: 199,
-          totalPrice: 199
-        }
-      ]
-    }
-  ];
-
-  const allOrders = [...storeOrders, ...sampleOrders];
+  const allOrders = storeOrders;
 
   useEffect(() => {
     setMounted(true);
