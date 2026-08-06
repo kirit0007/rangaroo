@@ -26,8 +26,13 @@ export default function CartDrawer() {
 
   const getCoupon = useAdminStore((state: any) => state.getCoupon);
 
+  const [mounted, setMounted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const cartSubtotal = items.reduce((acc: number, item: any) => acc + (item.price * (item.quantity || 1)), 0);
   const shippingFee = cartSubtotal > 999 || items.length === 0 ? 0 : 60;
@@ -70,7 +75,7 @@ export default function CartDrawer() {
 
   return (
     <AnimatePresence>
-      {isCartOpen && (
+      {mounted && isCartOpen && (
         <>
           {/* Overlay */}
           <motion.div

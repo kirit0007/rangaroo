@@ -26,7 +26,12 @@ export default function AuthModal() {
     signInWithGoogle: state.signInWithGoogle
   }));
 
+  const [mounted, setMounted] = useState(false);
   const [name, setName] = useState('');
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -48,19 +53,20 @@ export default function AuthModal() {
     setIsLoading(true);
 
     try {
-      if (authModalMode === 'LOGIN') {
+      const mode = (authModalMode || '').toUpperCase();
+      if (mode === 'LOGIN') {
         if (!email || !password) throw new Error('Please fill all fields');
         await signIn?.(email, password);
         toast.success('Successfully logged in!');
         closeAuthModal();
-      } else if (authModalMode === 'SIGNUP') {
+      } else if (mode === 'SIGNUP') {
         if (!name || !email || !password || !confirmPassword) throw new Error('Please fill all fields');
         if (password !== confirmPassword) throw new Error('Passwords do not match');
         if (!terms) throw new Error('You must accept terms and conditions');
-        await signUp?.(name, email, password);
+        await signUp?.(email, password, name);
         toast.success('Account created successfully!');
         closeAuthModal();
-      } else if (authModalMode === 'FORGOT') {
+      } else if (mode === 'FORGOT') {
         if (!email) throw new Error('Please enter your email');
         // mock forgot password
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -86,7 +92,7 @@ export default function AuthModal() {
 
   return (
     <AnimatePresence>
-      {isAuthModalOpen && (
+      {mounted && isAuthModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }}

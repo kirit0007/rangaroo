@@ -14,7 +14,12 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Zustand stores
   const { user, openAuthModal, signOut } = useAuthStore((state: any) => ({
@@ -134,7 +139,7 @@ export default function Navbar() {
 
           {/* User & Cart Area */}
           <div className="flex items-center gap-4 sm:gap-6 z-50">
-            {user ? (
+            {mounted && user ? (
               <div className="group relative">
                 <div className="flex items-center gap-2 cursor-pointer p-2 rounded-full hover:bg-white/50 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--brand-orange)] to-[var(--brand-amber)] flex items-center justify-center text-white font-bold text-sm">
@@ -172,7 +177,7 @@ export default function Navbar() {
             >
               <ShoppingBag size={24} className="text-gray-800" />
               <AnimatePresence>
-                {cartItemCount > 0 && (
+                {mounted && cartItemCount > 0 && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
