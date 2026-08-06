@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronRight, Truck, CreditCard, ShoppingBag, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { formatPrice } from '@/data/products';
+import { useAdminStore } from '@/store/adminStore';
 import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
@@ -16,6 +17,7 @@ export default function CheckoutPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotal = useCartStore((state) => state.getTotal);
   const getShippingFee = useCartStore((state) => state.getShippingFee);
+  const addOrder = useAdminStore((state) => state.addOrder);
   
   const [step, setStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,8 +131,37 @@ export default function CheckoutPage() {
         image: '/logo.png',
         // order_id: orderData.id, 
         handler: function (response: any) {
-          // Success handler - normally verify on backend here
-          // await fetch('/api/razorpay/verify', { method: 'POST', body: JSON.stringify(response) });
+          const newOrder = {
+            id: `ord-${Date.now()}`,
+            orderNumber: `RANG-${Math.floor(100000 + Math.random() * 900000)}`,
+            status: 'confirmed' as const,
+            paymentStatus: 'paid' as const,
+            createdAt: new Date().toISOString(),
+            subtotal: getSubtotal(),
+            shippingFee: getShippingFee(),
+            discountAmount: 0,
+            total: getTotal(),
+            razorpayPaymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
+            shippingAddress: {
+              fullName: formData.fullName,
+              phone: formData.phone,
+              addressLine1: formData.address1,
+              addressLine2: formData.address2,
+              city: formData.city,
+              state: formData.state,
+              pincode: formData.pincode,
+            },
+            items: items.map(it => ({
+              productId: it.productId,
+              productName: it.name,
+              productImage: it.image,
+              quantity: it.quantity,
+              unitPrice: it.price,
+              totalPrice: it.price * it.quantity
+            }))
+          };
+          addOrder(newOrder);
+          clearCart();
           router.push('/order-confirmation');
         },
         prefill: {
