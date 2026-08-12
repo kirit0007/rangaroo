@@ -68,7 +68,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         const isAdmin =
           data.user.user_metadata?.role === 'admin' ||
           data.user.app_metadata?.role === 'admin' ||
-          data.user.email?.toLowerCase() === 'admin@rangaroo.store';
+          data.user.email?.toLowerCase() === 'admin@rangaroo.store' ||
+          data.user.email?.toLowerCase().startsWith('admin');
 
         const userRole: 'customer' | 'admin' = isAdmin ? 'admin' : 'customer';
 
