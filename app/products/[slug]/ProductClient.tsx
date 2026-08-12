@@ -11,6 +11,7 @@ import { useAdminStore } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import ProductCard from '@/components/product/ProductCard';
+import ReviewSkeleton from '@/components/reviews/ReviewSkeleton';
 import toast from 'react-hot-toast';
 
 export default function ProductClient({ initialProduct, initialRelatedProducts }: { initialProduct: any, initialRelatedProducts: any[] }) {
@@ -25,6 +26,32 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
   const [relatedProducts, setRelatedProducts] = useState<any[]>(initialRelatedProducts || []);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [pincode, setPincode] = useState('');
+  const [pincodeStatus, setPincodeStatus] = useState<string | null>(null);
+
+  const checkPincodeDelivery = async (pin: string) => {
+    if (pin.length !== 6) {
+      toast.error('Please enter a valid 6-digit Pincode');
+      return;
+    }
+    setPincodeStatus('Checking delivery speed...');
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+      const data = await res.json();
+      if (data && data[0]?.Status === 'Success') {
+        const district = data[0].PostOffice[0]?.District || 'your location';
+        const deliveryDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+        setPincodeStatus(`🚚 Express Delivery by ${deliveryDate} to ${district} (${pin})`);
+        toast.success(`Delivery available to ${district}!`);
+      } else {
+        const deliveryDate = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+        setPincodeStatus(`🚚 Standard Delivery by ${deliveryDate} to Pincode ${pin}`);
+      }
+    } catch (_err) {
+      const deliveryDate = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+      setPincodeStatus(`🚚 Delivery available! Expected by ${deliveryDate}`);
+    }
+  };
 
   useEffect(() => {
     if (typeof slug === 'string') {
@@ -165,16 +192,49 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
                 )}
               </div>
 
-              {/* Stock Urgency & Delivery Calculator */}
-              <div className="space-y-2 mb-6 p-3.5 bg-orange-50/80 rounded-2xl border border-orange-100/80">
+              {/* Stock Urgency & Delivery Pincode Speed Estimator */}
+              <div className="space-y-3 mb-6 p-4 bg-orange-50/80 rounded-2xl border border-orange-100/80">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-orange-700">
-                  <span className="animate-pulse">🔥</span> Only 4 left in stock — Order soon!
+                  <span className="animate-pulse">🔥</span> High Demand — Only 4 kits left in stock!
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <Truck className="w-4 h-4 text-emerald-600 shrink-0" /> 
                   <span>
-                    Get it by <strong className="text-gray-900">{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</strong> if ordered in the next 2 hrs!
+                    Express delivery by <strong className="text-gray-900">{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</strong> if ordered in 2 hrs!
                   </span>
+                </div>
+
+                {/* Interactive Pincode Checker */}
+                <div className="pt-2 border-t border-orange-200/60">
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 flex items-center justify-between">
+                    <span>Check Delivery Speed to Your Pincode</span>
+                    <span className="text-[10px] text-gray-500 font-normal">Nationwide India</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={pincode}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setPincode(val);
+                        if (val.length === 6) checkPincodeDelivery(val);
+                      }}
+                      placeholder="Enter 6-digit Pincode (e.g. 400001)"
+                      className="flex-1 px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                    />
+                    <button
+                      onClick={() => checkPincodeDelivery(pincode)}
+                      className="px-3.5 py-1.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-colors"
+                    >
+                      Check
+                    </button>
+                  </div>
+                  {pincodeStatus && (
+                    <p className="mt-2 text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> {pincodeStatus}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -598,7 +658,9 @@ function ProductReviewsSection({ product }: { product: any }) {
 
       {/* Reviews List */}
       {isLoading ? (
-        <div className="py-12 text-center text-gray-400">Loading customer reviews...</div>
+        <div className="py-6">
+          <ReviewSkeleton />
+        </div>
       ) : reviews.length === 0 ? (
         <div className="py-12 text-center text-gray-500 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
           <p className="font-semibold text-gray-700">No customer reviews for this product yet.</p>

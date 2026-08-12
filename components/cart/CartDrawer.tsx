@@ -23,13 +23,17 @@ export default function CartDrawer() {
   const [mounted, setMounted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
+  const [isGiftWrapped, setIsGiftWrapped] = useState(false);
+  const [giftMessage, setGiftMessage] = useState('');
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
+  const FREE_SHIPPING_THRESHOLD = 499;
   const cartSubtotal = items.reduce((acc: number, item: any) => acc + (item.price * (item.quantity || 1)), 0);
-  const shippingFee = cartSubtotal > 999 || items.length === 0 ? 0 : 60;
+  const shippingFee = cartSubtotal >= FREE_SHIPPING_THRESHOLD || items.length === 0 ? 0 : 60;
+  const giftWrapFee = isGiftWrapped ? 30 : 0;
 
   const handleCheckoutClick = (e: React.MouseEvent) => {
     closeCart();
@@ -45,22 +49,19 @@ export default function CartDrawer() {
     ? (appliedCoupon.discount < 1 ? cartSubtotal * appliedCoupon.discount : appliedCoupon.discount) 
     : 0;
 
-  const cartTotal = Math.max(0, cartSubtotal + shippingFee - discountAmount);
+  const cartTotal = Math.max(0, cartSubtotal + shippingFee + giftWrapFee - discountAmount);
   const cartItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
 
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) return;
     
-    // safe call to getCoupon, if undefined use a mock
     const coupon = typeof getCoupon === 'function' ? getCoupon(couponCode) : undefined;
-    if (coupon) {
-      const discountVal = coupon.discountType === 'percentage'
-        ? (coupon.discountValue > 1 ? coupon.discountValue / 100 : coupon.discountValue)
-        : coupon.discountValue;
-      setAppliedCoupon({ code: coupon.code, discount: discountVal });
-      toast.success('Coupon applied successfully!');
+    if (coupon || couponCode.toUpperCase() === 'FIRST10') {
+      const discountVal = 0.10; // 10% OFF
+      setAppliedCoupon({ code: couponCode.toUpperCase(), discount: discountVal });
+      toast.success('10% OFF Coupon applied successfully! 🎉');
     } else {
-      toast.error('Invalid or expired coupon code');
+      toast.error('Invalid coupon code');
       setAppliedCoupon(null);
     }
   };
@@ -111,19 +112,19 @@ export default function CartDrawer() {
 
             {/* Free Shipping Progress */}
             {items.length > 0 && (
-              <div className="px-6 py-4 bg-orange-50/50 border-b border-orange-100/50">
+              <div className="px-6 py-4 bg-orange-50/70 border-b border-orange-100/70">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-gray-700">
-                    {cartSubtotal >= 999 
-                      ? "🎉 You've unlocked Free Shipping!" 
-                      : `Add ₹${(999 - cartSubtotal).toLocaleString('en-IN')} more for Free Shipping`}
+                  <span className="text-xs sm:text-sm font-bold text-gray-800">
+                    {cartSubtotal >= FREE_SHIPPING_THRESHOLD 
+                      ? "🎉 You've unlocked FREE Express Shipping!" 
+                      : `Add ₹${(FREE_SHIPPING_THRESHOLD - cartSubtotal).toLocaleString('en-IN')} more for FREE Express Delivery`}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (cartSubtotal / 999) * 100)}%` }}
-                    className="bg-[var(--brand-orange)] h-2 rounded-full transition-all duration-500 ease-out"
+                    animate={{ width: `${Math.min(100, (cartSubtotal / FREE_SHIPPING_THRESHOLD) * 100)}%` }}
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full transition-all duration-500 ease-out"
                   />
                 </div>
               </div>
@@ -147,7 +148,7 @@ export default function CartDrawer() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* Cart Items */}
                   <div className="space-y-4">
                     <AnimatePresence>
@@ -214,13 +215,39 @@ export default function CartDrawer() {
                     </AnimatePresence>
                   </div>
 
+                  {/* Gift Packaging & Personalization */}
+                  <div className="bg-pink-50/70 p-4 rounded-2xl border border-pink-100/80 space-y-3">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isGiftWrapped}
+                        onChange={(e) => setIsGiftWrapped(e.target.checked)}
+                        className="w-4 h-4 text-pink-500 rounded focus:ring-pink-400 accent-pink-500"
+                      />
+                      <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                        🎁 Add Gift Wrap & Custom Note <span className="text-pink-600 font-extrabold">(+₹30)</span>
+                      </span>
+                    </label>
+                    {isGiftWrapped && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                        <textarea
+                          rows={2}
+                          value={giftMessage}
+                          onChange={(e) => setGiftMessage(e.target.value)}
+                          placeholder="Write your custom birthday wish or note here..."
+                          className="w-full bg-white p-2.5 rounded-xl border border-pink-200 text-xs focus:outline-none focus:ring-2 focus:ring-pink-400 resize-none"
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+
                   {/* Coupon Section */}
                   <div className="bg-white/50 p-4 rounded-2xl border border-white/40">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">Promo Code</h4>
                     {appliedCoupon ? (
                       <div className="flex items-center justify-between bg-green-50 text-green-700 px-3 py-2 rounded-xl text-sm border border-green-200">
                         <span className="font-semibold flex items-center gap-1">
-                          🎉 {appliedCoupon.code} applied
+                          🎉 {appliedCoupon.code} applied (10% OFF)
                         </span>
                         <button onClick={handleRemoveCoupon} className="hover:text-green-900"><X size={16}/></button>
                       </div>
@@ -228,7 +255,7 @@ export default function CartDrawer() {
                       <div className="flex gap-2">
                         <input 
                           type="text" 
-                          placeholder="Enter code" 
+                          placeholder="Enter code (e.g. FIRST10)" 
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
                           className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[var(--brand-orange)] transition-colors uppercase placeholder:normal-case"
@@ -254,6 +281,13 @@ export default function CartDrawer() {
                     <span>Subtotal</span>
                     <span className="font-semibold">₹{cartSubtotal.toLocaleString('en-IN')}</span>
                   </div>
+
+                  {isGiftWrapped && (
+                    <div className="flex justify-between text-pink-600">
+                      <span>Gift Wrap & Custom Note</span>
+                      <span className="font-semibold">+₹30</span>
+                    </div>
+                  )}
                   
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
@@ -265,7 +299,7 @@ export default function CartDrawer() {
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
                     {shippingFee === 0 ? (
-                      <span className="font-semibold text-green-600">Free</span>
+                      <span className="font-semibold text-green-600">Free Express Delivery</span>
                     ) : (
                       <span className="font-semibold">₹{shippingFee.toLocaleString('en-IN')}</span>
                     )}

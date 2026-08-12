@@ -5,13 +5,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag, User, ChevronDown, Search, Heart, Sparkles } from 'lucide-react';
+import { Menu, X, ShoppingBag, User, ChevronDown, Search, Heart, Sparkles, Copy, Gift } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useAdminStore } from '@/store/adminStore';
 import { products as defaultProducts } from '@/data/products';
 import { createClient } from '@/lib/supabase/client';
+import BulkInquiryModal from '@/components/modals/BulkInquiryModal';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,6 +58,16 @@ export default function Navbar() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+
+  const handleCopyCoupon = (code: string) => {
+    try {
+      navigator.clipboard.writeText(code);
+      toast.success(`Coupon ${code} copied to clipboard! 🎉`, { duration: 3000 });
+    } catch (_err) {
+      toast.success(`Coupon ${code} ready at checkout! 🎉`);
+    }
+  };
 
   // Zustand stores with atomic selectors to prevent infinite re-renders
   const user = useAuthStore((state) => state.user);
@@ -66,7 +78,7 @@ export default function Navbar() {
   const openCart = useCartStore((state) => state.openCart);
   const wishlistItems = useWishlistStore((state) => state.items) || [];
 
-  const siteSettings = useAdminStore((state) => state.siteSettings) || { announcementText: '🎉 Free shipping on all orders over ₹999! 🎉' };
+  const siteSettings = useAdminStore((state) => state.siteSettings) || { announcementText: '🎨 Free shipping on all orders over ₹499!' };
 
   const cartItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
   const wishlistCount = wishlistItems.length;
@@ -102,8 +114,17 @@ export default function Navbar() {
     <>
       {/* Announcement Bar */}
       {siteSettings.announcementText && (
-        <div className="bg-gradient-to-r from-[var(--brand-orange)] to-[var(--brand-amber)] text-white text-center py-2 text-sm font-semibold tracking-wide">
-          {siteSettings.announcementText}
+        <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white text-center py-2 text-xs sm:text-sm font-semibold tracking-wide flex items-center justify-center gap-2 px-4 shadow-2xs">
+          <span>🎨 Free Express Shipping above ₹499! Use code</span>
+          <button
+            onClick={() => handleCopyCoupon('FIRST10')}
+            className="px-2.5 py-0.5 bg-white/20 hover:bg-white/30 rounded-md font-mono font-extrabold text-white text-xs border border-white/40 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
+            title="Click to copy coupon code FIRST10"
+          >
+            <span>FIRST10</span>
+            <Copy className="w-3 h-3" />
+          </button>
+          <span>for 10% OFF!</span>
         </div>
       )}
 
@@ -157,6 +178,14 @@ export default function Navbar() {
                 )}
               </Link>
             ))}
+
+            {/* Bulk / Return Gifts Inquiry CTA */}
+            <button
+              onClick={() => setIsBulkModalOpen(true)}
+              className="hover:text-purple-800 transition-all flex items-center gap-1.5 text-purple-700 font-bold bg-purple-50 hover:bg-purple-100 px-3.5 py-1.5 rounded-full text-xs border border-purple-200 shadow-2xs active:scale-95 cursor-pointer"
+            >
+              <Gift className="w-3.5 h-3.5 text-purple-600" /> Bulk Gifts
+            </button>
 
             {/* Collections Dropdown */}
             <div 
@@ -393,6 +422,12 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bulk Inquiry Modal */}
+      <BulkInquiryModal
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+      />
     </>
   );
 }
