@@ -106,7 +106,7 @@ export default function AuthModal() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="glass-panel bg-white/90 max-w-md w-full relative z-10 overflow-hidden shadow-2xl"
+            className="bg-white/98 backdrop-blur-xl border border-gray-100 rounded-3xl max-w-md w-full relative z-10 overflow-hidden shadow-2xl"
           >
             {/* Top decorative gradient */}
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[var(--brand-orange)] via-[var(--brand-amber)] to-[var(--brand-purple)]" />

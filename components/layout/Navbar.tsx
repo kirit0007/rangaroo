@@ -193,12 +193,12 @@ export default function Navbar() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 mt-2 w-48 glass-panel py-2 shadow-xl z-50"
+                    className="absolute top-full left-0 mt-2 w-52 dropdown-panel py-2 shadow-2xl z-50 overflow-hidden"
                   >
-                    <Link href="/collections/animal-collection" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Animals</Link>
-                    <Link href="/collections/space-collection" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Space</Link>
-                    <Link href="/collections/dinosaur-collection" className="block px-4 py-2 hover:bg-white/50 hover:text-[var(--brand-orange)] transition-colors">Dinosaurs</Link>
-                    <Link href="/collections" className="block px-4 py-2 mt-1 border-t border-gray-100 font-medium hover:bg-white/50 text-[var(--brand-orange)] transition-colors">View All &rarr;</Link>
+                    <Link href="/collections/animal-collection" className="block px-4 py-2.5 hover:bg-orange-50 text-gray-800 font-medium text-sm transition-colors">Animals</Link>
+                    <Link href="/collections/space-collection" className="block px-4 py-2.5 hover:bg-orange-50 text-gray-800 font-medium text-sm transition-colors">Space</Link>
+                    <Link href="/collections/dinosaur-collection" className="block px-4 py-2.5 hover:bg-orange-50 text-gray-800 font-medium text-sm transition-colors">Dinosaurs</Link>
+                    <Link href="/collections" className="block px-4 py-2.5 mt-1 border-t border-gray-100 font-bold hover:bg-orange-50 text-[var(--brand-orange)] text-sm transition-colors">View All &rarr;</Link>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -216,21 +216,22 @@ export default function Navbar() {
                   <span className="hidden sm:block font-medium text-sm text-gray-700">{user.fullName?.split(' ')[0]}</span>
                 </div>
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-48 glass-panel py-2 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link href="/profile" className="block px-4 py-2 hover:bg-white/50 text-gray-700">My Profile</Link>
-                  <Link href="/profile?tab=wishlist" className="block px-4 py-2 hover:bg-white/50 text-rose-600 font-medium flex items-center justify-between">
+                <div className="absolute right-0 mt-2 w-52 dropdown-panel py-2 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/profile" className="block px-4 py-2.5 hover:bg-orange-50 text-gray-900 font-semibold text-sm transition-colors">My Profile</Link>
+                  <Link href="/profile?tab=wishlist" className="block px-4 py-2.5 hover:bg-rose-50 text-rose-600 font-semibold text-sm flex items-center justify-between transition-colors">
                     <span>My Wishlist</span>
                     {wishlistCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">
                         {wishlistCount}
                       </span>
                     )}
                   </Link>
-                  <Link href="/orders" className="block px-4 py-2 hover:bg-white/50 text-gray-700">My Orders</Link>
+                  <Link href="/orders" className="block px-4 py-2.5 hover:bg-orange-50 text-gray-900 font-semibold text-sm transition-colors">My Orders</Link>
                   {user.role === 'admin' && (
-                    <Link href="/admin" className="block px-4 py-2 hover:bg-white/50 text-[var(--brand-purple)] font-medium">Admin Dashboard</Link>
+                    <Link href="/admin" className="block px-4 py-2.5 hover:bg-purple-50 text-purple-700 font-semibold text-sm transition-colors">Admin Dashboard</Link>
                   )}
-                  <button onClick={signOut} className="w-full text-left px-4 py-2 hover:bg-white/50 text-red-500">
+                  <div className="my-1 border-t border-gray-100" />
+                  <button onClick={signOut} className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 font-semibold text-sm transition-colors cursor-pointer">
                     Logout
                   </button>
                 </div>
