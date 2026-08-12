@@ -1,7 +1,6 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { createClient } from '@/lib/supabase/client';
 
 export interface AuthUser {
@@ -25,7 +24,7 @@ interface AuthState {
   closeAuthModal: () => void;
   setAuthModalMode: (mode: 'login' | 'signup' | 'forgot') => void;
 
-  // Auth operations
+  // Auth operations - Strictly Supabase Auth
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
@@ -54,51 +53,41 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         return { error: 'Please enter both email and password' };
       }
 
-      // Strict Admin Authentication Check
-      const isAdminEmail = cleanEmail === 'admin' || cleanEmail === 'admin@rangaroo.store';
-      if (isAdminEmail) {
-        if (password === 'rangaroo2026') {
-          const adminUser: AuthUser = {
-            id: 'admin-super-user',
-            email: 'admin@rangaroo.store',
-            fullName: 'Admin',
-            role: 'admin',
-          };
-          set({ user: adminUser, isAuthModalOpen: false });
-          document.cookie = `rangaroo_user=admin; path=/; max-age=86400; secure; samesite=strict`;
-          return { error: null };
-        } else {
-          // Password failed for admin email - Reject immediately! Do NOT fall back!
-          set({ user: null });
-          document.cookie = 'rangaroo_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          return { error: 'Invalid admin credentials' };
-        }
-      }
-
-      if (password.length < 4) {
-        return { error: 'Invalid email or password' };
-      }
-
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-      
-      if (data?.user) {
-        const authUser: AuthUser = {
-          id: data.user.id,
-          email: data.user.email || cleanEmail,
-          fullName: data.user.user_metadata?.full_name || cleanEmail.split('@')[0],
-          role: data.user.user_metadata?.role === 'admin' ? 'admin' : 'customer',
-        };
-        set({ user: authUser, isAuthModalOpen: false });
-        return { error: null };
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
 
       if (error) {
+        set({ user: null });
         return { error: error.message || 'Invalid email or password' };
       }
 
-      return { error: 'Sign in failed' };
+      if (data?.user) {
+        const userRole: 'customer' | 'admin' =
+          data.user.user_metadata?.role === 'admin' || data.user.app_metadata?.role === 'admin'
+            ? 'admin'
+            : 'customer';
+
+        const authUser: AuthUser = {
+          id: data.user.id,
+          email: data.user.email || cleanEmail,
+          fullName:
+            data.user.user_metadata?.full_name ||
+            data.user.user_metadata?.name ||
+            cleanEmail.split('@')[0],
+          role: userRole,
+        };
+
+        set({ user: authUser, isAuthModalOpen: false, isLoading: false });
+        return { error: null };
+      }
+
+      set({ user: null });
+      return { error: 'Authentication failed. Please check your credentials.' };
     } catch (err: unknown) {
+      set({ user: null });
       const message = err instanceof Error ? err.message : 'Sign in failed';
       return { error: message };
     }
@@ -106,26 +95,44 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   signUp: async (email: string, password: string, fullName: string) => {
     try {
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail || !password || !fullName) {
+        return { error: 'Please fill in all required fields' };
+      }
+
       const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: cleanEmail,
         password,
         options: {
-          data: { full_name: fullName, role: 'customer' },
+          data: {
+            full_name: fullName,
+            role: 'customer',
+          },
         },
       });
-      if (error) return { error: error.message };
-      if (data.user) {
-        const authUser: AuthUser = {
-          id: data.user.id,
-          email: data.user.email || email,
-          fullName: fullName,
-          role: 'customer',
-        };
-        set({ user: authUser, isAuthModalOpen: false });
+
+      if (error) {
+        set({ user: null });
+        return { error: error.message };
       }
-      return { error: null };
+
+      if (data?.user) {
+        if (data.session) {
+          const authUser: AuthUser = {
+            id: data.user.id,
+            email: data.user.email || cleanEmail,
+            fullName: fullName,
+            role: 'customer',
+          };
+          set({ user: authUser, isAuthModalOpen: false, isLoading: false });
+        }
+        return { error: null };
+      }
+
+      return { error: 'Sign up failed' };
     } catch (err: unknown) {
+      set({ user: null });
       const message = err instanceof Error ? err.message : 'Sign up failed';
       return { error: message };
     }
@@ -141,7 +148,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
         },
       });
       if (error) return { error: error.message };
@@ -156,37 +163,40 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
       document.cookie = 'rangaroo_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      set({ user: null });
-    } catch {
-      document.cookie = 'rangaroo_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      set({ user: null });
+      set({ user: null, isLoading: false });
     }
   },
 
   refreshUser: async () => {
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (data?.user && !error) {
+        const userRole: 'customer' | 'admin' =
+          data.user.user_metadata?.role === 'admin' || data.user.app_metadata?.role === 'admin'
+            ? 'admin'
+            : 'customer';
+
         set({
           user: {
-            id: user.id,
-            email: user.email || '',
-            fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
-            role: user.user_metadata?.role || 'customer',
+            id: data.user.id,
+            email: data.user.email || '',
+            fullName:
+              data.user.user_metadata?.full_name ||
+              data.user.user_metadata?.name ||
+              data.user.email?.split('@')[0] ||
+              'User',
+            role: userRole,
           },
           isLoading: false,
         });
       } else {
-        // Fallback check for dummy admin session
-        const cookies = document.cookie.split(';');
-        const adminCookie = cookies.find(c => c.trim().startsWith('rangaroo_user=admin'));
-        if (adminCookie) {
-           set({ user: { id: 'admin', email: 'admin', fullName: 'Admin', role: 'admin' }, isLoading: false });
-        } else {
-           set({ user: null, isLoading: false });
-        }
+        set({ user: null, isLoading: false });
       }
     } catch {
       set({ user: null, isLoading: false });

@@ -1,27 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// In-memory rate limiting map for basic Edge rate limiting protection
+// In-memory rate limiting map for Edge protection
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
-const LIMIT = 60; // 60 requests
-const WINDOW_MS = 60 * 1000; // 1 minute
+const LIMIT = 60; // 60 requests per minute
+const WINDOW_MS = 60 * 1000;
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Protect Admin Routes (/admin*) with Role Check
-  if (pathname.startsWith('/admin')) {
-    const authCookie = request.cookies.get('rangaroo_user') || request.cookies.get('sb-access-token');
-    const authSession = authCookie?.value;
-
-    // Check if user is logged in as admin
-    const isAdmin = request.headers.get('x-user-role') === 'admin' || (authSession && authSession.includes('admin'));
-
-    // Allow local development and store admin bypass
-    if (!isAdmin && process.env.NODE_ENV === 'production' && !pathname.startsWith('/admin/login')) {
-      // Allow admin route in demo mode or redirect to login
-    }
-  }
 
   // Rate limiting for API endpoints
   if (pathname.startsWith('/api/')) {
@@ -55,18 +41,18 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next();
 
-  // CORS settings
+  // CORS settings for trusted origins
   const origin = request.headers.get('origin');
   if (origin && (origin.includes('rangaroo.store') || origin.includes('localhost') || origin.includes('vercel.app'))) {
     response.headers.set('Access-Control-Allow-Origin', origin);
   }
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-role');
-  response.headers.set('Access-Control-Allow-Credentials', 'true'); // Only allowed for trusted origins now
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
 
-  // Additional security headers on every response
+  // Security headers on every response
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   return response;
