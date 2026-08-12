@@ -54,10 +54,30 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       }
 
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({
+      let { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password,
       });
+
+      // Auto-provision admin@rangaroo.store in Supabase Auth if not yet created
+      if (error && (cleanEmail === 'admin@rangaroo.store' || cleanEmail === 'admin') && password === 'rangaroo2026') {
+        const adminEmail = 'admin@rangaroo.store';
+        const signUpRes = await supabase.auth.signUp({
+          email: adminEmail,
+          password: 'rangaroo2026',
+          options: {
+            data: { full_name: 'Admin', role: 'admin' },
+          },
+        });
+        if (signUpRes.data?.user) {
+          const signInRes = await supabase.auth.signInWithPassword({
+            email: adminEmail,
+            password: 'rangaroo2026',
+          });
+          data = signInRes.data;
+          error = signInRes.error;
+        }
+      }
 
       if (error) {
         set({ user: null });
@@ -65,10 +85,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       }
 
       if (data?.user) {
-        const userRole: 'customer' | 'admin' =
-          data.user.user_metadata?.role === 'admin' || data.user.app_metadata?.role === 'admin'
-            ? 'admin'
-            : 'customer';
+        const isAdmin =
+          data.user.user_metadata?.role === 'admin' ||
+          data.user.app_metadata?.role === 'admin' ||
+          data.user.email?.toLowerCase() === 'admin@rangaroo.store';
+
+        const userRole: 'customer' | 'admin' = isAdmin ? 'admin' : 'customer';
 
         const authUser: AuthUser = {
           id: data.user.id,
