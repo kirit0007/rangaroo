@@ -15,6 +15,7 @@ import {
   ChevronUp,
   Search,
   Lock,
+  ShieldAlert,
   Plus,
   Edit2,
   X,
@@ -55,11 +56,9 @@ function SafeProductThumbnail({ src, alt }: { src?: string; alt: string }) {
 
 export default function AdminPage() {
   const user = useAuthStore((state) => state.user);
-  const signIn = useAuthStore((state) => state.signIn);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const signOut = useAuthStore((state) => state.signOut);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   const siteSettings = useAdminStore((state) => state.siteSettings);
@@ -132,27 +131,7 @@ export default function AdminPage() {
     isActive: true,
   });
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await signOut();
-      const res = await signIn(email, password);
-      if (res?.error) {
-        toast.error(res.error);
-        return;
-      }
-      
-      const currentUser = useAuthStore.getState().user;
-      if (currentUser?.role === 'admin') {
-        toast.success('Welcome Admin');
-      } else {
-        toast.error('Access Denied: Your account in Supabase does not have Admin privileges');
-        await signOut();
-      }
-    } catch (error) {
-      toast.error('Login failed: Invalid credentials');
-    }
-  };
+
 
   const handleCmsSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,45 +324,22 @@ export default function AdminPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2] p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
+        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-gray-100 shadow-xl text-center">
           <div className="flex justify-center mb-4">
             <div className="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center">
               <Lock className="w-8 h-8 text-orange-500" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-center mb-2 font-outfit text-gray-800">Admin Sign In</h1>
-          <p className="text-xs text-gray-500 text-center mb-6">Authenticate via your Supabase Admin Account</p>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Admin Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your-admin-email@example.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors shadow-md cursor-pointer"
-            >
-              Sign In to Admin Dashboard
-            </button>
-          </form>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2 font-outfit">Admin Panel Access</h1>
+          <p className="text-gray-600 text-sm mb-6">
+            Access to this administrative area requires an authenticated Supabase account with assigned Admin privileges.
+          </p>
+          <button
+            onClick={() => openAuthModal('login')}
+            className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg cursor-pointer"
+          >
+            Sign In with Supabase
+          </button>
         </div>
       </div>
     );
@@ -393,9 +349,24 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2] p-4">
         <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-red-100 shadow-xl text-center">
-          <Lock className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h1>
-          <p className="text-gray-600">You do not have permission to access the admin panel.</p>
+          <div className="flex justify-center mb-4">
+            <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center">
+              <ShieldAlert className="w-8 h-8 text-red-500" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2 font-outfit">Access Denied</h1>
+          <p className="text-gray-700 text-sm mb-1 font-medium">
+            Logged in as <span className="font-bold text-gray-900">{user.email}</span>
+          </p>
+          <p className="text-xs text-red-600 font-medium mb-6">
+            This account does not have Admin privileges in Supabase.
+          </p>
+          <button
+            onClick={() => signOut()}
+            className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+          >
+            Sign Out & Switch Account
+          </button>
         </div>
       </div>
     );
