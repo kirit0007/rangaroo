@@ -119,21 +119,21 @@ export default function HomePage() {
               </div>
 
               {/* Colorful Pill Trust Badges Container */}
-              <div className="mt-8 bg-white/80 backdrop-blur-md rounded-full p-2.5 shadow-sm border border-gray-100 flex flex-wrap items-center justify-center lg:justify-start gap-3 w-fit">
-                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
-                  <Shield className="w-4 h-4 text-emerald-500" /> 100% Non-Toxic
+              <div className="mt-8 bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm border border-orange-100/60 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 max-w-2xl">
+                <div className="px-3.5 py-2 rounded-full bg-emerald-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-emerald-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
+                  <Shield className="w-4 h-4 text-emerald-600" /> 100% Non-Toxic
                 </div>
-                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                <div className="px-3.5 py-2 rounded-full bg-orange-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-orange-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
                   <span className="text-sm">🇮🇳</span> Made in India
                 </div>
-                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
-                  <Gift className="w-4 h-4 text-pink-500" /> Gift Packaging
+                <div className="px-3.5 py-2 rounded-full bg-pink-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-pink-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
+                  <Gift className="w-4 h-4 text-pink-600" /> Gift Packaging
                 </div>
-                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
+                <div className="px-3.5 py-2 rounded-full bg-amber-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-amber-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
                   <span className="text-sm">👨‍👩‍👧</span> Parent Approved
                 </div>
-                <div className="px-4 py-2 rounded-full bg-white text-gray-800 font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 border border-gray-50 transition-transform hover:scale-105">
-                  <Shield className="w-4 h-4 text-purple-500" /> Safe & Premium
+                <div className="px-3.5 py-2 rounded-full bg-purple-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-purple-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
+                  <Shield className="w-4 h-4 text-purple-600" /> Safe & Premium
                 </div>
               </div>
             </motion.div>
