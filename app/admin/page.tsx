@@ -538,24 +538,108 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
-                    <input
-                      type="text"
-                      value={cmsForm.contactPhone}
-                      onChange={(e) => setCmsForm({ ...cmsForm, contactPhone: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
-                    <input
-                      type="email"
-                      value={cmsForm.contactEmail}
-                      onChange={(e) => setCmsForm({ ...cmsForm, contactEmail: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
+                <div className="border-t border-gray-100 pt-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">Footer & Contact Settings</h3>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Footer Tagline</label>
+                      <input
+                        type="text"
+                        value={cmsForm.footerTagline || '"Paint. Create. Imagine."'}
+                        onChange={(e) => setCmsForm({ ...cmsForm, footerTagline: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder='"Paint. Create. Imagine."'
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Footer Description</label>
+                      <textarea
+                        rows={3}
+                        value={cmsForm.footerDescription || ''}
+                        onChange={(e) => setCmsForm({ ...cmsForm, footerDescription: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="Premium DIY Paint Kits for Kids. Sparking creativity and building fine motor skills..."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Location / Shipping</label>
+                        <input
+                          type="text"
+                          value={cmsForm.contactLocation || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, contactLocation: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="India IN (Shipping Nationwide)"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Support Number</label>
+                        <input
+                          type="text"
+                          value={cmsForm.whatsappNumber || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, whatsappNumber: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="+91 87936 87379"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Instagram Handle</label>
+                        <input
+                          type="text"
+                          value={cmsForm.instagramHandle || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, instagramHandle: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="ranga.roo"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Instagram Direct URL</label>
+                        <input
+                          type="text"
+                          value={cmsForm.instagramUrl || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, instagramUrl: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="https://www.instagram.com/ranga.roo/"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                        <input
+                          type="text"
+                          value={cmsForm.contactPhone || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, contactPhone: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                        <input
+                          type="email"
+                          value={cmsForm.contactEmail || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, contactEmail: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Copyright Line</label>
+                      <input
+                        type="text"
+                        value={cmsForm.copyrightText || ''}
+                        onChange={(e) => setCmsForm({ ...cmsForm, copyrightText: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="© 2026 Rangaroo. Made with ❤️ in India."
+                      />
+                    </div>
                   </div>
                 </div>
 

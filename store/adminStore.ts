@@ -12,6 +12,13 @@ interface SiteSettings {
   contactPhone: string;
   contactEmail: string;
   freeShippingThreshold: number;
+  footerTagline: string;
+  footerDescription: string;
+  contactLocation: string;
+  instagramHandle: string;
+  instagramUrl: string;
+  whatsappNumber: string;
+  copyrightText: string;
 }
 
 interface AdminStore {
@@ -35,12 +42,19 @@ interface AdminStore {
 }
 
 const defaultSettings: SiteSettings = {
-  announcementText: '🎨 Use code FIRST10 for 10% off your first order! 🦘',
+  announcementText: '🎨 Free Express Shipping above ₹499! 🦘',
   heroTitle: 'Where Little Hands Create Big Smiles',
   heroSubtitle: 'Premium DIY Paint Kits for Kids — Plaster Figurines, Non-Toxic Colors & Beautiful Gift Packaging',
   contactPhone: '+91 87936 87379',
   contactEmail: 'hello@rangaroo.store',
-  freeShippingThreshold: 0,
+  freeShippingThreshold: 499,
+  footerTagline: '"Paint. Create. Imagine."',
+  footerDescription: 'Premium DIY Paint Kits for Kids. Sparking creativity and building fine motor skills one canvas at a time. Safe, non-toxic, and endlessly fun!',
+  contactLocation: 'India IN (Shipping Nationwide)',
+  instagramHandle: 'ranga.roo',
+  instagramUrl: 'https://www.instagram.com/ranga.roo/',
+  whatsappNumber: '+91 87936 87379',
+  copyrightText: '© 2026 Rangaroo. Made with ❤️ in India.',
 };
 
 const defaultCoupons: Coupon[] = [
