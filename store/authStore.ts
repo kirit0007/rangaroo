@@ -26,7 +26,7 @@ interface AuthState {
 
   // Auth operations - Strictly Supabase Auth
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string, role?: 'customer' | 'admin') => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -68,8 +68,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         const isAdmin =
           data.user.user_metadata?.role === 'admin' ||
           data.user.app_metadata?.role === 'admin' ||
-          cleanEmail.includes('admin') ||
-          cleanEmail === 'admin@rangaroo.store';
+          data.user.email?.toLowerCase() === 'admin@rangaroo.store';
 
         const userRole: 'customer' | 'admin' = isAdmin ? 'admin' : 'customer';
 
@@ -96,7 +95,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     }
   },
 
-  signUp: async (email: string, password: string, fullName: string, role: 'customer' | 'admin' = 'customer') => {
+  signUp: async (email: string, password: string, fullName: string) => {
     try {
       const cleanEmail = email.trim().toLowerCase();
       if (!cleanEmail || !password || !fullName) {
@@ -110,7 +109,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         options: {
           data: {
             full_name: fullName,
-            role: role,
+            role: 'customer',
           },
         },
       });
@@ -126,7 +125,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             id: data.user.id,
             email: data.user.email || cleanEmail,
             fullName: fullName,
-            role: role,
+            role: 'customer',
           };
           set({ user: authUser, isAuthModalOpen: false, isLoading: false });
         }
