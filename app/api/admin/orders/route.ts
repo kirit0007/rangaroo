@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { isUserAdmin, getAuthenticatedUser } from '@/lib/auth/serverAuth';
 import { Order } from '@/types';
 
-// In-memory fallback global store for cross-session orders when Supabase DB is initialising
+// In-memory fallback global store for cross-session orders
 const globalOrdersStore: Order[] = [];
 
 export async function GET(request: NextRequest) {
   try {
+    const isAdmin = await isUserAdmin(request);
     const supabase = createServerClient();
 
-    // Query all orders from Supabase DB without user filtering
+    // Query orders from Supabase DB
     const { data: dbOrders, error } = await supabase
       .from('orders')
       .select('*')
@@ -31,11 +33,10 @@ export async function GET(request: NextRequest) {
         items: typeof row.items === 'string' ? JSON.parse(row.items) : row.items,
       }));
 
-      return NextResponse.json({ orders: formattedOrders, count: formattedOrders.length, source: 'supabase' });
+      return NextResponse.json({ orders: formattedOrders, count: formattedOrders.length, source: 'supabase', isAdmin });
     }
 
-    // Return global orders fallback if database table is empty or pending schema creation
-    return NextResponse.json({ orders: globalOrdersStore, count: globalOrdersStore.length, source: 'memory' });
+    return NextResponse.json({ orders: globalOrdersStore, count: globalOrdersStore.length, source: 'memory', isAdmin });
   } catch (error: any) {
     console.error('[Admin Orders API Error]', error);
     return NextResponse.json({ orders: globalOrdersStore, count: globalOrdersStore.length, source: 'memory_fallback' });
@@ -51,6 +52,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order data required' }, { status: 400 });
     }
 
+    const user = await getAuthenticatedUser(request);
+
     // Save to memory store
     const existingIdx = globalOrdersStore.findIndex(o => o.id === order.id || o.orderNumber === order.orderNumber);
     if (existingIdx >= 0) {
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
       globalOrdersStore.unshift(order);
     }
 
-    // Attempt Supabase insert
+    // Upsert into Supabase DB
     try {
       const supabase = createServerClient();
       await supabase.from('orders').upsert({
@@ -72,6 +75,7 @@ export async function POST(request: NextRequest) {
         discount_amount: order.discountAmount || 0,
         total: order.total,
         razorpay_payment_id: order.razorpayPaymentId,
+        user_id: user?.id || null,
         created_at: order.createdAt || new Date().toISOString(),
         shipping_address: JSON.stringify(order.shippingAddress),
         items: JSON.stringify(order.items),
@@ -88,6 +92,11 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const isAdmin = await isUserAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { orderId, status, order } = body;
 
@@ -112,7 +121,7 @@ export async function PATCH(request: NextRequest) {
       globalOrdersStore.unshift(newOrderPayload);
     }
 
-    // Update in Supabase DB if available
+    // Update in Supabase DB
     try {
       const supabase = createServerClient();
       await supabase

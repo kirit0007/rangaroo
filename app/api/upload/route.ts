@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { isUserAdmin } from '@/lib/auth/serverAuth';
 
 export async function POST(request: NextRequest) {
   try {
+    const isAdmin = await isUserAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required for media upload' }, { status: 403 });
+    }
+
     const contentType = request.headers.get('content-type') || '';
     let fileName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
     let fileBuffer: Buffer | null = null;
@@ -15,6 +21,12 @@ export async function POST(request: NextRequest) {
       if (!file) {
         return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
       }
+
+      // Restrict upload MIME types strictly to images
+      if (!file.type.startsWith('image/')) {
+        return NextResponse.json({ error: 'Invalid file type: Only images are allowed' }, { status: 400 });
+      }
+
       mimeType = file.type || 'image/png';
       fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       const arrayBuffer = await file.arrayBuffer();
@@ -33,6 +45,9 @@ export async function POST(request: NextRequest) {
         const matches = image.match(/^data:(.+);base64,(.+)$/);
         if (matches) {
           mimeType = matches[1];
+          if (!mimeType.startsWith('image/')) {
+            return NextResponse.json({ error: 'Invalid file type: Only images are allowed' }, { status: 400 });
+          }
           fileBuffer = Buffer.from(matches[2], 'base64');
         }
       }
@@ -57,29 +72,24 @@ export async function POST(request: NextRequest) {
             .getPublicUrl(fileName);
 
           if (publicUrlData?.publicUrl) {
-            console.log('[Upload API] Supabase CDN public URL generated:', publicUrlData.publicUrl);
             return NextResponse.json({ 
               url: publicUrlData.publicUrl,
               publicUrl: publicUrlData.publicUrl,
               storage: 'supabase',
             });
           }
-        } else {
-          console.warn('[Upload API] Supabase Storage upload warning:', uploadError?.message);
         }
       }
     } catch (sbErr) {
       console.warn('[Upload API] Supabase Storage exception:', sbErr);
     }
 
-    // Fallback: Return optimized base64 Data URL (guaranteed public access across all devices)
     return NextResponse.json({
       url: base64Url || '/logo.png',
       publicUrl: base64Url || '/logo.png',
       storage: 'data-uri',
     });
   } catch (error: any) {
-    console.error('[Upload API Exception]', error);
     return NextResponse.json({ error: error.message || 'Image upload failed' }, { status: 500 });
   }
 }

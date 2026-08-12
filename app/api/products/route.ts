@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { isUserAdmin } from '@/lib/auth/serverAuth';
 import { Product } from '@/types';
 import { products as initialProducts } from '@/data/products';
 
@@ -43,13 +44,18 @@ export async function GET() {
     }
 
     return NextResponse.json({ products: globalProductsStore, source: 'memory' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ products: globalProductsStore, source: 'memory_fallback' });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const isAdmin = await isUserAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { product } = body;
 
@@ -103,6 +109,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const isAdmin = await isUserAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('id');
 
