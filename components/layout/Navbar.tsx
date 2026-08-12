@@ -227,6 +227,14 @@ export default function Navbar() {
                 {/* Dropdown */}
                 <div className="absolute right-0 mt-2 w-48 glass-panel py-2 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <Link href="/profile" className="block px-4 py-2 hover:bg-white/50 text-gray-700">My Profile</Link>
+                  <Link href="/profile?tab=wishlist" className="block px-4 py-2 hover:bg-white/50 text-rose-600 font-medium flex items-center justify-between">
+                    <span>My Wishlist</span>
+                    {wishlistCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs font-bold">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Link>
                   <Link href="/orders" className="block px-4 py-2 hover:bg-white/50 text-gray-700">My Orders</Link>
                   {user.role === 'admin' && (
                     <Link href="/admin" className="block px-4 py-2 hover:bg-white/50 text-[var(--brand-purple)] font-medium">Admin Dashboard</Link>
@@ -259,7 +267,7 @@ export default function Navbar() {
             {/* Wishlist Button */}
             {mounted && user ? (
               <Link
-                href="/profile"
+                href="/profile?tab=wishlist"
                 className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
               >
                 <span className="sr-only">Wishlist</span>

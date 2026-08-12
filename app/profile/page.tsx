@@ -1,24 +1,36 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import { useWishlistStore } from '@/store/wishlistStore';
+import ProductCard from '@/components/product/ProductCard';
 import { 
   User, Mail, Phone, Lock, ShieldCheck, MapPin, CreditCard, 
-  Bell, Trash2, Plus, Edit2, Check, AlertTriangle, KeyRound, ChevronRight, Save
+  Bell, Trash2, Plus, Edit2, Check, AlertTriangle, KeyRound, ChevronRight, Save, Heart, ShoppingBag
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Address } from '@/types';
 
-export default function ProfilePage() {
+function ProfileContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
+  const wishlistItems = useWishlistStore((state) => state.items) || [];
+  const clearWishlist = useWishlistStore((state) => state.clearWishlist);
 
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'info' | 'security' | 'addresses' | 'payments' | 'preferences'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'wishlist' | 'security' | 'addresses' | 'payments' | 'preferences'>('info');
+
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab === 'wishlist' || tab === 'info' || tab === 'addresses' || tab === 'payments' || tab === 'preferences' || tab === 'security') {
+      setActiveTab(tab as any);
+    }
+  }, [searchParams]);
 
   // Form states
   const [fullName, setFullName] = useState('');
@@ -181,6 +193,7 @@ export default function ProfilePage() {
           <div className="lg:col-span-1 space-y-2">
             {[
               { id: 'info', label: 'Personal Info', icon: User },
+              { id: 'wishlist', label: 'My Wishlist', icon: Heart, badge: wishlistItems.length },
               { id: 'security', label: 'Security & Access', icon: Lock },
               { id: 'addresses', label: 'Address Book', icon: MapPin },
               { id: 'payments', label: 'Saved Payments', icon: CreditCard },
@@ -196,8 +209,15 @@ export default function ProfilePage() {
                 }`}
               >
                 <span className="flex items-center gap-3">
-                  <tab.icon size={18} />
+                  <tab.icon size={18} className={tab.id === 'wishlist' && activeTab !== 'wishlist' ? 'text-rose-500' : ''} />
                   {tab.label}
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      activeTab === tab.id ? 'bg-white text-orange-600' : 'bg-rose-100 text-rose-600'
+                    }`}>
+                      {tab.badge}
+                    </span>
+                  )}
                 </span>
                 <ChevronRight size={16} className={activeTab === tab.id ? 'opacity-100' : 'opacity-40'} />
               </button>
@@ -249,6 +269,49 @@ export default function ProfilePage() {
                       <Save size={16} /> Save Personal Info
                     </button>
                   </form>
+                </motion.div>
+              )}
+
+              {/* TAB: My Wishlist */}
+              {activeTab === 'wishlist' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                    <h2 className="text-xl font-outfit font-bold text-gray-900 flex items-center gap-2">
+                      <Heart className="text-rose-500 fill-rose-500" /> My Wishlist ({wishlistItems.length})
+                    </h2>
+                    {wishlistItems.length > 0 && (
+                      <button
+                        onClick={() => {
+                          clearWishlist();
+                          toast.success('Wishlist cleared');
+                        }}
+                        className="text-xs font-semibold text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                      >
+                        <Trash2 size={14} /> Clear All
+                      </button>
+                    )}
+                  </div>
+
+                  {wishlistItems.length === 0 ? (
+                    <div className="text-center py-16 px-4 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
+                      <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xs">
+                        <Heart size={32} />
+                      </div>
+                      <h3 className="font-outfit font-bold text-lg text-gray-900 mb-1">Your wishlist is empty</h3>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mb-6">
+                        Explore our DIY plaster paint kits and tap the heart icon to save your favorite figurines here!
+                      </p>
+                      <Link href="/products" className="btn-primary py-2.5 px-6 text-xs font-bold inline-flex items-center gap-2 shadow-sm">
+                        <ShoppingBag size={14} /> Browse Craft Kits
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {wishlistItems.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -599,5 +662,17 @@ export default function ProfilePage() {
 
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FFF9F2] pt-32 text-center text-gray-500 font-medium">
+        Loading profile...
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }
