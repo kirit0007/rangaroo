@@ -3,7 +3,7 @@ import { Order } from '@/types';
 export async function sendOrderConfirmationEmail(order: Order, customerEmailOverride?: string) {
   try {
     const apiKey = process.env.BREVO_API_KEY;
-    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'rangaroo.co@gmail.com';
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'hello@rangaroo.store';
     const recipientEmail = customerEmailOverride || (order as any).customerEmail || (order.shippingAddress as any)?.email || (order as any).email;
     const recipientName = order.shippingAddress?.fullName || 'Valued Customer';
     const orderNum = order.orderNumber || order.id || '#1001';
@@ -136,7 +136,7 @@ export async function sendOrderConfirmationEmail(order: Order, customerEmailOver
           <tr>
             <td style="background-color: #1a1a2e; color: #9ca3af; padding: 25px 30px; text-align: center; font-size: 12px;">
               <p style="margin: 0 0 10px 0; color: #ffffff; font-weight: bold; font-size: 14px;">Need Help with your order?</p>
-              <p style="margin: 0 0 15px 0;">WhatsApp Us: <a href="https://wa.me/918793687379" style="color: #25D366; font-weight: bold; text-decoration: none;">+91 87936 87379</a> | Email: <a href="mailto:rangaroo.co@gmail.com" style="color: #ffaa00; text-decoration: none;">rangaroo.co@gmail.com</a></p>
+              <p style="margin: 0 0 15px 0;">WhatsApp Us: <a href="https://wa.me/918793687379" style="color: #25D366; font-weight: bold; text-decoration: none;">+91 87936 87379</a> | Email: <a href="mailto:hello@rangaroo.store" style="color: #ffaa00; text-decoration: none;">hello@rangaroo.store</a></p>
               <p style="margin: 0; opacity: 0.7;">© 2026 Rangaroo Store. Made with ❤️ in India.</p>
             </td>
           </tr>

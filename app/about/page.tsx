@@ -2,10 +2,19 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Star, Palette, Shield, Sparkles, Smile } from 'lucide-react';
+import { Metadata } from 'next';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'About Us | Rangaroo',
   description: 'The story behind Rangaroo, creating smiles with premium DIY paint kits for kids.',
+  alternates: {
+    canonical: '/about',
+  },
+  openGraph: {
+    title: 'About Us | Rangaroo',
+    description: 'The story behind Rangaroo, creating smiles with premium DIY paint kits for kids.',
+    url: '/about',
+  },
 };
 
 export default function AboutPage() {

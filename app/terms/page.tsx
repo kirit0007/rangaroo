@@ -4,6 +4,14 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Terms of Service | Rangaroo',
   description: 'Terms and conditions for using the Rangaroo e-commerce platform.',
+  alternates: {
+    canonical: '/terms',
+  },
+  openGraph: {
+    title: 'Terms of Service | Rangaroo',
+    description: 'Terms and conditions for using the Rangaroo e-commerce platform.',
+    url: '/terms',
+  },
 };
 
 export default function TermsOfServicePage() {

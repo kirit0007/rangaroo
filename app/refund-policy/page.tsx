@@ -4,6 +4,14 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Refund & Returns Policy | Rangaroo',
   description: 'Our 7-day return and refund policy for Rangaroo DIY craft kits.',
+  alternates: {
+    canonical: '/refund-policy',
+  },
+  openGraph: {
+    title: 'Refund & Returns Policy | Rangaroo',
+    description: 'Our 7-day return and refund policy for Rangaroo DIY craft kits.',
+    url: '/refund-policy',
+  },
 };
 
 export default function RefundPolicyPage() {

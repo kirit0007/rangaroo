@@ -23,23 +23,16 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.rangaroo.store'),
   title: {
     default: 'Rangaroo | DIY Paint Kits for Kids - Non-Toxic & Screen-Free Fun',
-    template: '%s | Rangaroo',
+    template: '%s',
   },
   description: 'Premium DIY Paint Kits for Kids. Where Little Hands Create Big Smiles. Safe, non-toxic, and endlessly fun plaster figurines delivered across India.',
-  keywords: ['DIY paint kits', 'kids craft kits', 'non-toxic paints', 'plaster figurines', 'return gifts', 'made in India'],
   authors: [{ name: 'Rangaroo' }],
   creator: 'Rangaroo',
   publisher: 'Rangaroo',
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://www.rangaroo.store',
     siteName: 'Rangaroo',
-    title: 'Rangaroo | DIY Paint Kits for Kids',
-    description: 'Spark imagination with premium plaster figurines, non-toxic colors, and complete paint sets delivered in gift packaging.',
     images: [
       {
         url: '/logo.png',
@@ -51,8 +44,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Rangaroo | DIY Paint Kits for Kids',
-    description: 'Premium DIY Paint Kits for Kids. Non-toxic, screen-free fun!',
     images: ['/logo.png'],
   },
   robots: {

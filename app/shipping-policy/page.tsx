@@ -4,6 +4,14 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Shipping Policy | Rangaroo',
   description: 'Information about Rangaroo shipping times, costs, and delivery partners across India.',
+  alternates: {
+    canonical: '/shipping-policy',
+  },
+  openGraph: {
+    title: 'Shipping Policy | Rangaroo',
+    description: 'Information about Rangaroo shipping times, costs, and delivery partners across India.',
+    url: '/shipping-policy',
+  },
 };
 
 export default function ShippingPolicyPage() {

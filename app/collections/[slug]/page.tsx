@@ -3,8 +3,8 @@ import { getCollectionBySlug, getProductsByCollection } from '@/data/products';
 import CollectionClient from './CollectionClient';
 import { notFound } from 'next/navigation';
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   const collection = getCollectionBySlug(slug);
 
   if (!collection) {
@@ -16,15 +16,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${collection.name} Collection | Rangaroo DIY Paint Kits`,
     description: collection.description || `Explore our hand-picked selection of ${collection.name.toLowerCase()} themed painting kits.`,
+    alternates: { canonical: `/collections/${slug}` },
     openGraph: {
       title: `${collection.name} Collection | Rangaroo`,
       description: collection.description || `Explore our hand-picked selection of ${collection.name.toLowerCase()} themed painting kits.`,
+      url: `/collections/${slug}`,
     },
   };
 }
 
-export default function CollectionPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const collection = getCollectionBySlug(slug);
 
   if (!collection) {
@@ -33,5 +35,23 @@ export default function CollectionPage({ params }: { params: { slug: string } })
 
   const products = getProductsByCollection(collection.id);
 
-  return <CollectionClient initialCollection={collection} initialProducts={products} />;
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.rangaroo.store' },
+      { '@type': 'ListItem', position: 2, name: 'Collections', item: 'https://www.rangaroo.store/collections' },
+      { '@type': 'ListItem', position: 3, name: `${collection.name} Collection`, item: `https://www.rangaroo.store/collections/${slug}` },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <CollectionClient initialCollection={collection} initialProducts={products} />
+    </>
+  );
 }

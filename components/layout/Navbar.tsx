@@ -228,18 +228,28 @@ export default function Navbar() {
             </motion.button>
 
             {/* Wishlist Button */}
-            <Link
-              href="/profile"
-              aria-label="Wishlist"
-              className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
-            >
-              <Heart size={22} />
-              {mounted && wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
+            {mounted && user ? (
+              <Link
+                href="/profile"
+                className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              >
+                <span className="sr-only">Wishlist</span>
+                <Heart size={22} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <button
+                onClick={() => openAuthModal('login')}
+                className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              >
+                <span className="sr-only">Login to view wishlist</span>
+                <Heart size={22} />
+              </button>
+            )}
 
             {/* Cart Button */}
             <motion.button

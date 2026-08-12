@@ -1,9 +1,18 @@
 import React from 'react';
+import { Metadata } from 'next';
 import { MapPin, Send, PhoneCall } from 'lucide-react';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Contact Us | Rangaroo',
   description: 'Get in touch with the Rangaroo team for any questions about our DIY paint kits.',
+  alternates: {
+    canonical: '/contact',
+  },
+  openGraph: {
+    title: 'Contact Us | Rangaroo',
+    description: 'Get in touch with the Rangaroo team for any questions about our DIY paint kits.',
+    url: '/contact',
+  },
 };
 
 export default function ContactPage() {

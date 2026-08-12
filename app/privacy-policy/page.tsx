@@ -4,6 +4,14 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Privacy Policy | Rangaroo',
   description: 'How Rangaroo handles and protects your personal data securely.',
+  alternates: {
+    canonical: '/privacy-policy',
+  },
+  openGraph: {
+    title: 'Privacy Policy | Rangaroo',
+    description: 'How Rangaroo handles and protects your personal data securely.',
+    url: '/privacy-policy',
+  },
 };
 
 export default function PrivacyPolicyPage() {
