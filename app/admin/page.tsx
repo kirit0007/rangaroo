@@ -56,6 +56,7 @@ function SafeProductThumbnail({ src, alt }: { src?: string; alt: string }) {
 export default function AdminPage() {
   const user = useAuthStore((state) => state.user);
   const signIn = useAuthStore((state) => state.signIn);
+  const signOut = useAuthStore((state) => state.signOut);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -134,14 +135,22 @@ export default function AdminPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      await signOut();
       const res = await signIn(email, password);
       if (res?.error) {
         toast.error(res.error);
-      } else {
+        return;
+      }
+      
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser?.role === 'admin') {
         toast.success('Welcome Admin');
+      } else {
+        toast.error('Access Denied: Invalid admin credentials');
+        await signOut();
       }
     } catch (error) {
-      toast.error('Login failed');
+      toast.error('Login failed: Invalid credentials');
     }
   };
 
@@ -447,6 +456,18 @@ export default function AdminPage() {
             <span>Orders ({orders.length})</span>
           </button>
         </nav>
+        <div className="p-4 border-t border-gray-800 mt-auto">
+          <button
+            onClick={() => {
+              useAuthStore.getState().signOut();
+              toast.success('Admin session locked');
+            }}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-900/40 hover:bg-red-800 text-red-200 rounded-xl text-xs font-bold transition-colors border border-red-800/50 cursor-pointer"
+          >
+            <Lock size={14} />
+            <span>Lock & Sign Out</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content Area */}

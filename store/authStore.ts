@@ -54,18 +54,25 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         return { error: 'Please enter both email and password' };
       }
 
-      // Admin Login Check
-      if ((cleanEmail === 'admin' || cleanEmail === 'admin@rangaroo.store') && password === 'rangaroo2026') {
-        const adminUser: AuthUser = {
-          id: 'admin-super-user',
-          email: 'admin@rangaroo.store',
-          fullName: 'Admin',
-          role: 'admin',
-        };
-        set({ user: adminUser, isAuthModalOpen: false });
-        // Set secure cookie for middleware RBAC
-        document.cookie = `rangaroo_user=admin; path=/; max-age=86400; secure; samesite=strict`;
-        return { error: null };
+      // Strict Admin Authentication Check
+      const isAdminEmail = cleanEmail === 'admin' || cleanEmail === 'admin@rangaroo.store';
+      if (isAdminEmail) {
+        if (password === 'rangaroo2026') {
+          const adminUser: AuthUser = {
+            id: 'admin-super-user',
+            email: 'admin@rangaroo.store',
+            fullName: 'Admin',
+            role: 'admin',
+          };
+          set({ user: adminUser, isAuthModalOpen: false });
+          document.cookie = `rangaroo_user=admin; path=/; max-age=86400; secure; samesite=strict`;
+          return { error: null };
+        } else {
+          // Password failed for admin email - Reject immediately! Do NOT fall back!
+          set({ user: null });
+          document.cookie = 'rangaroo_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          return { error: 'Invalid admin credentials' };
+        }
       }
 
       if (password.length < 4) {
@@ -80,28 +87,14 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           id: data.user.id,
           email: data.user.email || cleanEmail,
           fullName: data.user.user_metadata?.full_name || cleanEmail.split('@')[0],
-          role: data.user.user_metadata?.role || (cleanEmail.includes('admin') ? 'admin' : 'customer'),
+          role: data.user.user_metadata?.role === 'admin' ? 'admin' : 'customer',
         };
         set({ user: authUser, isAuthModalOpen: false });
         return { error: null };
       }
 
       if (error) {
-        // Customer sign in fallback
-        if (error.message.includes('Invalid login credentials')) {
-          if (password.length >= 6) {
-            const customerUser: AuthUser = {
-              id: `user-${Date.now()}`,
-              email: cleanEmail,
-              fullName: cleanEmail.split('@')[0],
-              role: 'customer',
-            };
-            set({ user: customerUser, isAuthModalOpen: false });
-            return { error: null };
-          }
-          return { error: 'Invalid email or password' };
-        }
-        return { error: error.message };
+        return { error: error.message || 'Invalid email or password' };
       }
 
       return { error: 'Sign in failed' };
