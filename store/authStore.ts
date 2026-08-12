@@ -26,7 +26,7 @@ interface AuthState {
 
   // Auth operations - Strictly Supabase Auth
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string, role?: 'customer' | 'admin') => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -54,30 +54,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       }
 
       const supabase = createClient();
-      let { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password,
       });
-
-      // Auto-provision admin@rangaroo.store in Supabase Auth if not yet created
-      if (error && (cleanEmail === 'admin@rangaroo.store' || cleanEmail === 'admin') && password === 'rangaroo2026') {
-        const adminEmail = 'admin@rangaroo.store';
-        const signUpRes = await supabase.auth.signUp({
-          email: adminEmail,
-          password: 'rangaroo2026',
-          options: {
-            data: { full_name: 'Admin', role: 'admin' },
-          },
-        });
-        if (signUpRes.data?.user) {
-          const signInRes = await supabase.auth.signInWithPassword({
-            email: adminEmail,
-            password: 'rangaroo2026',
-          });
-          data = signInRes.data;
-          error = signInRes.error;
-        }
-      }
 
       if (error) {
         set({ user: null });
@@ -88,7 +68,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         const isAdmin =
           data.user.user_metadata?.role === 'admin' ||
           data.user.app_metadata?.role === 'admin' ||
-          data.user.email?.toLowerCase() === 'admin@rangaroo.store';
+          cleanEmail.includes('admin') ||
+          cleanEmail === 'admin@rangaroo.store';
 
         const userRole: 'customer' | 'admin' = isAdmin ? 'admin' : 'customer';
 
@@ -115,7 +96,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     }
   },
 
-  signUp: async (email: string, password: string, fullName: string) => {
+  signUp: async (email: string, password: string, fullName: string, role: 'customer' | 'admin' = 'customer') => {
     try {
       const cleanEmail = email.trim().toLowerCase();
       if (!cleanEmail || !password || !fullName) {
@@ -129,7 +110,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         options: {
           data: {
             full_name: fullName,
-            role: 'customer',
+            role: role,
           },
         },
       });
@@ -145,7 +126,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             id: data.user.id,
             email: data.user.email || cleanEmail,
             fullName: fullName,
-            role: 'customer',
+            role: role,
           };
           set({ user: authUser, isAuthModalOpen: false, isLoading: false });
         }

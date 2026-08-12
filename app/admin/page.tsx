@@ -56,10 +56,13 @@ function SafeProductThumbnail({ src, alt }: { src?: string; alt: string }) {
 export default function AdminPage() {
   const user = useAuthStore((state) => state.user);
   const signIn = useAuthStore((state) => state.signIn);
+  const signUp = useAuthStore((state) => state.signUp);
   const signOut = useAuthStore((state) => state.signOut);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [adminAuthMode, setAdminAuthMode] = useState<'login' | 'signup'>('login');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   const siteSettings = useAdminStore((state) => state.siteSettings);
@@ -146,11 +149,30 @@ export default function AdminPage() {
       if (currentUser?.role === 'admin') {
         toast.success('Welcome Admin');
       } else {
-        toast.error('Access Denied: Invalid admin credentials');
+        toast.error('Access Denied: You must have an Admin account in Supabase to access the Admin Panel');
         await signOut();
       }
     } catch (error) {
       toast.error('Login failed: Invalid credentials');
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await signOut();
+      const res = await signUp(email, password, fullName || 'Store Admin', 'admin');
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success('Admin account created in Supabase! Signing in...');
+      const loginRes = await signIn(email, password);
+      if (loginRes?.error) {
+        toast.error(loginRes.error);
+      }
+    } catch (error) {
+      toast.error('Admin registration failed');
     }
   };
 
@@ -346,17 +368,49 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2] p-4">
         <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-4">
             <div className="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center">
               <Lock className="w-8 h-8 text-orange-500" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-center mb-8 font-outfit text-gray-800">Admin Login</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <h1 className="text-2xl font-bold text-center mb-2 font-outfit text-gray-800">Admin Access Portal</h1>
+          <p className="text-xs text-gray-500 text-center mb-6">Authenticate strictly via Supabase Auth</p>
+
+          <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+            <button
+              type="button"
+              onClick={() => setAdminAuthMode('login')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${adminAuthMode === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setAdminAuthMode('signup')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${adminAuthMode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+            >
+              Register Admin Account
+            </button>
+          </div>
+
+          <form onSubmit={adminAuthMode === 'login' ? handleLogin : handleRegister} className="space-y-4">
+            {adminAuthMode === 'signup' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Store Admin"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                  required
+                />
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
-                type="text"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@rangaroo.store"
@@ -377,9 +431,9 @@ export default function AdminPage() {
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors shadow-md"
+              className="w-full py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors shadow-md cursor-pointer"
             >
-              Sign In to Admin
+              {adminAuthMode === 'login' ? 'Sign In to Admin' : 'Register & Create Admin Account'}
             </button>
           </form>
         </div>
