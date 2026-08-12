@@ -55,13 +55,15 @@ export default function CartDrawer() {
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) return;
     
-    const coupon = typeof getCoupon === 'function' ? getCoupon(couponCode) : undefined;
-    if (coupon || couponCode.toUpperCase() === 'FIRST10') {
-      const discountVal = 0.10; // 10% OFF
-      setAppliedCoupon({ code: couponCode.toUpperCase(), discount: discountVal });
-      toast.success('10% OFF Coupon applied successfully! 🎉');
+    const coupon = typeof getCoupon === 'function' ? getCoupon(couponCode.trim()) : undefined;
+    if (coupon) {
+      const discountVal = coupon.discountType === 'percentage'
+        ? (coupon.discountValue > 1 ? coupon.discountValue / 100 : coupon.discountValue)
+        : coupon.discountValue;
+      setAppliedCoupon({ code: coupon.code, discount: discountVal });
+      toast.success(`Coupon ${coupon.code} applied successfully! 🎉`);
     } else {
-      toast.error('Invalid coupon code');
+      toast.error('Invalid or expired coupon code');
       setAppliedCoupon(null);
     }
   };

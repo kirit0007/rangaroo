@@ -197,7 +197,6 @@ function ProfileContent() {
               { id: 'security', label: 'Security & Access', icon: Lock },
               { id: 'addresses', label: 'Address Book', icon: MapPin },
               { id: 'payments', label: 'Saved Payments', icon: CreditCard },
-              { id: 'preferences', label: 'Preferences', icon: Bell },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -504,55 +503,6 @@ function ProfileContent() {
                       ))}
                     </div>
                   )}
-                </motion.div>
-              )}
-
-              {/* TAB 5: Preferences & Account Deletion */}
-              {activeTab === 'preferences' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h2 className="text-xl font-outfit font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <Bell className="text-orange-500" /> Communication Preferences
-                  </h2>
-
-                  <div className="space-y-4 max-w-xl mb-12">
-                    {[
-                      { key: 'marketingEmails', label: 'Marketing & Discount Emails', desc: 'Receive special sales & promo codes' },
-                      { key: 'smsAlerts', label: 'SMS Order Updates', desc: 'Real-time shipping and delivery notifications' },
-                      { key: 'whatsAppUpdates', label: 'WhatsApp Order Support', desc: 'Instant support & status updates via WhatsApp' },
-                    ].map((pref) => (
-                      <label key={pref.key} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-200 cursor-pointer">
-                        <div>
-                          <p className="font-bold text-gray-900 text-sm">{pref.label}</p>
-                          <p className="text-xs text-gray-500">{pref.desc}</p>
-                        </div>
-                        <input 
-                          type="checkbox"
-                          checked={(preferences as any)[pref.key]}
-                          onChange={(e) => {
-                            setPreferences({ ...preferences, [pref.key]: e.target.checked });
-                            toast.success('Preferences updated!');
-                          }}
-                          className="w-5 h-5 accent-orange-500 rounded cursor-pointer"
-                        />
-                      </label>
-                    ))}
-                  </div>
-
-                  {/* Account Deletion / Deactivation */}
-                  <div className="pt-8 border-t border-red-100 max-w-xl">
-                    <h3 className="font-bold text-red-600 text-base mb-2 flex items-center gap-2">
-                      <AlertTriangle size={18} /> Danger Zone
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Deactivating your account will remove your saved addresses, payment methods, and profile preferences.
-                    </p>
-                    <button 
-                      onClick={() => setShowDeleteModal(true)}
-                      className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition-colors"
-                    >
-                      Deactivate Account
-                    </button>
-                  </div>
                 </motion.div>
               )}
 

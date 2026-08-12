@@ -115,16 +115,7 @@ export default function Navbar() {
       {/* Announcement Bar */}
       {siteSettings.announcementText && (
         <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white text-center py-2 text-xs sm:text-sm font-semibold tracking-wide flex items-center justify-center gap-2 px-4 shadow-2xs">
-          <span>🎨 Free Express Shipping above ₹499! Use code</span>
-          <button
-            onClick={() => handleCopyCoupon('FIRST10')}
-            className="px-2.5 py-0.5 bg-white/20 hover:bg-white/30 rounded-md font-mono font-extrabold text-white text-xs border border-white/40 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
-            title="Click to copy coupon code FIRST10"
-          >
-            <span>FIRST10</span>
-            <Copy className="w-3 h-3" />
-          </button>
-          <span>for 10% OFF!</span>
+          <span>{siteSettings.announcementText}</span>
         </div>
       )}
 
