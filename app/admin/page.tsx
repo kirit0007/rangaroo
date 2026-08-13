@@ -982,16 +982,7 @@ export default function AdminPage() {
                               </button>
                               <button
                                 onClick={async () => {
-                                  updateOrderStatus(order.id, 'processing');
-                                  try {
-                                    await fetch('/api/admin/orders', {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ orderId: order.id, status: 'processing' }),
-                                    });
-                                  } catch (err) {
-                                    console.error('Failed to reject cancellation:', err);
-                                  }
+                                  await updateOrderStatus(order.id, 'processing');
                                   toast.success(`Cancellation request rejected for ${order.orderNumber || order.id}`);
                                 }}
                                 className="px-4 py-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-bold transition-colors"
@@ -1003,9 +994,24 @@ export default function AdminPage() {
                         )}
 
                         {isExpanded && (
-                          <div className="mt-4 pt-4 border-t border-gray-100 text-sm space-y-3 bg-gray-50 p-4 rounded-2xl">
-                            <p><strong>Razorpay Payment ID:</strong> <span className="font-mono text-xs bg-gray-200 px-2 py-0.5 rounded">{order.razorpayPaymentId || 'N/A'}</span></p>
-                            <p><strong>Shipping Address:</strong> {order.shippingAddress?.addressLine1}, {order.shippingAddress?.addressLine2 ? `${order.shippingAddress.addressLine2}, ` : ''}{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
+                          <div className="mt-4 pt-4 border-t border-gray-100 text-sm space-y-4 bg-gray-50 p-4 rounded-2xl">
+                            
+                            {/* Customer Info & Payment */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="font-bold text-gray-900 mb-2">Customer Details</h4>
+                                <p><strong>Email:</strong> {order.customerEmail || 'N/A'}</p>
+                                <p><strong>Phone:</strong> {order.shippingAddress?.phone || 'N/A'}</p>
+                                <p><strong>Address:</strong> {order.shippingAddress?.addressLine1}, {order.shippingAddress?.addressLine2 ? `${order.shippingAddress.addressLine2}, ` : ''}{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-gray-900 mb-2">Payment Details</h4>
+                                <p><strong>Razorpay ID:</strong> <span className="font-mono text-xs bg-gray-200 px-2 py-0.5 rounded">{order.razorpayPaymentId || 'N/A'}</span></p>
+                                {order.trackingNumber && (
+                                  <p><strong>Tracking:</strong> {order.courierName ? `${order.courierName} - ` : ''} <span className="font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">{order.trackingNumber}</span></p>
+                                )}
+                              </div>
+                            </div>
                             
                             {order.shippingAddress?.isGiftWrapped && (
                               <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
@@ -1016,14 +1022,71 @@ export default function AdminPage() {
                               </div>
                             )}
 
-                            <p><strong>Items Ordered:</strong></p>
-                            <ul className="list-disc pl-5 space-y-1">
-                              {order.items?.map((item: any, idx: number) => (
-                                <li key={idx}>
-                                  <strong>{item.productName}</strong> × {item.quantity} — ₹{item.unitPrice} each (Total: ₹{item.totalPrice})
-                                </li>
-                              ))}
-                            </ul>
+                            {/* Order Items */}
+                            <div>
+                              <h4 className="font-bold text-gray-900 mb-2 border-b pb-1">Items Ordered</h4>
+                              <ul className="space-y-3">
+                                {order.items?.map((item: any, idx: number) => (
+                                  <li key={idx} className="flex justify-between items-start bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                    <div>
+                                      <p className="font-bold text-gray-800">{item.productName}</p>
+                                      {item.variantDetails && <p className="text-xs text-gray-500 mt-0.5">{item.variantDetails}</p>}
+                                      {item.sku && <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {item.sku}</p>}
+                                      <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity} × ₹{item.unitPrice}</p>
+                                    </div>
+                                    <div className="font-bold text-gray-900">
+                                      ₹{item.totalPrice}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Financial Breakdown (Receipt Style) */}
+                            <div className="flex justify-end pt-4 border-t border-gray-200">
+                              <div className="w-full md:w-1/2 lg:w-1/3 space-y-2 text-right bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                {order.subtotal !== undefined ? (
+                                  <>
+                                    <div className="flex justify-between text-gray-600">
+                                      <span>Subtotal</span>
+                                      <span>₹{order.subtotal}</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-600">
+                                      <span>Shipping</span>
+                                      <span>{order.shippingFee === 0 ? 'Free' : `₹${order.shippingFee}`}</span>
+                                    </div>
+                                    {(order.giftWrapFee ?? 0) > 0 && (
+                                      <div className="flex justify-between text-pink-600">
+                                        <span>Gift Wrap</span>
+                                        <span>₹{order.giftWrapFee}</span>
+                                      </div>
+                                    )}
+                                    {(order.taxAmount ?? 0) > 0 && (
+                                      <div className="flex justify-between text-gray-600">
+                                        <span>Tax</span>
+                                        <span>₹{order.taxAmount}</span>
+                                      </div>
+                                    )}
+                                    {order.discountAmount > 0 && (
+                                      <div className="flex justify-between text-green-600">
+                                        <span>Discount {order.couponCode ? `(${order.couponCode})` : ''}</span>
+                                        <span>-₹{order.discountAmount}</span>
+                                      </div>
+                                    )}
+                                    <div className="flex justify-between font-bold text-lg text-gray-900 pt-2 border-t border-dashed border-gray-300 mt-2">
+                                      <span>Grand Total</span>
+                                      <span>₹{order.total}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  /* Fallback for legacy orders missing new financial fields */
+                                  <div className="flex justify-between font-bold text-lg text-gray-900">
+                                    <span>Grand Total</span>
+                                    <span>₹{order.total}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>

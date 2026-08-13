@@ -21,6 +21,8 @@ export interface CartStore {
   getTotal: () => number;
   getSubtotal: () => number;
   getShippingFee: () => number;
+  getGiftWrapFee: () => number;
+  getTaxAmount: () => number;
   getItemCount: () => number;
 }
 
@@ -99,13 +101,20 @@ export const useCartStore = create<CartStore>()(
 
       getShippingFee: () => {
         const subtotal = get().getSubtotal();
-        if (subtotal === 0) return 0;
+        if (subtotal === 0 || subtotal >= 499) return 0;
         return FLAT_SHIPPING_FEE;
       },
 
+      getGiftWrapFee: () => {
+        return get().isGiftWrapped ? GIFT_WRAP_FEE : 0;
+      },
+
+      getTaxAmount: () => {
+        return 0;
+      },
+
       getTotal: () => {
-        const giftWrapFee = get().isGiftWrapped ? GIFT_WRAP_FEE : 0;
-        return get().getSubtotal() + get().getShippingFee() + giftWrapFee;
+        return get().getSubtotal() + get().getShippingFee() + get().getGiftWrapFee() + get().getTaxAmount();
       },
 
       getItemCount: () => {

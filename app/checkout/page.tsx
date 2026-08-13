@@ -20,8 +20,12 @@ export default function CheckoutPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotal = useCartStore((state) => state.getTotal);
   const getShippingFee = useCartStore((state) => state.getShippingFee);
+  const getGiftWrapFee = useCartStore((state) => state.getGiftWrapFee);
+  const getTaxAmount = useCartStore((state) => state.getTaxAmount);
   const isGiftWrapped = useCartStore((state) => state.isGiftWrapped);
   const giftMessage = useCartStore((state) => state.giftMessage);
+  
+  const appliedCoupon: any = null; // Placeholder for coupon implementation
   const addOrder = useAdminStore((state) => state.addOrder);
   
   const [step, setStep] = useState<1 | 2>(1);
@@ -198,9 +202,13 @@ export default function CheckoutPage() {
               status: 'confirmed' as const,
               paymentStatus: 'paid' as const,
               createdAt: new Date().toISOString(),
+              customerEmail: formData.email,
               subtotal: getSubtotal(),
               shippingFee: getShippingFee(),
-              discountAmount: 0,
+              giftWrapFee: getGiftWrapFee(),
+              taxAmount: getTaxAmount(),
+              discountAmount: appliedCoupon ? (getSubtotal() * (appliedCoupon.discountValue / 100)) : 0,
+              couponCode: appliedCoupon?.code,
               total: getTotal(),
               razorpayPaymentId: response.razorpay_payment_id,
               shippingAddress: {

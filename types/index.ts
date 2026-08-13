@@ -99,10 +99,13 @@ export interface Order {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   shippingAddress: Address;
+  customerEmail?: string;
   subtotal: number;
   discountAmount: number;
   couponCode?: string;
   shippingFee: number;
+  giftWrapFee?: number;
+  taxAmount?: number;
   total: number;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
@@ -118,6 +121,8 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  variantDetails?: string;
+  sku?: string;
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancellation_requested' | 'cancelled' | 'refunded';
