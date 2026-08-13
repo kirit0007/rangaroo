@@ -149,65 +149,91 @@ export default function CheckoutPage() {
 
       // Razorpay Checkout Options
       const options: any = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_dummy_key',
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TPIC0CSsjAS9L2',
         amount: getTotal() * 100, // Amount in paise
         currency: 'INR',
         name: 'Rangaroo Store',
         description: 'DIY Paint Kits Order',
         image: '/logo.png',
-        handler: function (response: any) {
-          const currentOrders = useAdminStore.getState().orders || [];
-          const nextSeq = 1001 + currentOrders.length;
-          const newOrder = {
-            id: `ord-${nextSeq}`,
-            orderNumber: `#${nextSeq}`,
-            status: 'confirmed' as const,
-            paymentStatus: 'paid' as const,
-            createdAt: new Date().toISOString(),
-            subtotal: getSubtotal(),
-            shippingFee: getShippingFee(),
-            discountAmount: 0,
-            total: getTotal(),
-            razorpayPaymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
-            shippingAddress: {
-              fullName: formData.fullName,
-              phone: formData.phone,
-              addressLine1: formData.address1,
-              addressLine2: formData.address2,
-              city: formData.city,
-              state: formData.state,
-              pincode: formData.pincode,
-            },
-            items: items.map(it => ({
-              productId: it.productId,
-              productName: it.name,
-              productImage: it.image,
-              quantity: it.quantity,
-              unitPrice: it.price,
-              totalPrice: it.price * it.quantity
-            }))
-          };
-          addOrder(newOrder);
+        handler: async function (response: any) {
+          try {
+            // Verify HMAC signature on backend
+            if (response.razorpay_signature) {
+              const verifyRes = await fetch('/api/razorpay/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id || orderId || `ord_${Date.now()}`,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+              const verifyData = await verifyRes.json();
+              if (!verifyRes.ok || !verifyData.verified) {
+                toast.error('Payment signature verification failed. Please contact support.');
+                setIsLoading(false);
+                return;
+              }
+            }
 
-          // 1. Sync order to central system store for Admin Orders Panel
-          fetch('/api/admin/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order: newOrder }),
-          }).catch(err => console.error('Admin order sync error:', err));
+            const currentOrders = useAdminStore.getState().orders || [];
+            const nextSeq = 1001 + currentOrders.length;
+            const newOrder = {
+              id: `ord-${nextSeq}`,
+              orderNumber: `#${nextSeq}`,
+              status: 'confirmed' as const,
+              paymentStatus: 'paid' as const,
+              createdAt: new Date().toISOString(),
+              subtotal: getSubtotal(),
+              shippingFee: getShippingFee(),
+              discountAmount: 0,
+              total: getTotal(),
+              razorpayPaymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
+              shippingAddress: {
+                fullName: formData.fullName,
+                phone: formData.phone,
+                addressLine1: formData.address1,
+                addressLine2: formData.address2,
+                city: formData.city,
+                state: formData.state,
+                pincode: formData.pincode,
+              },
+              items: items.map(it => ({
+                productId: it.productId,
+                productName: it.name,
+                productImage: it.image,
+                quantity: it.quantity,
+                unitPrice: it.price,
+                totalPrice: it.price * it.quantity
+              }))
+            };
+            addOrder(newOrder);
 
-          // 2. Trigger Brevo Order Confirmation Email
-          fetch('/api/email/order-confirmation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order: newOrder,
-              customerEmail: formData.email,
-            }),
-          }).catch(err => console.error('Brevo order confirmation email trigger failed:', err));
+            // 1. Sync order to central system store for Admin Orders Panel
+            fetch('/api/admin/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ order: newOrder }),
+            }).catch(err => console.error('Admin order sync error:', err));
 
-          clearCart();
-          router.push(`/order-confirmation?orderNumber=${encodeURIComponent(newOrder.orderNumber)}`);
+            // 2. Trigger Brevo Order Confirmation Email
+            fetch('/api/email/order-confirmation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                order: newOrder,
+                customerEmail: formData.email,
+              }),
+            }).catch(err => console.error('Brevo order confirmation email trigger failed:', err));
+
+            clearCart();
+            toast.success('Payment Verified & Order Confirmed! 🎉');
+            router.push(`/order-confirmation?orderNumber=${encodeURIComponent(newOrder.orderNumber)}`);
+          } catch (error) {
+            console.error('Payment processing error:', error);
+            toast.error('Payment verification failed');
+            setIsLoading(false);
+          }
         },
         prefill: {
           name: formData.fullName,

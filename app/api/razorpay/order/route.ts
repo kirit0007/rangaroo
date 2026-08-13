@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     const amountInPaise = Math.round(finalAmountRupees * 100);
 
     // Create Razorpay order via official REST endpoint
-    const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_dummy_key';
-    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || 'dummy_secret';
+    const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TPIC0CSsjAS9L2';
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || '4c91jNJeOtVWnQpMNfTSznZS';
 
     const auth = Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
 
