@@ -105,8 +105,23 @@ export default function CheckoutPage() {
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      if (existingScript) {
+        if ((window as any).Razorpay) {
+          resolve(true);
+          return;
+        }
+        existingScript.addEventListener('load', () => resolve(true));
+        existingScript.addEventListener('error', () => resolve(false));
+        return;
+      }
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
@@ -117,10 +132,10 @@ export default function CheckoutPage() {
     setIsLoading(true);
     
     try {
-      // Load script
+      // Load SDK Script safely
       const res = await loadRazorpayScript();
-      if (!res) {
-        toast.error('Razorpay SDK failed to load. Please check your network connection.');
+      if (!res || !(window as any).Razorpay) {
+        toast.error('Razorpay SDK failed to load. Please check your internet connection.');
         setIsLoading(false);
         return;
       }
@@ -150,7 +165,7 @@ export default function CheckoutPage() {
       // Razorpay Checkout Options
       const options: any = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TPIC0CSsjAS9L2',
-        amount: getTotal() * 100, // Amount in paise
+        amount: Math.round(getTotal() * 100), // Amount in paise
         currency: 'INR',
         name: 'Rangaroo Store',
         description: 'DIY Paint Kits Order',
@@ -246,6 +261,7 @@ export default function CheckoutPage() {
         modal: {
           ondismiss: function() {
             setIsLoading(false);
+            toast('Checkout modal closed', { icon: 'ℹ️' });
           }
         }
       };
@@ -255,11 +271,18 @@ export default function CheckoutPage() {
       }
 
       const paymentObject = new (window as any).Razorpay(options);
+
+      paymentObject.on('payment.failed', function (response: any) {
+        console.error('Razorpay payment failed:', response.error);
+        toast.error(`Payment failed: ${response.error?.description || 'Transaction declined'}`);
+        setIsLoading(false);
+      });
+
       paymentObject.open();
 
-    } catch (error) {
-      console.error(error);
-      toast.error('Something went wrong. Please try again.');
+    } catch (error: any) {
+      console.error('Razorpay initialization error:', error);
+      toast.error(`Failed to launch payment popup: ${error.message || 'Error occurred'}`);
       setIsLoading(false);
     }
   };
