@@ -48,9 +48,17 @@ export async function POST(request: NextRequest) {
       key: key_id,
     });
   } catch (error: any) {
-    console.error('Error creating Razorpay order:', error);
+    console.error('FULL RAZORPAY ERROR:', error);
+    
+    // Razorpay SDK often nests the error description
+    const errorMessage = 
+      error?.error?.description || 
+      error?.description || 
+      error?.message || 
+      (typeof error === 'string' ? error : 'Failed to create payment order. Unknown error.');
+
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create payment order.' },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
