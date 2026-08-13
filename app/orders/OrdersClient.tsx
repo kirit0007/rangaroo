@@ -260,8 +260,8 @@ export default function OrdersClient() {
 
                 <div className="bg-orange-50/60 p-4 rounded-2xl border border-orange-100 mb-6">
                   <div className="flex justify-between text-xs font-semibold text-gray-600 mb-1">
-                    <span>Courier Partner: {showTrackModal.courierName || 'Delhivery Express'}</span>
-                    <span>AWB: {showTrackModal.trackingNumber || 'DELHIVERY-98471204'}</span>
+                    <span>Courier Partner: {showTrackModal.courierName || 'Pending Dispatch'}</span>
+                    <span>AWB: {showTrackModal.trackingNumber || 'Not Generated Yet'}</span>
                   </div>
                   <p className="text-xs text-orange-700 font-bold mt-1">Expected Delivery: Within 2-3 Business Days</p>
                 </div>
@@ -269,9 +269,9 @@ export default function OrdersClient() {
                 {/* Timeline */}
                 <div className="space-y-6 relative pl-6 border-l-2 border-orange-200 my-4 ml-3">
                   {[
-                    { title: 'Order Confirmed & Paid', date: 'Order Received', done: true },
-                    { title: 'Packed & Dispatched', date: 'Handed over to Courier', done: true },
-                    { title: 'In Transit', date: 'Out for local delivery', done: showTrackModal.status === 'shipped' || showTrackModal.status === 'delivered' },
+                    { title: 'Order Confirmed & Paid', date: 'Order Received', done: ['confirmed', 'processing', 'shipped', 'delivered'].includes(showTrackModal.status) || true },
+                    { title: 'Packed & Dispatched', date: 'Handed over to Courier', done: ['shipped', 'delivered'].includes(showTrackModal.status) },
+                    { title: 'In Transit', date: 'Out for local delivery', done: ['shipped', 'delivered'].includes(showTrackModal.status) },
                     { title: 'Delivered', date: 'Package arrived at doorstep', done: showTrackModal.status === 'delivered' },
                   ].map((step, idx) => (
                     <div key={idx} className="relative">

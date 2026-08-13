@@ -137,6 +137,7 @@ export async function PATCH(request: NextRequest) {
 
     revalidatePath('/admin');
     revalidatePath('/admin/orders');
+    revalidatePath('/orders');
 
     return NextResponse.json({ success: true, orderId: cleanId, status, trackingNumber, courierName });
   } catch (error: any) {
