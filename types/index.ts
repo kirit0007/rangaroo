@@ -141,7 +141,7 @@ export interface Coupon {
   code: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
-  minOrderAmount: number;
+  minOrderAmount?: number;
   maxDiscountAmount?: number;
 }
 

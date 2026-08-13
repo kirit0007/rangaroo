@@ -5,7 +5,7 @@ import { persist } from 'zustand/middleware';
 import { Coupon, Order, Product } from '@/types';
 import { products as initialProducts } from '@/data/products';
 
-interface SiteSettings {
+export interface SiteSettings {
   announcementText: string;
   heroTitle: string;
   heroSubtitle: string;
@@ -27,10 +27,14 @@ interface AdminStore {
   orders: Order[];
   products: Product[];
 
-  updateSiteSettings: (settings: Partial<SiteSettings>) => void;
-  addCoupon: (coupon: Coupon) => void;
-  removeCoupon: (code: string) => void;
+  fetchSiteSettings: () => Promise<void>;
+  updateSiteSettings: (settings: Partial<SiteSettings>) => Promise<boolean>;
+  
+  fetchCoupons: () => Promise<void>;
+  addCoupon: (coupon: Coupon) => Promise<boolean>;
+  removeCoupon: (code: string) => Promise<boolean>;
   getCoupon: (code: string) => Coupon | undefined;
+
   setOrders: (orders: Order[]) => void;
   addOrder: (order: Order) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
@@ -88,20 +92,98 @@ export const useAdminStore = create<AdminStore>()(
       orders: [],
       products: initialProducts,
 
-      updateSiteSettings: (settings) =>
-        set((state) => ({
-          siteSettings: { ...state.siteSettings, ...settings },
-        })),
+      fetchSiteSettings: async () => {
+        try {
+          const res = await fetch('/api/settings', { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.settings) {
+              set({ siteSettings: { ...defaultSettings, ...data.settings } });
+            }
+          }
+        } catch (err) {
+          console.error('Error syncing site settings:', err);
+        }
+      },
 
-      addCoupon: (coupon) =>
-        set((state) => ({
-          coupons: [...state.coupons.filter(c => c.code !== coupon.code), coupon],
-        })),
+      updateSiteSettings: async (settings) => {
+        const newSettings = { ...get().siteSettings, ...settings };
+        set({ siteSettings: newSettings });
 
-      removeCoupon: (code) =>
+        try {
+          const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.settings) {
+              set({ siteSettings: data.settings });
+            }
+            return true;
+          }
+        } catch (err) {
+          console.error('Failed to sync site settings to backend:', err);
+        }
+        return false;
+      },
+
+      fetchCoupons: async () => {
+        try {
+          const res = await fetch('/api/coupons', { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.coupons && Array.isArray(data.coupons)) {
+              set({ coupons: data.coupons });
+            }
+          }
+        } catch (err) {
+          console.error('Error syncing coupons:', err);
+        }
+      },
+
+      addCoupon: async (coupon) => {
         set((state) => ({
-          coupons: state.coupons.filter(c => c.code !== code),
-        })),
+          coupons: [coupon, ...state.coupons.filter(c => c.code.toUpperCase() !== coupon.code.toUpperCase())],
+        }));
+
+        try {
+          const res = await fetch('/api/coupons', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupon }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.coupons) set({ coupons: data.coupons });
+            return true;
+          }
+        } catch (err) {
+          console.error('Failed to sync new coupon:', err);
+        }
+        return false;
+      },
+
+      removeCoupon: async (code) => {
+        set((state) => ({
+          coupons: state.coupons.filter(c => c.code.toUpperCase() !== code.toUpperCase()),
+        }));
+
+        try {
+          const res = await fetch(`/api/coupons?code=${encodeURIComponent(code)}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.coupons) set({ coupons: data.coupons });
+            return true;
+          }
+        } catch (err) {
+          console.error('Failed to delete coupon on server:', err);
+        }
+        return false;
+      },
 
       getCoupon: (code) => {
         return get().coupons.find(c => c.code.toUpperCase() === code.toUpperCase());

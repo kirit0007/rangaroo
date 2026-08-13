@@ -94,8 +94,11 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  // Fetch all system-wide orders and custom products from central API endpoints
+  // Fetch all system-wide orders, products, CMS settings, and coupons on mount
   useEffect(() => {
+    useAdminStore.getState().fetchSiteSettings();
+    useAdminStore.getState().fetchCoupons();
+
     fetch('/api/admin/orders')
       .then((res) => res.json())
       .then((data) => {
@@ -131,22 +134,25 @@ export default function AdminPage() {
     isActive: true,
   });
 
-
-
-  const handleCmsSave = (e: React.FormEvent) => {
+  const handleCmsSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSiteSettings(cmsForm);
-    toast.success('Site settings updated');
+    const toastId = toast.loading('Publishing site settings globally...');
+    try {
+      await updateSiteSettings(cmsForm);
+      toast.success('Site settings published globally across all devices!', { id: toastId });
+    } catch (_err) {
+      toast.error('Failed to publish settings', { id: toastId });
+    }
   };
 
-  const handleAddCoupon = (e: React.FormEvent) => {
+  const handleAddCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponForm.code) {
       toast.error('Coupon code is required');
       return;
     }
     
-    addCoupon({
+    await addCoupon({
       code: couponForm.code,
       discountType: couponForm.discountType,
       discountValue: couponForm.discountValue,
@@ -161,7 +167,7 @@ export default function AdminPage() {
       minOrderAmount: 0,
       maxDiscountAmount: 0
     });
-    toast.success('Coupon added successfully');
+    toast.success('Coupon added & synchronized globally!');
   };
 
   const openAddProductModal = () => {

@@ -25,6 +25,10 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
 
+    // Sync live system CMS settings & coupons from API across sessions & devices
+    useAdminStore.getState().fetchSiteSettings();
+    useAdminStore.getState().fetchCoupons();
+
     const supabase = createClient();
 
     // Check current Supabase session on mount
