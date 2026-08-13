@@ -3,7 +3,7 @@ import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
+    const key_secret = process.env.RAZORPAY_KEY_SECRET || '4c91jNJeOtVWnQpMNfTSznZS';
 
     if (!key_secret) {
       console.error('Razorpay secret key is missing');

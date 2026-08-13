@@ -3,8 +3,8 @@ import Razorpay from 'razorpay';
 
 export async function POST(request: NextRequest) {
   try {
-    const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
+    const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TPIC0CSsjAS9L2';
+    const key_secret = process.env.RAZORPAY_KEY_SECRET || '4c91jNJeOtVWnQpMNfTSznZS';
 
     if (!key_id || !key_secret) {
       console.error('Razorpay API keys are missing in environment variables');
