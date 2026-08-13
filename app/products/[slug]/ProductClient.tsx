@@ -5,11 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ChevronRight, Star, Plus, Minus, ShoppingCart, Zap, CheckCircle2, Shield, Truck, Package, RotateCcw } from 'lucide-react';
+import { ChevronRight, Star, Plus, Minus, ShoppingCart, Zap, CheckCircle2, Shield, Truck, Package, RotateCcw, Heart } from 'lucide-react';
 import { getProductBySlug, getProductsByCollection, products as defaultProducts, categories, formatPrice, calculateDiscount } from '@/data/products';
 import { useAdminStore } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import ProductCard from '@/components/product/ProductCard';
 import ReviewSkeleton from '@/components/reviews/ReviewSkeleton';
 import toast from 'react-hot-toast';
@@ -20,6 +21,8 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
   const user = useAuthStore((state) => state.user);
   const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const addItem = useCartStore((state) => state.addItem);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
   const storeProducts = useAdminStore((state) => state.products) || defaultProducts;
   
   const [product, setProduct] = useState<any>(initialProduct);
@@ -92,6 +95,17 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
     }
     addItem(product, quantity);
     router.push('/checkout');
+  };
+
+  const handleToggleWishlist = () => {
+    if (product) {
+      toggleWishlist(product);
+      if (!isInWishlist(product.id)) {
+        toast.success('Saved to Wishlist!');
+      } else {
+        toast.success('Removed from Wishlist');
+      }
+    }
   };
 
   const productImages = product.images?.length ? product.images : ['/logo.png'];
@@ -302,6 +316,17 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
                   >
                     <ShoppingCart className="w-5 h-5" />
                     Add to Cart
+                  </button>
+                  <button
+                    onClick={handleToggleWishlist}
+                    aria-label={product && isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                    className={`h-14 w-14 flex-shrink-0 flex items-center justify-center rounded-xl border-2 transition-all ${
+                      product && isInWishlist(product.id)
+                        ? 'border-rose-500 bg-rose-500 text-white shadow-md'
+                        : 'border-gray-200 bg-gray-50 text-gray-500 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50'
+                    }`}
+                  >
+                    <Heart className={`w-6 h-6 ${product && isInWishlist(product.id) ? 'fill-current' : ''}`} />
                   </button>
                 </div>
                 

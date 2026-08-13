@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { Review } from '@/types';
+import { getAuthenticatedUser } from '@/lib/auth/serverAuth';
 
-// In-memory store for reviews (initialized empty - zero fake reviews)
-const globalReviewsStore: Review[] = [];
 
 function calculateReviewSummary(reviews: Review[]) {
   if (reviews.length === 0) {
@@ -69,17 +68,6 @@ export async function GET(request: NextRequest) {
       console.warn('[Reviews GET Supabase Warning]', dbErr);
     }
 
-    // 2. Fallback / Merge with global memory store
-    if (allReviews.length === 0) {
-      allReviews = [...globalReviewsStore];
-      if (productId) {
-        allReviews = allReviews.filter(r => r.productId === productId);
-      }
-      if (minRating) {
-        allReviews = allReviews.filter(r => r.rating >= Number(minRating));
-      }
-    }
-
     if (featured === 'true') {
       allReviews = allReviews.filter(r => r.rating >= 4);
     }
@@ -105,6 +93,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { productId, customerName, title, rating, comment } = body;
+    const user = await getAuthenticatedUser(request);
 
     if (!productId || !comment || !rating) {
       return NextResponse.json({ error: 'Product ID, rating, and review comment are required' }, { status: 400 });
@@ -113,20 +102,18 @@ export async function POST(request: NextRequest) {
     const newReview: Review = {
       id: `rev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       productId,
-      customerName: customerName?.trim() || 'Happy Young Artist',
+      customerName: customerName?.trim() || user?.email?.split('@')[0] || 'Customer',
       title: title?.trim() || '',
       rating: Math.min(5, Math.max(1, Number(rating))),
       comment: comment.trim(),
-      isVerified: true,
+      isVerified: false,
       createdAt: new Date().toISOString(),
     };
 
-    // Save to memory store
-    globalReviewsStore.unshift(newReview);
-
+    let supabase;
     // Save to Supabase DB if available
     try {
-      const supabase = createServerClient();
+      supabase = createServerClient();
       await supabase.from('reviews').insert({
         id: newReview.id,
         product_id: newReview.productId,
@@ -141,8 +128,8 @@ export async function POST(request: NextRequest) {
       console.warn('[Reviews POST Supabase Warning]', dbErr);
     }
 
-    const productReviews = globalReviewsStore.filter(r => r.productId === productId);
-    const summary = calculateReviewSummary(productReviews);
+    const { data: productReviews } = await (supabase || createServerClient()).from('reviews').select('*').eq('product_id', productId);
+    const summary = calculateReviewSummary(productReviews || []);
 
     return NextResponse.json({
       success: true,

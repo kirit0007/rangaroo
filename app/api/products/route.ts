@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { isUserAdmin } from '@/lib/auth/serverAuth';
 import { Product } from '@/types';
-import { products as initialProducts } from '@/data/products';
-
-// Global memory store for newly created/edited products across sessions
-const globalProductsStore: Product[] = [...initialProducts];
 
 export async function GET() {
   try {
@@ -43,9 +39,9 @@ export async function GET() {
       return NextResponse.json({ products: formattedProducts, source: 'supabase' });
     }
 
-    return NextResponse.json({ products: globalProductsStore, source: 'memory' });
+    return NextResponse.json({ products: [], source: 'empty' });
   } catch {
-    return NextResponse.json({ products: globalProductsStore, source: 'memory_fallback' });
+    return NextResponse.json({ products: [], source: 'error_fallback' });
   }
 }
 
@@ -61,14 +57,6 @@ export async function POST(request: NextRequest) {
 
     if (!product) {
       return NextResponse.json({ error: 'Product payload required' }, { status: 400 });
-    }
-
-    // Upsert into memory store
-    const idx = globalProductsStore.findIndex(p => p.id === product.id);
-    if (idx >= 0) {
-      globalProductsStore[idx] = product;
-    } else {
-      globalProductsStore.unshift(product);
     }
 
     // Upsert into Supabase DB
@@ -119,11 +107,6 @@ export async function DELETE(request: NextRequest) {
 
     if (!productId) {
       return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
-    }
-
-    const idx = globalProductsStore.findIndex(p => p.id === productId);
-    if (idx >= 0) {
-      globalProductsStore.splice(idx, 1);
     }
 
     try {

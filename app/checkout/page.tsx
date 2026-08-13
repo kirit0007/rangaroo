@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const getShippingFee = useCartStore((state) => state.getShippingFee);
   const getGiftWrapFee = useCartStore((state) => state.getGiftWrapFee);
   const getTaxAmount = useCartStore((state) => state.getTaxAmount);
+  const threshold = useAdminStore((state) => state.siteSettings?.freeShippingThreshold) || 499;
   const isGiftWrapped = useCartStore((state) => state.isGiftWrapped);
   const giftMessage = useCartStore((state) => state.giftMessage);
   
@@ -138,25 +139,35 @@ export default function CheckoutPage() {
     setIsLoading(true);
     
     try {
-      // 1. Fetch server-calculated order ID from API
-      const orderRes = await fetch('/api/razorpay/create-order', {
+      // 1. Fetch server-calculated order details and create pending order
+      const orderRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: items.map(it => ({ productId: it.productId, quantity: it.quantity })),
-          amount: getTotal(),
-          receipt: `ord_${Date.now()}`,
+          couponCode: appliedCoupon?.code || null,
+          isGiftWrapped,
+          giftMessage,
+          shippingAddress: {
+            fullName: formData.fullName,
+            phone: formData.phone,
+            email: formData.email,
+            addressLine1: formData.address1,
+            addressLine2: formData.address2,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+          },
         }),
       });
       
       const orderData = await orderRes.json();
       
       if (!orderRes.ok || !orderData.success) {
-        throw new Error(orderData.error || 'Failed to create order on server');
+        throw new Error(orderData.error || 'Failed to initialize checkout');
       }
 
-      const orderId = orderData.orderId;
-      const keyId = orderData.key;
+      const { razorpayOrderId, key: keyId, orderId, orderNumber, amountInPaise } = orderData;
 
       // 2. Load SDK Script safely AFTER order creation
       const res = await loadRazorpayScript();
@@ -166,96 +177,44 @@ export default function CheckoutPage() {
 
       // 3. Razorpay Checkout Options
       const options: any = {
-        key: keyId, // Use the key returned from the backend
-        amount: Math.round(getTotal() * 100), // Amount in paise
+        key: keyId,
+        amount: amountInPaise,
         currency: 'INR',
         name: 'Rangaroo Store',
         description: 'DIY Paint Kits Order',
         image: '/logo.png',
-        order_id: orderId, // Crucial: attach the backend order ID
+        order_id: razorpayOrderId,
         handler: async function (response: any) {
           try {
-            // Verify HMAC signature on backend
+            // Verify HMAC signature on backend and finalize order
             if (response.razorpay_signature) {
               const verifyRes = await fetch('/api/razorpay/verify-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id || orderId,
+                  razorpay_order_id: response.razorpay_order_id || razorpayOrderId,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
                 }),
               });
+              
               const verifyData = await verifyRes.json();
               if (!verifyRes.ok || !verifyData.success) {
                 toast.error(verifyData.error || 'Payment signature verification failed. Please contact support.');
                 setIsLoading(false);
                 return;
               }
+
+              // Payment successful and verified
+              clearCart();
+              toast.success('Payment Verified & Order Confirmed! 🎉');
+              router.push(`/order-confirmation?orderNumber=${encodeURIComponent(orderNumber)}`);
+            } else {
+              throw new Error('No signature returned from Razorpay');
             }
-
-            const currentOrders = useAdminStore.getState().orders || [];
-            const nextSeq = 1001 + currentOrders.length;
-            const newOrder = {
-              id: `ord-${nextSeq}`,
-              orderNumber: `#${nextSeq}`,
-              status: 'confirmed' as const,
-              paymentStatus: 'paid' as const,
-              createdAt: new Date().toISOString(),
-              customerEmail: formData.email,
-              subtotal: getSubtotal(),
-              shippingFee: getShippingFee(),
-              giftWrapFee: getGiftWrapFee(),
-              taxAmount: getTaxAmount(),
-              discountAmount: appliedCoupon ? (getSubtotal() * (appliedCoupon.discountValue / 100)) : 0,
-              couponCode: appliedCoupon?.code,
-              total: getTotal(),
-              razorpayPaymentId: response.razorpay_payment_id,
-              shippingAddress: {
-                fullName: formData.fullName,
-                phone: formData.phone,
-                addressLine1: formData.address1,
-                addressLine2: formData.address2,
-                city: formData.city,
-                state: formData.state,
-                pincode: formData.pincode,
-                isGiftWrapped,
-                giftMessage,
-              },
-              items: items.map(it => ({
-                productId: it.productId,
-                productName: it.name,
-                productImage: it.image,
-                quantity: it.quantity,
-                unitPrice: it.price,
-                totalPrice: it.price * it.quantity
-              }))
-            };
-            addOrder(newOrder);
-
-            // 1. Sync order to central system store for Admin Orders Panel
-            fetch('/api/admin/orders', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ order: newOrder }),
-            }).catch(err => console.error('Admin order sync error:', err));
-
-            // 2. Trigger Brevo Order Confirmation Email
-            fetch('/api/email/order-confirmation', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                order: newOrder,
-                customerEmail: formData.email,
-              }),
-            }).catch(err => console.error('Brevo order confirmation email trigger failed:', err));
-
-            clearCart();
-            toast.success('Payment Verified & Order Confirmed! 🎉');
-            router.push(`/order-confirmation?orderNumber=${encodeURIComponent(newOrder.orderNumber)}`);
-          } catch (error) {
+          } catch (error: any) {
             console.error('Payment processing error:', error);
-            toast.error('Payment verification failed');
+            toast.error(error.message || 'Payment verification failed');
             setIsLoading(false);
           }
         },
@@ -444,7 +403,7 @@ export default function CheckoutPage() {
                       className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
-                      {isLoading ? 'Processing...' : `Proceed to Pay ${formatPrice(getTotal())}`}
+                      {isLoading ? 'Processing...' : `Proceed to Pay ${formatPrice(getTotal(threshold))}`}
                     </button>
                     <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 font-medium">
                       <ShieldCheck className="w-4 h-4 text-green-500" />
@@ -468,9 +427,9 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className="font-medium text-gray-900">{formatPrice(getShippingFee())}</span>
+                  <span className="font-medium text-gray-900">{formatPrice(getShippingFee(threshold))}</span>
                 </div>
-                {getSubtotal() > 999 && (
+                {getSubtotal() >= threshold && (
                   <div className="flex justify-between text-green-600">
                     <span>Shipping Discount</span>
                     <span>-₹60</span>
@@ -481,7 +440,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between items-end mb-8">
                 <span className="font-bold text-gray-900 text-lg">Total Amount</span>
                 <div className="text-right">
-                  <span className="font-bold text-orange-600 text-2xl">{formatPrice(getTotal())}</span>
+                  <span className="font-bold text-orange-600 text-2xl">{formatPrice(getTotal(threshold))}</span>
                   <p className="text-xs text-gray-500 mt-1">Inclusive of all taxes</p>
                 </div>
               </div>

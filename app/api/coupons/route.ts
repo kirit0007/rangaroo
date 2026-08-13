@@ -27,7 +27,6 @@ export const defaultCoupons: Coupon[] = [
   },
 ];
 
-let globalCouponsStore: Coupon[] = [...defaultCoupons];
 
 export async function GET() {
   try {
@@ -44,7 +43,6 @@ export async function GET() {
         minOrderAmount: row.min_order_amount ? Number(row.min_order_amount) : undefined,
         maxDiscountAmount: row.max_discount_amount ? Number(row.max_discount_amount) : undefined,
       }));
-      globalCouponsStore = formatted;
       return NextResponse.json({ coupons: formatted, source: 'supabase' });
     }
   } catch (err: any) {
@@ -66,8 +64,6 @@ export async function POST(request: NextRequest) {
     if (!coupon || !coupon.code) {
       return NextResponse.json({ error: 'Invalid coupon data' }, { status: 400 });
     }
-
-    globalCouponsStore = [coupon, ...globalCouponsStore.filter(c => c.code.toUpperCase() !== coupon.code.toUpperCase())];
 
     const supabase = createServerClient();
     const { error: upsertError } = await supabase

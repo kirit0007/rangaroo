@@ -33,7 +33,7 @@ export default function CartDrawer() {
     setMounted(true);
   }, []);
 
-  const FREE_SHIPPING_THRESHOLD = 499;
+  const FREE_SHIPPING_THRESHOLD = useAdminStore((state) => state.siteSettings?.freeShippingThreshold) || 499;
   const cartSubtotal = items.reduce((acc: number, item: any) => acc + (item.price * (item.quantity || 1)), 0);
   const shippingFee = cartSubtotal >= FREE_SHIPPING_THRESHOLD || items.length === 0 ? 0 : 60;
   const giftWrapFee = isGiftWrapped ? 30 : 0;

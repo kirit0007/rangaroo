@@ -111,6 +111,11 @@ export interface Order {
   razorpayPaymentId?: string;
   trackingNumber?: string;
   courierName?: string;
+  cancelRequested?: boolean;
+  cancelReason?: string;
+  returnRequested?: boolean;
+  returnReason?: string;
+  deliveredAt?: string;
   createdAt: string;
 }
 
@@ -125,7 +130,7 @@ export interface OrderItem {
   sku?: string;
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancellation_requested' | 'cancelled' | 'refunded';
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancellation_requested' | 'cancelled' | 'return_requested' | 'refunded';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export interface Review {

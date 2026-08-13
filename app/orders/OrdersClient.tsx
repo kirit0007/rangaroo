@@ -19,7 +19,6 @@ export default function OrdersClient() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const addItem = useCartStore((state) => state.addItem);
-  const storeOrders = useAdminStore((state) => state.orders);
 
   const [mounted, setMounted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -27,23 +26,41 @@ export default function OrdersClient() {
   const [showTrackModal, setShowTrackModal] = useState<Order | null>(null);
   const [showReviewModal, setShowReviewModal] = useState<{ order: Order; item: any } | null>(null);
   const [showCancelModal, setShowCancelModal] = useState<Order | null>(null);
+  const [showReturnModal, setShowReturnModal] = useState<Order | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
+  const [returnReason, setReturnReason] = useState('');
+  const [orders, setOrders] = useState<Order[]>([]);
 
-  const allOrders = storeOrders;
+  const allOrders = orders;
+
+  const fetchOrders = async () => {
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const res = await fetch('/api/orders', {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+        }
+      });
+      const data = await res.json();
+      if (data.orders) {
+        setOrders(data.orders);
+      } else {
+        console.error('Fetch orders failed:', data.error);
+      }
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
-    fetch('/api/admin/orders')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
-          data.orders.forEach((ord: any) => {
-            useAdminStore.getState().addOrder(ord);
-          });
-        }
-      })
-      .catch((err) => console.error('Error syncing orders:', err));
+    fetchOrders();
   }, []);
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -66,33 +83,38 @@ export default function OrdersClient() {
     }
   };
 
-  const handleReorder = (order: Order) => {
-    order.items.forEach((item) => {
-      addItem({
-        id: item.productId,
-        name: item.productName,
-        slug: item.productId,
-        price: item.unitPrice,
-        images: [item.productImage || '/logo.png'],
-        shortDescription: item.productName,
-        description: item.productName,
-        categoryId: 'creative-paint-kit',
-        collectionId: 'dinosaur',
-        kitContents: ['Figurine', 'Paints', 'Brush'],
-        ageGroup: '5+',
-        difficulty: 'beginner',
-        paintType: 'Washable Tempera',
-        figureCount: 2,
-        figureSize: 'medium',
-        weightGrams: 400,
-        stockQuantity: 100,
-        isActive: true,
-        isFeatured: false,
-        tags: ['bestseller']
-      }, item.quantity);
-    });
-    toast.success('Items added to cart!');
-    useCartStore.getState().openCart();
+  const handleReorder = async (order: Order) => {
+    const products = useAdminStore.getState().products || [];
+    let itemsAdded = 0;
+
+    for (const item of order.items) {
+      let realProduct = products.find(p => p.id === item.productId);
+      
+      // If not in store, try API
+      if (!realProduct) {
+        try {
+          const res = await fetch(`/api/products/${item.productId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.product) realProduct = data.product;
+          }
+        } catch (e) {
+          console.error('Failed to fetch product for reorder', e);
+        }
+      }
+
+      if (realProduct) {
+        addItem(realProduct, item.quantity);
+        itemsAdded++;
+      }
+    }
+
+    if (itemsAdded > 0) {
+      toast.success('Items added to cart!');
+      useCartStore.getState().openCart();
+    } else {
+      toast.error('Products are currently unavailable.');
+    }
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -219,12 +241,20 @@ export default function OrdersClient() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                    {['pending', 'confirmed', 'processing'].includes(order.status) && (
                       <button 
                         onClick={() => setShowCancelModal(order)}
                         className="px-3.5 py-2 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center gap-1"
                       >
-                        <CornerUpLeft size={14} /> Cancel / Return
+                        <CornerUpLeft size={14} /> Cancel Order
+                      </button>
+                    )}
+                    {order.status === 'delivered' && order.deliveredAt && ((Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24)) <= 7 && (
+                      <button 
+                        onClick={() => setShowReturnModal(order)}
+                        className="px-3.5 py-2 rounded-xl text-amber-600 hover:bg-amber-50 text-xs font-semibold flex items-center gap-1"
+                      >
+                        <CornerUpLeft size={14} /> Request Return
                       </button>
                     )}
                     <button 
@@ -338,6 +368,9 @@ export default function OrdersClient() {
                   <div className="space-y-1.5 text-xs text-gray-600 pt-2">
                     <div className="flex justify-between"><span>Subtotal</span><span>₹{showInvoiceModal.subtotal.toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between"><span>Shipping Fee</span><span>{showInvoiceModal.shippingFee > 0 ? `₹${showInvoiceModal.shippingFee}` : 'FREE'}</span></div>
+                    {showInvoiceModal.giftWrapFee && showInvoiceModal.giftWrapFee > 0 ? (
+                      <div className="flex justify-between"><span>Gift Wrap Fee</span><span>₹{showInvoiceModal.giftWrapFee}</span></div>
+                    ) : null}
                     {showInvoiceModal.discountAmount > 0 && (
                       <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-₹{showInvoiceModal.discountAmount}</span></div>
                     )}
@@ -404,7 +437,7 @@ export default function OrdersClient() {
           )}
         </AnimatePresence>
 
-        {/* Cancel / Return Modal */}
+        {/* Cancel Modal */}
         <AnimatePresence>
           {showCancelModal && (
             <motion.div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -412,34 +445,125 @@ export default function OrdersClient() {
                 <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                   <AlertCircle size={28} />
                 </div>
-                <h3 className="font-outfit font-extrabold text-lg mb-1 text-gray-900">Request Cancellation / Return</h3>
-                <p className="text-xs text-gray-500 mb-6">Are you sure you want to cancel or initiate a return for order #{showCancelModal.orderNumber}?</p>
+                <h3 className="font-outfit font-extrabold text-lg mb-1 text-gray-900">Cancel Order</h3>
+                <p className="text-xs text-gray-500 mb-4">Are you sure you want to cancel order #{showCancelModal.orderNumber || showCancelModal.id.slice(0,8)}?</p>
+                <div className="mb-4 text-left">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Reason for Cancellation</label>
+                  <textarea 
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-red-500" 
+                    placeholder="Optional: Tell us why you are cancelling..." 
+                    rows={2} 
+                  />
+                </div>
                 <div className="flex gap-2">
                   <button 
                     onClick={async () => {
-                      const targetOrder = showCancelModal;
-                      useAdminStore.getState().updateOrderStatus(targetOrder.id, 'cancellation_requested');
                       try {
-                        await fetch('/api/admin/orders', {
+                        const { createClient } = await import('@/lib/supabase/client');
+                        const supabase = createClient();
+                        const { data: { session } } = await supabase.auth.getSession();
+                        
+                        const res = await fetch('/api/orders', {
                           method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: { 
+                            'Content-Type': 'application/json',
+                            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+                          },
                           body: JSON.stringify({ 
-                            orderId: targetOrder.id, 
-                            status: 'cancellation_requested',
-                            order: { ...targetOrder, status: 'cancellation_requested' }
+                            orderId: showCancelModal.id, 
+                            action: 'cancel',
+                            reason: cancelReason
                           }),
                         });
+                        if (res.ok) {
+                          toast.success('Cancellation request submitted to support!');
+                          fetchOrders();
+                        } else {
+                          const err = await res.json();
+                          toast.error(err.error || 'Cancellation failed');
+                        }
                       } catch (err) {
-                        console.error('Error sending cancellation request to server:', err);
+                        toast.error('An error occurred');
                       }
-                      toast.success('Cancellation request submitted to support!');
                       setShowCancelModal(null);
+                      setCancelReason('');
                     }} 
                     className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-xs font-bold"
                   >
                     Submit Request
                   </button>
-                  <button onClick={() => setShowCancelModal(null)} className="flex-1 py-2.5 border rounded-xl text-xs font-bold">Close</button>
+                  <button onClick={() => { setShowCancelModal(null); setCancelReason(''); }} className="flex-1 py-2.5 border rounded-xl text-xs font-bold">Close</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Return Modal */}
+        <AnimatePresence>
+          {showReturnModal && (
+            <motion.div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center">
+                <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <AlertCircle size={28} />
+                </div>
+                <h3 className="font-outfit font-extrabold text-lg mb-1 text-gray-900">Request Return</h3>
+                <p className="text-xs text-gray-500 mb-4">Request a return for order #{showReturnModal.orderNumber || showReturnModal.id.slice(0,8)}</p>
+                <div className="mb-4 text-left">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Reason for Return</label>
+                  <textarea 
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-amber-500" 
+                    placeholder="Please tell us why you are returning this item..." 
+                    rows={2} 
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={async () => {
+                      if (!returnReason.trim()) {
+                        toast.error('Please provide a reason for the return');
+                        return;
+                      }
+                      try {
+                        const { createClient } = await import('@/lib/supabase/client');
+                        const supabase = createClient();
+                        const { data: { session } } = await supabase.auth.getSession();
+
+                        const res = await fetch('/api/orders', {
+                          method: 'PATCH',
+                          headers: { 
+                            'Content-Type': 'application/json',
+                            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+                          },
+                          body: JSON.stringify({ 
+                            orderId: showReturnModal.id, 
+                            action: 'return',
+                            reason: returnReason
+                          }),
+                        });
+                        if (res.ok) {
+                          toast.success('Return request submitted!');
+                          fetchOrders();
+                        } else {
+                          const err = await res.json();
+                          toast.error(err.error || 'Return request failed');
+                        }
+                      } catch (err) {
+                        toast.error('An error occurred');
+                      }
+                      setShowReturnModal(null);
+                      setReturnReason('');
+                    }} 
+                    className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold"
+                  >
+                    Submit Request
+                  </button>
+                  <button onClick={() => { setShowReturnModal(null); setReturnReason(''); }} className="flex-1 py-2.5 border rounded-xl text-xs font-bold">Close</button>
                 </div>
               </div>
             </motion.div>

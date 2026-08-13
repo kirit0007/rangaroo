@@ -55,6 +55,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const isAdmin = await isUserAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { order } = body;
 
@@ -133,6 +138,21 @@ export async function PATCH(request: NextRequest) {
     if (dbErr) {
       console.error('[Supabase Status Update Error]', dbErr);
       throw new Error(dbErr.message || 'Database update failed');
+    }
+
+    if (status === 'cancelled' || status === 'refunded') {
+      const { data: orderData } = await supabase.from('orders').select('items').or(`id.eq.${cleanId},order_number.eq.${cleanId}`).single();
+      if (orderData && orderData.items) {
+        for (const item of orderData.items) {
+          const productId = item.productId || item.product_id;
+          if (productId) {
+            const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', productId).single();
+            if (product) {
+              await supabase.from('products').update({ stock_quantity: (product.stock_quantity || 0) + item.quantity }).eq('id', productId);
+            }
+          }
+        }
+      }
     }
 
     revalidatePath('/admin');

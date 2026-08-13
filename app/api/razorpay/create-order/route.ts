@@ -4,8 +4,8 @@ import Razorpay from 'razorpay';
 export async function POST(request: NextRequest) {
   try {
     // Using the exact test keys provided to bypass stale Vercel env variables
-    const key_id = 'rzp_test_TPIC0CSsjAS9L2';
-    const key_secret = '4c91jNJeOtVWnQpMNfTSznZS';
+    const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!key_id || !key_secret) {
       console.error('Razorpay API keys are missing in environment variables');

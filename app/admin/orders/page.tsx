@@ -8,7 +8,8 @@ import {
   Search,
   Gift,
   Truck,
-  Save
+  Save,
+  AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdminStore } from '@/store/adminStore';
@@ -134,7 +135,10 @@ export default function OrdersAdminPage() {
                       <option value="processing">Processing</option>
                       <option value="shipped">Shipped</option>
                       <option value="delivered">Delivered</option>
+                      <option value="cancellation_requested">Cancellation Requested</option>
                       <option value="cancelled">Cancelled</option>
+                      <option value="return_requested">Return Requested</option>
+                      <option value="refunded">Refunded</option>
                     </select>
 
                     <button 
@@ -207,6 +211,76 @@ export default function OrdersAdminPage() {
                               "{order.shippingAddress.giftMessage}"
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {/* Cancellation Request Alert */}
+                      {order.cancelRequested && order.status === 'cancellation_requested' && (
+                        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+                          <div className="flex items-center gap-2 font-bold text-red-700 mb-2">
+                            <AlertCircle size={18} />
+                            Cancellation Requested
+                          </div>
+                          {order.cancelReason && (
+                            <div className="text-sm text-gray-700 bg-white p-3 rounded-xl border border-red-100/50 mb-3 shadow-sm">
+                              Reason: "{order.cancelReason}"
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => {
+                                updateOrderStatus(order.id, 'cancelled');
+                                toast.success('Cancellation approved and stock restored.');
+                              }}
+                              className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition"
+                            >
+                              Approve Cancellation
+                            </button>
+                            <button 
+                              onClick={() => {
+                                updateOrderStatus(order.id, 'processing');
+                                toast.success('Cancellation rejected.');
+                              }}
+                              className="px-4 py-2 border border-gray-300 bg-white rounded-xl text-sm font-bold hover:bg-gray-50 transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Return Request Alert */}
+                      {order.returnRequested && order.status === 'return_requested' && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+                          <div className="flex items-center gap-2 font-bold text-amber-700 mb-2">
+                            <AlertCircle size={18} />
+                            Return Requested
+                          </div>
+                          {order.returnReason && (
+                            <div className="text-sm text-gray-700 bg-white p-3 rounded-xl border border-amber-100/50 mb-3 shadow-sm">
+                              Reason: "{order.returnReason}"
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => {
+                                updateOrderStatus(order.id, 'refunded');
+                                toast.success('Return approved and stock restored.');
+                              }}
+                              className="px-4 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold hover:bg-amber-700 transition"
+                            >
+                              Approve Return (Refund)
+                            </button>
+                            <button 
+                              onClick={() => {
+                                updateOrderStatus(order.id, 'delivered');
+                                toast.success('Return rejected.');
+                              }}
+                              className="px-4 py-2 border border-gray-300 bg-white rounded-xl text-sm font-bold hover:bg-gray-50 transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
                         </div>
                       )}
 

@@ -18,9 +18,9 @@ export interface CartStore {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  getTotal: () => number;
+  getTotal: (threshold?: number) => number;
   getSubtotal: () => number;
-  getShippingFee: () => number;
+  getShippingFee: (threshold?: number) => number;
   getGiftWrapFee: () => number;
   getTaxAmount: () => number;
   getItemCount: () => number;
@@ -99,9 +99,9 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
       },
 
-      getShippingFee: () => {
+      getShippingFee: (threshold: number = 499) => {
         const subtotal = get().getSubtotal();
-        if (subtotal === 0 || subtotal >= 499) return 0;
+        if (subtotal === 0 || subtotal >= threshold) return 0;
         return FLAT_SHIPPING_FEE;
       },
 
@@ -113,8 +113,8 @@ export const useCartStore = create<CartStore>()(
         return 0;
       },
 
-      getTotal: () => {
-        return get().getSubtotal() + get().getShippingFee() + get().getGiftWrapFee() + get().getTaxAmount();
+      getTotal: (threshold: number = 499) => {
+        return get().getSubtotal() + get().getShippingFee(threshold) + get().getGiftWrapFee() + get().getTaxAmount();
       },
 
       getItemCount: () => {

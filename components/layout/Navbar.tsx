@@ -370,13 +370,28 @@ export default function Navbar() {
             >
               <div className="flex items-center justify-between gap-3 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-3 flex-grow bg-gray-50 px-4 py-3 rounded-2xl border border-gray-200 focus-within:border-orange-500 transition-colors">
-                  <Search className="w-5 h-5 text-gray-400 shrink-0" />
+                  <button onClick={() => {
+                      if (searchQuery.trim()) {
+                        setIsSearchOpen(false);
+                        window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+                      }
+                    }}
+                    className="focus:outline-none"
+                  >
+                    <Search className="w-5 h-5 text-gray-400 shrink-0 hover:text-orange-500 transition-colors" />
+                  </button>
                   <input
                     type="text"
                     autoFocus
                     placeholder="Search DIY paint kits, dinosaurs, vehicles..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        setIsSearchOpen(false);
+                        window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+                      }
+                    }}
                     className="bg-transparent border-none outline-none text-sm w-full text-gray-900 font-medium placeholder-gray-400"
                   />
                   {searchQuery && (
