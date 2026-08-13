@@ -132,60 +132,57 @@ export default function CheckoutPage() {
     setIsLoading(true);
     
     try {
-      // Load SDK Script safely
+      // 1. Fetch server-calculated order ID from API
+      const orderRes = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map(it => ({ productId: it.productId, quantity: it.quantity })),
+          amount: getTotal(),
+          receipt: `ord_${Date.now()}`,
+        }),
+      });
+      
+      const orderData = await orderRes.json();
+      
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.error || 'Failed to create order on server');
+      }
+
+      const orderId = orderData.orderId;
+      const keyId = orderData.key;
+
+      // 2. Load SDK Script safely AFTER order creation
       const res = await loadRazorpayScript();
       if (!res || !(window as any).Razorpay) {
-        toast.error('Razorpay SDK failed to load. Please check your internet connection.');
-        setIsLoading(false);
-        return;
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
       }
 
-      // Fetch server-calculated order ID from API
-      let orderId = '';
-      try {
-        const orderRes = await fetch('/api/razorpay/order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            items: items.map(it => ({ productId: it.productId, quantity: it.quantity })),
-            amount: getTotal(),
-            receipt: `ord_${Date.now()}`,
-          }),
-        });
-        if (orderRes.ok) {
-          const orderData = await orderRes.json();
-          if (orderData?.id) {
-            orderId = orderData.id;
-          }
-        }
-      } catch (err) {
-        console.warn('Backend order creation fallback:', err);
-      }
-
-      // Razorpay Checkout Options
+      // 3. Razorpay Checkout Options
       const options: any = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TPIC0CSsjAS9L2',
+        key: keyId, // Use the key returned from the backend
         amount: Math.round(getTotal() * 100), // Amount in paise
         currency: 'INR',
         name: 'Rangaroo Store',
         description: 'DIY Paint Kits Order',
         image: '/logo.png',
+        order_id: orderId, // Crucial: attach the backend order ID
         handler: async function (response: any) {
           try {
             // Verify HMAC signature on backend
             if (response.razorpay_signature) {
-              const verifyRes = await fetch('/api/razorpay/verify', {
+              const verifyRes = await fetch('/api/razorpay/verify-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id || orderId || `ord_${Date.now()}`,
+                  razorpay_order_id: response.razorpay_order_id || orderId,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
                 }),
               });
               const verifyData = await verifyRes.json();
-              if (!verifyRes.ok || !verifyData.verified) {
-                toast.error('Payment signature verification failed. Please contact support.');
+              if (!verifyRes.ok || !verifyData.success) {
+                toast.error(verifyData.error || 'Payment signature verification failed. Please contact support.');
                 setIsLoading(false);
                 return;
               }
@@ -203,7 +200,7 @@ export default function CheckoutPage() {
               shippingFee: getShippingFee(),
               discountAmount: 0,
               total: getTotal(),
-              razorpayPaymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
+              razorpayPaymentId: response.razorpay_payment_id,
               shippingAddress: {
                 fullName: formData.fullName,
                 phone: formData.phone,
@@ -266,10 +263,6 @@ export default function CheckoutPage() {
         }
       };
 
-      if (orderId) {
-        options.order_id = orderId;
-      }
-
       const paymentObject = new (window as any).Razorpay(options);
 
       paymentObject.on('payment.failed', function (response: any) {
@@ -282,7 +275,7 @@ export default function CheckoutPage() {
 
     } catch (error: any) {
       console.error('Razorpay initialization error:', error);
-      toast.error(`Failed to launch payment popup: ${error.message || 'Error occurred'}`);
+      toast.error(error.message || 'Failed to launch payment popup. Please try again.');
       setIsLoading(false);
     }
   };
