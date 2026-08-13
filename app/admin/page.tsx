@@ -25,7 +25,8 @@ import {
   Upload,
   Star,
   Users,
-  Box
+  Box,
+  AlertCircle
 } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -593,8 +594,8 @@ export default function AdminPage() {
                             <p className="text-xs text-red-600 font-medium">{product.stockQuantity} remaining</p>
                           </div>
                         </div>
-                        <button onClick={() => openEditProductModal(product)} className="text-orange-600 hover:text-orange-700 p-2 bg-orange-100 rounded-lg transition-colors">
-                          <Edit size={14} />
+                        <button onClick={() => openEditProductModal(product)} className="text-gray-400 hover:text-orange-500 transition-colors p-1 bg-white rounded-md shadow-sm border border-gray-100">
+                          <Edit2 size={14} />
                         </button>
                       </div>
                     ))}
