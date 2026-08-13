@@ -144,45 +144,44 @@ export const useAdminStore = create<AdminStore>()(
       },
 
       addCoupon: async (coupon) => {
-        set((state) => ({
-          coupons: [coupon, ...state.coupons.filter(c => c.code.toUpperCase() !== coupon.code.toUpperCase())],
-        }));
-
         try {
           const res = await fetch('/api/coupons', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ coupon }),
           });
+          const data = await res.json();
           if (res.ok) {
-            const data = await res.json();
             if (data.coupons) set({ coupons: data.coupons });
             return true;
+          } else {
+            throw new Error(data.error || 'Failed to add coupon');
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('Failed to sync new coupon:', err);
+          throw new Error(err.message || 'Network error while adding coupon');
         }
-        return false;
       },
 
       removeCoupon: async (code) => {
-        set((state) => ({
-          coupons: state.coupons.filter(c => c.code.toUpperCase() !== code.toUpperCase()),
-        }));
-
         try {
           const res = await fetch(`/api/coupons?code=${encodeURIComponent(code)}`, {
             method: 'DELETE',
           });
+          const data = await res.json();
           if (res.ok) {
-            const data = await res.json();
+            set((state) => ({
+              coupons: state.coupons.filter(c => c.code.toUpperCase() !== code.toUpperCase()),
+            }));
             if (data.coupons) set({ coupons: data.coupons });
             return true;
+          } else {
+            throw new Error(data.error || 'Failed to delete coupon');
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('Failed to delete coupon on server:', err);
+          throw new Error(err.message || 'Network error while deleting coupon');
         }
-        return false;
       },
 
       getCoupon: (code) => {

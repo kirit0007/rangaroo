@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { isUserAdmin } from '@/lib/auth/serverAuth';
 import { Coupon } from '@/types';
+import { revalidatePath } from 'next/cache';
 
 export const defaultCoupons: Coupon[] = [
   {
@@ -46,11 +47,10 @@ export async function GET() {
       globalCouponsStore = formatted;
       return NextResponse.json({ coupons: formatted, source: 'supabase' });
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error fetching coupons from Supabase:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  return NextResponse.json({ coupons: globalCouponsStore, source: 'memory_fallback' });
 }
 
 export async function POST(request: NextRequest) {
@@ -82,10 +82,13 @@ export async function POST(request: NextRequest) {
       });
 
     if (upsertError) {
-      console.warn('Could not upsert into Supabase coupons table (using memory store):', upsertError.message);
+      console.error('[Supabase Coupon Upsert Error]', upsertError);
+      throw new Error(upsertError.message || 'Database insertion failed');
     }
 
-    return NextResponse.json({ success: true, coupons: globalCouponsStore });
+    revalidatePath('/admin');
+
+    return NextResponse.json({ success: true, coupon });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to save coupon';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -106,7 +109,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
     }
 
-    globalCouponsStore = globalCouponsStore.filter(c => c.code.toUpperCase() !== code.toUpperCase());
+    if (!code) {
+      return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
+    }
 
     const supabase = createServerClient();
     const { error: deleteError } = await supabase
@@ -115,10 +120,13 @@ export async function DELETE(request: NextRequest) {
       .eq('code', code.toUpperCase());
 
     if (deleteError) {
-      console.warn('Could not delete from Supabase coupons table:', deleteError.message);
+      console.error('[Supabase Coupon Delete Error]', deleteError);
+      throw new Error(deleteError.message || 'Database deletion failed');
     }
 
-    return NextResponse.json({ success: true, coupons: globalCouponsStore });
+    revalidatePath('/admin');
+
+    return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to delete coupon';
     return NextResponse.json({ error: message }, { status: 500 });

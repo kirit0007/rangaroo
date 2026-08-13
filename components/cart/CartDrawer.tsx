@@ -23,8 +23,11 @@ export default function CartDrawer() {
   const [mounted, setMounted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
-  const [isGiftWrapped, setIsGiftWrapped] = useState(false);
-  const [giftMessage, setGiftMessage] = useState('');
+  
+  const isGiftWrapped = useCartStore((state) => state.isGiftWrapped);
+  const setIsGiftWrapped = useCartStore((state) => state.setGiftWrap);
+  const giftMessage = useCartStore((state) => state.giftMessage);
+  const setGiftMessage = useCartStore((state) => state.setGiftMessage);
 
   React.useEffect(() => {
     setMounted(true);

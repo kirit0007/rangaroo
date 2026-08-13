@@ -62,6 +62,10 @@ export interface CartItem {
 export interface CartStore {
   items: CartItem[];
   isOpen: boolean;
+  isGiftWrapped: boolean;
+  giftMessage: string;
+  setGiftWrap: (isGiftWrapped: boolean) => void;
+  setGiftMessage: (message: string) => void;
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -84,6 +88,8 @@ export interface Address {
   city: string;
   state: string;
   pincode: string;
+  isGiftWrapped?: boolean;
+  giftMessage?: string;
 }
 
 export interface Order {

@@ -20,6 +20,8 @@ export default function CheckoutPage() {
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotal = useCartStore((state) => state.getTotal);
   const getShippingFee = useCartStore((state) => state.getShippingFee);
+  const isGiftWrapped = useCartStore((state) => state.isGiftWrapped);
+  const giftMessage = useCartStore((state) => state.giftMessage);
   const addOrder = useAdminStore((state) => state.addOrder);
   
   const [step, setStep] = useState<1 | 2>(1);
@@ -209,6 +211,8 @@ export default function CheckoutPage() {
                 city: formData.city,
                 state: formData.state,
                 pincode: formData.pincode,
+                isGiftWrapped,
+                giftMessage,
               },
               items: items.map(it => ({
                 productId: it.productId,

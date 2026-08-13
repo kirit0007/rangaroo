@@ -2,15 +2,41 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { CartItem, CartStore, Product } from '@/types';
+import { CartItem, Product } from '@/types';
+
+export interface CartStore {
+  items: CartItem[];
+  isOpen: boolean;
+  isGiftWrapped: boolean;
+  giftMessage: string;
+  setGiftWrap: (isGiftWrapped: boolean) => void;
+  setGiftMessage: (message: string) => void;
+  addItem: (product: Product, quantity?: number) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  toggleCart: () => void;
+  openCart: () => void;
+  closeCart: () => void;
+  getTotal: () => number;
+  getSubtotal: () => number;
+  getShippingFee: () => number;
+  getItemCount: () => number;
+}
 
 const FLAT_SHIPPING_FEE = 60;
+const GIFT_WRAP_FEE = 30;
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
       isOpen: false,
+      isGiftWrapped: false,
+      giftMessage: '',
+
+      setGiftWrap: (isGiftWrapped: boolean) => set({ isGiftWrapped }),
+      setGiftMessage: (giftMessage: string) => set({ giftMessage }),
 
       addItem: (product: Product, qtyToAdd: number = 1) => {
         set((state) => {
@@ -78,7 +104,8 @@ export const useCartStore = create<CartStore>()(
       },
 
       getTotal: () => {
-        return get().getSubtotal() + get().getShippingFee();
+        const giftWrapFee = get().isGiftWrapped ? GIFT_WRAP_FEE : 0;
+        return get().getSubtotal() + get().getShippingFee() + giftWrapFee;
       },
 
       getItemCount: () => {

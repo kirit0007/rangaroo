@@ -152,22 +152,26 @@ export default function AdminPage() {
       return;
     }
     
-    await addCoupon({
-      code: couponForm.code,
-      discountType: couponForm.discountType,
-      discountValue: couponForm.discountValue,
-      minOrderAmount: couponForm.minOrderAmount,
-      maxDiscountAmount: couponForm.discountType === 'percentage' ? couponForm.maxDiscountAmount : undefined,
-    });
-    
-    setCouponForm({
-      code: '',
-      discountType: 'percentage',
-      discountValue: 0,
-      minOrderAmount: 0,
-      maxDiscountAmount: 0
-    });
-    toast.success('Coupon added & synchronized globally!');
+    try {
+      await addCoupon({
+        code: couponForm.code,
+        discountType: couponForm.discountType,
+        discountValue: couponForm.discountValue,
+        minOrderAmount: couponForm.minOrderAmount,
+        maxDiscountAmount: couponForm.discountType === 'percentage' ? couponForm.maxDiscountAmount : undefined,
+      });
+      
+      setCouponForm({
+        code: '',
+        discountType: 'percentage',
+        discountValue: 0,
+        minOrderAmount: 0,
+        maxDiscountAmount: 0
+      });
+      toast.success('Coupon added & synchronized globally!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add coupon');
+    }
   };
 
   const openAddProductModal = () => {
@@ -860,9 +864,13 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <button
-                        onClick={() => {
-                          removeCoupon(coupon.code);
-                          toast.success('Coupon removed');
+                        onClick={async () => {
+                          try {
+                            await removeCoupon(coupon.code);
+                            toast.success('Coupon removed');
+                          } catch (err: any) {
+                            toast.error(err.message || 'Failed to remove coupon');
+                          }
                         }}
                         className="text-gray-400 hover:text-red-500 transition-colors p-2"
                       >
@@ -1014,6 +1022,16 @@ export default function AdminPage() {
                           <div className="mt-4 pt-4 border-t border-gray-100 text-sm space-y-3 bg-gray-50 p-4 rounded-2xl">
                             <p><strong>Razorpay Payment ID:</strong> <span className="font-mono text-xs bg-gray-200 px-2 py-0.5 rounded">{order.razorpayPaymentId || 'N/A'}</span></p>
                             <p><strong>Shipping Address:</strong> {order.shippingAddress?.addressLine1}, {order.shippingAddress?.addressLine2 ? `${order.shippingAddress.addressLine2}, ` : ''}{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
+                            
+                            {order.shippingAddress?.isGiftWrapped && (
+                              <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                                <p className="text-pink-700 font-bold flex items-center gap-2">🎁 Gift Wrap Requested</p>
+                                {order.shippingAddress?.giftMessage && (
+                                  <p className="text-pink-600 mt-1 italic text-xs">"{order.shippingAddress.giftMessage}"</p>
+                                )}
+                              </div>
+                            )}
+
                             <p><strong>Items Ordered:</strong></p>
                             <ul className="list-disc pl-5 space-y-1">
                               {order.items?.map((item: any, idx: number) => (
