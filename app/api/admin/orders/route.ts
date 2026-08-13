@@ -110,7 +110,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { orderId, status, order } = body;
+    const { orderId, status, trackingNumber, courierName } = body;
 
     if (!orderId || !status) {
       return NextResponse.json({ error: 'Missing orderId or status' }, { status: 400 });
@@ -118,11 +118,16 @@ export async function PATCH(request: NextRequest) {
 
     const cleanId = orderId.toString().trim();
 
+    // Prepare update payload
+    const updateData: any = { status };
+    if (trackingNumber !== undefined) updateData.tracking_awb = trackingNumber;
+    if (courierName !== undefined) updateData.courier_name = courierName;
+
     // Update in Supabase DB
     const supabase = createServerClient();
     const { error: dbErr } = await supabase
       .from('orders')
-      .update({ status })
+      .update(updateData)
       .or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
 
     if (dbErr) {
@@ -133,7 +138,7 @@ export async function PATCH(request: NextRequest) {
     revalidatePath('/admin');
     revalidatePath('/admin/orders');
 
-    return NextResponse.json({ success: true, orderId: cleanId, status });
+    return NextResponse.json({ success: true, orderId: cleanId, status, trackingNumber, courierName });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

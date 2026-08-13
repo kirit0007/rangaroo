@@ -5,7 +5,10 @@ import {
   ClipboardList, 
   ChevronDown, 
   ChevronUp, 
-  Search 
+  Search,
+  Gift,
+  Truck,
+  Save
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdminStore } from '@/store/adminStore';
@@ -13,10 +16,12 @@ import { useAdminStore } from '@/store/adminStore';
 export default function OrdersAdminPage() {
   const orders = useAdminStore((state) => state.orders);
   const updateOrderStatus = useAdminStore((state) => state.updateOrderStatus);
+  const updateOrderTracking = useAdminStore((state) => state.updateOrderTracking);
 
   const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
   const [orderSearch, setOrderSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [trackingData, setTrackingData] = useState<Record<string, { trackingNumber: string, courierName: string }>>({});
 
   const toggleOrderExpansion = (orderId: string) => {
     setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
@@ -29,7 +34,7 @@ export default function OrdersAdminPage() {
       (order.shippingAddress?.fullName || '').toLowerCase().includes(searchLower) ||
       (order.shippingAddress?.email || order.customerEmail || '').toLowerCase().includes(searchLower);
 
-    const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -95,17 +100,17 @@ export default function OrdersAdminPage() {
                         {order.orderNumber || `#${order.id.slice(0, 8)}`}
                       </span>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        order.orderStatus === 'delivered' ? 'bg-green-100 text-green-700' :
-                        order.orderStatus === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                        order.orderStatus === 'processing' ? 'bg-purple-100 text-purple-700' :
-                        order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-700' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                        order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                        order.status === 'processing' ? 'bg-purple-100 text-purple-700' :
+                        order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                         'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {order.orderStatus}
+                        {order.status || 'pending'}
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {order.shippingAddress?.fullName || 'Customer'} • {order.shippingAddress?.email || order.customerEmail || 'N/A'} • {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
+                      {order.shippingAddress?.fullName || 'Customer'} • {order.customerEmail || order.shippingAddress?.email || 'N/A'} • {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -118,7 +123,7 @@ export default function OrdersAdminPage() {
 
                   <div className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
                     <select
-                      value={order.orderStatus}
+                      value={order.status || 'pending'}
                       onChange={(e) => {
                         updateOrderStatus(order.id, e.target.value as any);
                         toast.success(`Order ${order.orderNumber || order.id} status updated to ${e.target.value}`);
@@ -151,6 +156,60 @@ export default function OrdersAdminPage() {
                     
                     {/* Items List */}
                     <div className="lg:col-span-2 space-y-3">
+                      
+                      {/* Tracking / Fulfillment Edit Box */}
+                      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-3 mb-4">
+                        <div className="flex items-center gap-2 font-bold text-blue-800">
+                          <Truck size={18} />
+                          Fulfillment & Tracking
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <input
+                            type="text"
+                            placeholder="Courier Name (e.g. Bluedart)"
+                            className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={trackingData[order.id]?.courierName ?? (order.courierName || '')}
+                            onChange={(e) => setTrackingData(prev => ({
+                              ...prev, [order.id]: { trackingNumber: prev[order.id]?.trackingNumber ?? order.trackingNumber ?? '', courierName: e.target.value }
+                            }))}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Tracking AWB Number"
+                            className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={trackingData[order.id]?.trackingNumber ?? (order.trackingNumber || '')}
+                            onChange={(e) => setTrackingData(prev => ({
+                              ...prev, [order.id]: { courierName: prev[order.id]?.courierName ?? order.courierName ?? '', trackingNumber: e.target.value }
+                            }))}
+                          />
+                          <button
+                            onClick={async () => {
+                              const data = trackingData[order.id] || { trackingNumber: order.trackingNumber, courierName: order.courierName };
+                              await updateOrderTracking(order.id, order.status, data.trackingNumber || '', data.courierName || '');
+                              toast.success('Tracking information saved');
+                            }}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition"
+                          >
+                            <Save size={16} /> Save
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Gift Wrap Banner */}
+                      {((order.giftWrapFee && order.giftWrapFee > 0) || order.shippingAddress?.isGiftWrapped) && (
+                        <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 mb-4">
+                          <div className="flex items-center gap-2 font-bold text-orange-700 mb-2">
+                            <Gift size={18} />
+                            Gift Wrap Requested (+₹{order.giftWrapFee || 30})
+                          </div>
+                          {order.shippingAddress?.giftMessage && (
+                            <div className="text-sm text-gray-700 bg-white p-3 rounded-xl border border-orange-100/50 italic shadow-sm">
+                              "{order.shippingAddress.giftMessage}"
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Order Items</h4>
                       <div className="bg-white rounded-2xl border border-gray-200/80 p-4 space-y-3">
                         {order.items?.map((item: any, idx: number) => (
@@ -160,11 +219,11 @@ export default function OrdersAdminPage() {
                                 <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover border border-gray-100" />
                               )}
                               <div>
-                                <p className="font-bold text-gray-800">{item.name || item.product?.name}</p>
-                                <p className="text-xs text-gray-500">Qty: {item.quantity} × ₹{item.price}</p>
+                                <p className="font-bold text-gray-800">{item.productName || item.name || item.product?.name}</p>
+                                <p className="text-xs text-gray-500">Qty: {item.quantity} × ₹{Number(item.unitPrice || item.price || 0)}</p>
                               </div>
                             </div>
-                            <p className="font-bold text-gray-900">₹{item.quantity * item.price}</p>
+                            <p className="font-bold text-gray-900">₹{Number(item.quantity) * Number(item.unitPrice || item.price || 0)}</p>
                           </div>
                         ))}
                       </div>
@@ -185,13 +244,20 @@ export default function OrdersAdminPage() {
                       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 space-y-3 text-sm">
                         <div className="flex justify-between text-gray-600">
                           <span>Subtotal</span>
-                          <span>₹{order.subtotal || order.total - (order.shippingFee || 0)}</span>
+                          <span>₹{order.subtotal || order.total - (order.shippingFee || 0) - (order.giftWrapFee || 0) + (order.discountAmount || 0)}</span>
                         </div>
                         
                         <div className="flex justify-between text-gray-600">
                           <span>Shipping Fee</span>
                           <span>{order.shippingFee ? `₹${order.shippingFee}` : 'FREE'}</span>
                         </div>
+
+                        {((order.giftWrapFee && order.giftWrapFee > 0) || order.shippingAddress?.isGiftWrapped) && (
+                          <div className="flex justify-between text-gray-600">
+                            <span>Gift Wrap Fee</span>
+                            <span>₹{order.giftWrapFee || 30}</span>
+                          </div>
+                        )}
 
                         {order.discountAmount > 0 && (
                           <div className="flex justify-between text-green-600 font-medium">

@@ -51,6 +51,7 @@ interface AdminStore {
   setOrders: (orders: Order[]) => void;
   addOrder: (order: Order) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+  updateOrderTracking: (orderId: string, status: Order['status'], trackingNumber: string, courierName: string) => Promise<void>;
 
   // Product management actions
   addProduct: (product: Product) => void;
@@ -248,6 +249,26 @@ export const useAdminStore = create<AdminStore>()(
           });
         } catch (err) {
           console.error('Failed to patch order status:', err);
+        }
+      },
+
+      updateOrderTracking: async (orderId, status, trackingNumber, courierName) => {
+        set((state) => ({
+          orders: state.orders.map(o =>
+            (o.id === orderId || o.orderNumber === orderId) 
+              ? { ...o, status, trackingNumber, courierName } 
+              : o
+          ),
+        }));
+
+        try {
+          await fetch('/api/admin/orders', {
+            method: 'PATCH',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({ orderId, status, trackingNumber, courierName }),
+          });
+        } catch (err) {
+          console.error('Failed to patch order tracking:', err);
         }
       },
 
