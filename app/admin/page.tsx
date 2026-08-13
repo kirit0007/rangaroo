@@ -99,14 +99,7 @@ export default function AdminPage() {
     useAdminStore.getState().fetchSiteSettings();
     useAdminStore.getState().fetchCoupons();
 
-    fetch('/api/admin/orders')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.orders && Array.isArray(data.orders)) {
-          useAdminStore.getState().setOrders(data.orders);
-        }
-      })
-      .catch((err) => console.error('Error fetching admin orders:', err));
+    useAdminStore.getState().fetchOrders();
 
     fetch('/api/products')
       .then((res) => res.json())

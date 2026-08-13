@@ -5,9 +5,15 @@ import { Order } from '@/types';
 
 import { revalidatePath } from 'next/cache';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const isAdmin = await isUserAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required' }, { status: 403 });
+    }
+    
     const supabase = createServerClient();
 
     // Query orders from Supabase DB

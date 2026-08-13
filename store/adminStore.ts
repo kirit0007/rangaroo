@@ -45,6 +45,7 @@ interface AdminStore {
   removeCoupon: (code: string) => Promise<boolean>;
   getCoupon: (code: string) => Coupon | undefined;
 
+  fetchOrders: () => Promise<void>;
   setOrders: (orders: Order[]) => void;
   addOrder: (order: Order) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
@@ -197,6 +198,24 @@ export const useAdminStore = create<AdminStore>()(
 
       getCoupon: (code) => {
         return get().coupons.find(c => c.code.toUpperCase() === code.toUpperCase());
+      },
+
+      fetchOrders: async () => {
+        try {
+          const res = await fetch('/api/admin/orders', {
+            headers: await getAuthHeaders(),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.orders && Array.isArray(data.orders)) {
+              set({ orders: data.orders });
+            }
+          } else {
+            console.error('Failed to fetch orders, status:', res.status);
+          }
+        } catch (err) {
+          console.error('Error fetching admin orders:', err);
+        }
       },
 
       setOrders: (orders) =>
