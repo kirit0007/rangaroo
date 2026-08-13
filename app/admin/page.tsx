@@ -22,17 +22,20 @@ import {
   CheckCircle2,
   XCircle,
   Tag,
-  Upload
+  Upload,
+  Star,
+  Users,
+  Box
 } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
-
 import { useAuthStore } from '@/store/authStore';
 import { useAdminStore } from '@/store/adminStore';
 import { products as initialProducts, categories, collections, formatPrice } from '@/data/products';
 import { Product } from '@/types';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-type TabType = 'dashboard' | 'cms' | 'products' | 'coupons' | 'orders';
+type TabType = 'dashboard' | 'cms' | 'products' | 'coupons' | 'orders' | 'customers' | 'reviews' | 'settings';
 
 function SafeProductThumbnail({ src, alt }: { src?: string; alt: string }) {
   const [hasError, setHasError] = useState(false);
@@ -76,7 +79,23 @@ export default function AdminPage() {
   const deleteProduct = useAdminStore((state) => state.deleteProduct);
 
   // Local state for forms
-  const [cmsForm, setCmsForm] = useState(siteSettings);
+  const [cmsForm, setCmsForm] = useState<any>({
+    storeName: siteSettings?.storeName || 'Rangaroo Store',
+    announcementText: siteSettings?.announcementText || '🎨 Free Express Shipping above ₹499! 🦘',
+    heroTitle: siteSettings?.heroTitle || '',
+    heroSubtitle: siteSettings?.heroSubtitle || '',
+    footerTagline: siteSettings?.footerTagline || '"Paint. Create. Imagine."',
+    footerDescription: siteSettings?.footerDescription || '',
+    contactLocation: siteSettings?.contactLocation || '',
+    whatsappNumber: siteSettings?.whatsappNumber || '',
+    instagramHandle: siteSettings?.instagramHandle || '',
+    instagramUrl: siteSettings?.instagramUrl || '',
+    contactPhone: siteSettings?.contactPhone || '+91 87936 87379',
+    contactEmail: siteSettings?.contactEmail || 'hello@rangaroo.store',
+    standardShippingRate: siteSettings?.standardShippingRate || 50,
+    freeShippingThreshold: siteSettings?.freeShippingThreshold || 499,
+  });
+
   const [couponForm, setCouponForm] = useState({
     code: '',
     discountType: 'percentage' as 'percentage' | 'fixed',
@@ -378,6 +397,25 @@ export default function AdminPage() {
   // Dashboard Stats
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
 
+  // Revenue Chart Data (Last 7 Days)
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
+  
+  const chartData = last7Days.map(date => {
+    const dayOrders = orders.filter(o => o.createdAt.startsWith(date));
+    const revenue = dayOrders.reduce((sum, o) => sum + o.total, 0);
+    return {
+      name: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+      revenue
+    };
+  });
+
+  // Low Stock Products
+  const lowStockProducts = storeProducts.filter(p => p.stockQuantity < 5).slice(0, 5);
+
   // Filtered Products
   const filteredProducts = storeProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(productSearch.toLowerCase());
@@ -430,6 +468,27 @@ export default function AdminPage() {
           >
             <ClipboardList size={20} />
             <span>Orders ({orders.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('customers')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'customers' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <Users size={20} />
+            <span>Customers</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'reviews' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <Star size={20} />
+            <span>Reviews</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl whitespace-nowrap transition-colors w-full ${activeTab === 'settings' ? 'bg-orange-500 text-white font-semibold' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
+          >
+            <Settings size={20} />
+            <span>Settings</span>
           </button>
         </nav>
         <div className="p-4 border-t border-gray-800 mt-auto">
@@ -494,13 +553,114 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* Widgets Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              
+              {/* Sales Chart */}
+              <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm">
+                <h3 className="font-bold text-gray-800 mb-6 font-outfit">Revenue (Last 7 Days)</h3>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} tickFormatter={(value) => `₹${value}`} dx={-10} />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                        formatter={(value: any) => [`₹${value}`, 'Revenue']}
+                      />
+                      <Line type="monotone" dataKey="revenue" stroke="#F97316" strokeWidth={3} dot={{ r: 4, fill: '#F97316', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Low Stock Alerts */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm">
+                <h3 className="font-bold text-gray-800 mb-6 font-outfit flex items-center gap-2">
+                  <AlertCircle size={18} className="text-red-500" />
+                  Low Stock Alerts
+                </h3>
+                {lowStockProducts.length > 0 ? (
+                  <div className="space-y-4">
+                    {lowStockProducts.map(product => (
+                      <div key={product.id} className="flex justify-between items-center p-3 bg-red-50/50 rounded-xl border border-red-100">
+                        <div className="flex items-center gap-3">
+                          <img src={product.images[0]} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 line-clamp-1">{product.name}</p>
+                            <p className="text-xs text-red-600 font-medium">{product.stockQuantity} remaining</p>
+                          </div>
+                        </div>
+                        <button onClick={() => openEditProductModal(product)} className="text-orange-600 hover:text-orange-700 p-2 bg-orange-100 rounded-lg transition-colors">
+                          <Edit size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-48 flex flex-col items-center justify-center text-gray-400">
+                    <CheckCircle2 size={32} className="mb-2 text-green-400" />
+                    <p className="text-sm">All products are well stocked!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Recent Orders Table */}
+              <div className="lg:col-span-3 bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm overflow-hidden">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-gray-800 font-outfit">Recent Orders</h3>
+                  <button onClick={() => setActiveTab('orders')} className="text-sm text-orange-600 font-medium hover:text-orange-700 transition-colors">
+                    View All →
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-4 py-3 font-medium rounded-tl-xl">Order ID</th>
+                        <th className="px-4 py-3 font-medium">Customer</th>
+                        <th className="px-4 py-3 font-medium">Date</th>
+                        <th className="px-4 py-3 font-medium">Total</th>
+                        <th className="px-4 py-3 font-medium rounded-tr-xl">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {orders.slice(0, 5).map(order => (
+                        <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-4 py-4 font-mono font-medium text-gray-900">{order.orderNumber || order.id}</td>
+                          <td className="px-4 py-4 text-gray-600">{order.shippingAddress?.fullName || 'Guest'}</td>
+                          <td className="px-4 py-4 text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</td>
+                          <td className="px-4 py-4 font-bold text-gray-900">₹{order.total}</td>
+                          <td className="px-4 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
+                              order.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {order.paymentStatus.toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {orders.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-8 text-center text-gray-400">No orders placed yet.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Tab 2: CMS */}
+        {/* Tab 2: CMS Settings */}
         {activeTab === 'cms' && (
           <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-outfit text-gray-800">Site CMS & Settings</h1>
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Site Content Management</h1>
             
             <div className="bg-white rounded-3xl border border-gray-200/80 shadow-sm p-6 max-w-4xl">
               <form onSubmit={handleCmsSave} className="space-y-6">
@@ -536,97 +696,26 @@ export default function AdminPage() {
                 </div>
 
                 <div className="border-t border-gray-100 pt-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4">Footer & Contact Settings</h3>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">Footer Section</h3>
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Footer Tagline</label>
                       <input
                         type="text"
-                        value={cmsForm.footerTagline || '"Paint. Create. Imagine."'}
+                        value={cmsForm.footerTagline}
                         onChange={(e) => setCmsForm({ ...cmsForm, footerTagline: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder='"Paint. Create. Imagine."'
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Footer Description</label>
                       <textarea
                         rows={3}
-                        value={cmsForm.footerDescription || ''}
+                        value={cmsForm.footerDescription}
                         onChange={(e) => setCmsForm({ ...cmsForm, footerDescription: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Premium DIY Paint Kits for Kids. Sparking creativity and building fine motor skills..."
                       />
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Location / Shipping</label>
-                        <input
-                          type="text"
-                          value={cmsForm.contactLocation || ''}
-                          onChange={(e) => setCmsForm({ ...cmsForm, contactLocation: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          placeholder="India IN (Shipping Nationwide)"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Support Number</label>
-                        <input
-                          type="text"
-                          value={cmsForm.whatsappNumber || ''}
-                          onChange={(e) => setCmsForm({ ...cmsForm, whatsappNumber: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          placeholder="+91 87936 87379"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Instagram Handle</label>
-                        <input
-                          type="text"
-                          value={cmsForm.instagramHandle || ''}
-                          onChange={(e) => setCmsForm({ ...cmsForm, instagramHandle: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          placeholder="ranga.roo"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Instagram Direct URL</label>
-                        <input
-                          type="text"
-                          value={cmsForm.instagramUrl || ''}
-                          onChange={(e) => setCmsForm({ ...cmsForm, instagramUrl: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          placeholder="https://www.instagram.com/ranga.roo/"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
-                        <input
-                          type="text"
-                          value={cmsForm.contactPhone || ''}
-                          onChange={(e) => setCmsForm({ ...cmsForm, contactPhone: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
-                        <input
-                          type="email"
-                          value={cmsForm.contactEmail || ''}
-                          onChange={(e) => setCmsForm({ ...cmsForm, contactEmail: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        />
-                      </div>
-                    </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Copyright Line</label>
                       <input
@@ -640,12 +729,90 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors shadow-md"
-                  >
+                <div className="flex justify-end pt-6 border-t border-gray-100">
+                  <button type="submit" className="px-8 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all">
                     Save CMS Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Settings */}
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold font-outfit text-gray-800">Store Settings</h1>
+            
+            <div className="bg-white rounded-3xl border border-gray-200/80 shadow-sm p-6 max-w-4xl">
+              <form onSubmit={handleCmsSave} className="space-y-8">
+                
+                {/* General Settings */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">General Information</h3>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
+                      <input
+                        type="text"
+                        value={cmsForm.storeName || ''}
+                        onChange={(e) => setCmsForm({ ...cmsForm, storeName: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                        <input
+                          type="email"
+                          value={cmsForm.contactEmail || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, contactEmail: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                        <input
+                          type="text"
+                          value={cmsForm.contactPhone || ''}
+                          onChange={(e) => setCmsForm({ ...cmsForm, contactPhone: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shipping Settings */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Shipping Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Standard Shipping Rate (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={cmsForm.standardShippingRate || 0}
+                        onChange={(e) => setCmsForm({ ...cmsForm, standardShippingRate: Number(e.target.value) })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Free Shipping Threshold (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={cmsForm.freeShippingThreshold || 0}
+                        onChange={(e) => setCmsForm({ ...cmsForm, freeShippingThreshold: Number(e.target.value) })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-6 border-t border-gray-100">
+                  <button type="submit" className="px-8 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all">
+                    Save Settings
                   </button>
                 </div>
               </form>

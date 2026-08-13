@@ -16,11 +16,13 @@ const getAuthHeaders = async () => {
 };
 
 export interface SiteSettings {
+  storeName: string;
   announcementText: string;
   heroTitle: string;
   heroSubtitle: string;
   contactPhone: string;
   contactEmail: string;
+  standardShippingRate: number;
   freeShippingThreshold: number;
   footerTagline: string;
   footerDescription: string;
@@ -57,11 +59,13 @@ interface AdminStore {
 }
 
 const defaultSettings: SiteSettings = {
+  storeName: 'Rangaroo Store',
   announcementText: '🎨 Free Express Shipping above ₹499! 🦘',
   heroTitle: 'Where Little Hands Create Big Smiles',
   heroSubtitle: 'Premium DIY Paint Kits for Kids — Plaster Figurines, Non-Toxic Colors & Beautiful Gift Packaging',
   contactPhone: '+91 87936 87379',
   contactEmail: 'hello@rangaroo.store',
+  standardShippingRate: 50,
   freeShippingThreshold: 499,
   footerTagline: '"Paint. Create. Imagine."',
   footerDescription: 'Premium DIY Paint Kits for Kids. Sparking creativity and building fine motor skills one canvas at a time. Safe, non-toxic, and endlessly fun!',
