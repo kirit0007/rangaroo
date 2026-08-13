@@ -933,16 +933,7 @@ export default function AdminPage() {
                               value={order.status}
                               onChange={async (e) => {
                                 const nextStatus = e.target.value;
-                                updateOrderStatus(order.id, nextStatus as any);
-                                try {
-                                  await fetch('/api/admin/orders', {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ orderId: order.id, status: nextStatus }),
-                                  });
-                                } catch (err) {
-                                  console.error('Failed to patch order status:', err);
-                                }
+                                await updateOrderStatus(order.id, nextStatus as any);
                                 toast.success(`Order ${order.orderNumber || order.id} status updated to ${nextStatus}`);
                               }}
                               className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm"

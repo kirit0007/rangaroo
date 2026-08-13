@@ -4,6 +4,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Coupon, Order, Product } from '@/types';
 import { products as initialProducts } from '@/data/products';
+import { createClient } from '@/lib/supabase/client';
+
+const getAuthHeaders = async () => {
+  const supabase = createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  return {
+    'Content-Type': 'application/json',
+    ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {})
+  };
+};
 
 export interface SiteSettings {
   announcementText: string;
@@ -37,7 +47,7 @@ interface AdminStore {
 
   setOrders: (orders: Order[]) => void;
   addOrder: (order: Order) => void;
-  updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
 
   // Product management actions
   addProduct: (product: Product) => void;
@@ -113,7 +123,7 @@ export const useAdminStore = create<AdminStore>()(
         try {
           const res = await fetch('/api/settings', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await getAuthHeaders(),
             body: JSON.stringify(settings),
           });
           if (res.ok) {
@@ -147,7 +157,7 @@ export const useAdminStore = create<AdminStore>()(
         try {
           const res = await fetch('/api/coupons', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await getAuthHeaders(),
             body: JSON.stringify({ coupon }),
           });
           const data = await res.json();
@@ -167,6 +177,7 @@ export const useAdminStore = create<AdminStore>()(
         try {
           const res = await fetch(`/api/coupons?code=${encodeURIComponent(code)}`, {
             method: 'DELETE',
+            headers: await getAuthHeaders(),
           });
           const data = await res.json();
           if (res.ok) {
@@ -199,12 +210,23 @@ export const useAdminStore = create<AdminStore>()(
           return { orders: [order, ...filtered] };
         }),
 
-      updateOrderStatus: (orderId, status) =>
+      updateOrderStatus: async (orderId, status) => {
         set((state) => ({
           orders: state.orders.map(o =>
             (o.id === orderId || o.orderNumber === orderId) ? { ...o, status } : o
           ),
-        })),
+        }));
+
+        try {
+          await fetch('/api/admin/orders', {
+            method: 'PATCH',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({ orderId, status }),
+          });
+        } catch (err) {
+          console.error('Failed to patch order status:', err);
+        }
+      },
 
       // Product management implementations
       addProduct: (product) =>
