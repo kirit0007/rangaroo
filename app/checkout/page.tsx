@@ -120,24 +120,41 @@ export default function CheckoutPage() {
       // Load script
       const res = await loadRazorpayScript();
       if (!res) {
-        toast.error('Razorpay SDK failed to load. Are you online?');
+        toast.error('Razorpay SDK failed to load. Please check your network connection.');
         setIsLoading(false);
         return;
       }
 
-      // In a real app, you would call your backend here to create an order
-      // const orderRes = await fetch('/api/razorpay/order', { method: 'POST', body: JSON.stringify({ amount: getTotal() }) });
-      // const orderData = await orderRes.json();
+      // Fetch server-calculated order ID from API
+      let orderId = '';
+      try {
+        const orderRes = await fetch('/api/razorpay/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map(it => ({ productId: it.productId, quantity: it.quantity })),
+            amount: getTotal(),
+            receipt: `ord_${Date.now()}`,
+          }),
+        });
+        if (orderRes.ok) {
+          const orderData = await orderRes.json();
+          if (orderData?.id) {
+            orderId = orderData.id;
+          }
+        }
+      } catch (err) {
+        console.warn('Backend order creation fallback:', err);
+      }
 
-      // Dummy Razorpay Options for simulation
-      const options = {
+      // Razorpay Checkout Options
+      const options: any = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_dummy_key',
         amount: getTotal() * 100, // Amount in paise
         currency: 'INR',
         name: 'Rangaroo Store',
         description: 'DIY Paint Kits Order',
         image: '/logo.png',
-        // order_id: orderData.id, 
         handler: function (response: any) {
           const currentOrders = useAdminStore.getState().orders || [];
           const nextSeq = 1001 + currentOrders.length;
@@ -206,6 +223,10 @@ export default function CheckoutPage() {
           }
         }
       };
+
+      if (orderId) {
+        options.order_id = orderId;
+      }
 
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
