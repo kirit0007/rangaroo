@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 const LIMIT = 60; // 60 requests per minute
 const WINDOW_MS = 60 * 1000;
+const MAX_MAP_SIZE = 5000;
 
 function isAllowedOrigin(origin: string): boolean {
   if (origin === 'https://rangaroo.store' || origin === 'https://www.rangaroo.store') {
@@ -45,8 +46,21 @@ export function middleware(request: NextRequest) {
 
   // Rate limiting for API endpoints
   if (pathname.startsWith('/api/')) {
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous';
+    const rawFwd = request.headers.get('x-forwarded-for');
+    const ip = (rawFwd ? rawFwd.split(',')[0].trim() : null) || request.headers.get('x-real-ip') || 'anonymous';
     const now = Date.now();
+
+    // Prevent memory leaks by capping rateLimitMap size and evicting expired entries
+    if (rateLimitMap.size >= MAX_MAP_SIZE) {
+      for (const [key, val] of rateLimitMap.entries()) {
+        if (now - val.lastReset > WINDOW_MS) {
+          rateLimitMap.delete(key);
+        }
+      }
+      if (rateLimitMap.size >= MAX_MAP_SIZE) {
+        rateLimitMap.clear();
+      }
+    }
 
     const record = rateLimitMap.get(ip) || { count: 0, lastReset: now };
 
