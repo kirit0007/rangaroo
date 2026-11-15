@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import { useAdminStore } from '@/store/adminStore';
@@ -14,19 +14,13 @@ export default function SearchClient() {
   const adminProducts = useAdminStore((state) => state.products);
   const allProducts = adminProducts && adminProducts.length > 0 ? adminProducts : defaultProducts;
   
-  const [results, setResults] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (query) {
-      const lowerQuery = query.toLowerCase();
-      const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(lowerQuery) || 
-        p.description.toLowerCase().includes(lowerQuery)
-      );
-      setResults(filtered);
-    } else {
-      setResults([]);
-    }
+  const results = useMemo(() => {
+    if (!query) return [];
+    const lowerQuery = query.toLowerCase();
+    return allProducts.filter(p => 
+      p.name.toLowerCase().includes(lowerQuery) || 
+      p.description.toLowerCase().includes(lowerQuery)
+    );
   }, [query, allProducts]);
 
   return (

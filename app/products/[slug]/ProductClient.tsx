@@ -25,8 +25,22 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
   const isInWishlist = useWishlistStore((state) => state.isInWishlist);
   const storeProducts = useAdminStore((state) => state.products) || defaultProducts;
   
-  const [product, setProduct] = useState<any>(initialProduct);
-  const [relatedProducts, setRelatedProducts] = useState<any[]>(initialRelatedProducts || []);
+  const product = useMemo(() => {
+    if (typeof slug === 'string') {
+      return storeProducts.find((p: any) => p.slug === slug || p.id === slug) || getProductBySlug(slug) || initialProduct;
+    }
+    return initialProduct;
+  }, [slug, storeProducts, initialProduct]);
+
+  const relatedProducts = useMemo(() => {
+    if (product && product.collectionId) {
+      return storeProducts
+        .filter((p: any) => p.collectionId === product.collectionId && p.id !== product.id)
+        .slice(0, 4);
+    }
+    return initialRelatedProducts || [];
+  }, [product, storeProducts, initialRelatedProducts]);
+
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [pincode, setPincode] = useState('');
@@ -63,20 +77,6 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
       setPincodeStatus(`🚚 Delivery available! Expected by ${deliveryDate}`);
     }
   };
-
-  useEffect(() => {
-    if (typeof slug === 'string') {
-      const foundProduct = storeProducts.find(p => p.slug === slug || p.id === slug) || getProductBySlug(slug);
-      setProduct(foundProduct);
-      
-      if (foundProduct && foundProduct.collectionId) {
-        const related = storeProducts
-          .filter(p => p.collectionId === foundProduct.collectionId && p.id !== foundProduct.id)
-          .slice(0, 4);
-        setRelatedProducts(related);
-      }
-    }
-  }, [slug, storeProducts]);
 
   if (!product) {
     return (
@@ -513,15 +513,24 @@ function ProductReviewsSection({ product }: { product: any }) {
 
   useEffect(() => {
     if (product?.id) {
-      setIsLoading(true);
+      let isMounted = true;
+      queueMicrotask(() => {
+        if (isMounted) setIsLoading(true);
+      });
       fetch(`/api/reviews?productId=${product.id}`)
         .then((res) => res.json())
         .then((data) => {
+          if (!isMounted) return;
           if (data.reviews) setReviews(data.reviews);
           if (data.summary) setReviewSummary(data.summary);
         })
         .catch((err) => console.error('Reviews load error:', err))
-        .finally(() => setIsLoading(false));
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+      return () => {
+        isMounted = false;
+      };
     }
   }, [product?.id]);
 

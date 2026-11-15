@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ChevronLeft, PackageX } from 'lucide-react';
@@ -12,29 +12,21 @@ import { motion } from 'framer-motion';
 export default function CollectionClient({ initialCollection, initialProducts }: { initialCollection: Collection | null, initialProducts: Product[] }) {
   const { slug } = useParams();
   
-  const [collection, setCollection] = useState<Collection | null>(initialCollection);
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (typeof slug === 'string' && !initialCollection) {
-      const foundCollection = getCollectionBySlug(slug);
-      setCollection(foundCollection || null);
-      
-      if (foundCollection) {
-        setProducts(getProductsByCollection(foundCollection.id));
-      }
-      setLoading(false);
+  const collection = useMemo(() => {
+    if (initialCollection) return initialCollection;
+    if (typeof slug === 'string') {
+      return getCollectionBySlug(slug) || null;
     }
-  }, [slug, initialCollection]);
+    return null;
+  }, [initialCollection, slug]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-      </div>
-    );
-  }
+  const products = useMemo(() => {
+    if (initialProducts && initialProducts.length > 0) return initialProducts;
+    if (collection) {
+      return getProductsByCollection(collection.id);
+    }
+    return [];
+  }, [initialProducts, collection]);
 
   if (!collection) {
     return (
