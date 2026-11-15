@@ -262,18 +262,6 @@ export default function AuthModal() {
                   </>
                 )}
 
-                {authModalMode === 'login' && (
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setAuthModalMode('forgot')}
-                      className="text-xs text-[var(--brand-orange)] font-semibold hover:underline"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                )}
-
                 <button
                   type="submit"
                   disabled={isLoading}
