@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
       .update(text)
       .digest('hex');
 
-    if (generatedSignature !== razorpay_signature) {
+    const genSigBuf = Buffer.from(generatedSignature, 'utf8');
+    const recSigBuf = Buffer.from(razorpay_signature, 'utf8');
+
+    if (genSigBuf.length !== recSigBuf.length || !crypto.timingSafeEqual(genSigBuf, recSigBuf)) {
       console.error('Razorpay signature mismatch');
       return NextResponse.json(
         { success: false, error: 'Invalid payment signature. Verification failed.' },
@@ -112,9 +115,13 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (fullOrder) {
+        const internalSecret = process.env.INTERNAL_API_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
         fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://rangaroo.store'}/api/email/order-confirmation`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(internalSecret ? { 'x-internal-secret': internalSecret } : {}),
+          },
           body: JSON.stringify({
             order: fullOrder,
             customerEmail: fullOrder.customer_email,
