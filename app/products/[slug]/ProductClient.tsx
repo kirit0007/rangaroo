@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -31,6 +31,14 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
   const [activeImage, setActiveImage] = useState(0);
   const [pincode, setPincode] = useState('');
   const [pincodeStatus, setPincodeStatus] = useState<string | null>(null);
+
+  const expressDeliveryDate = useMemo(() => {
+    return new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  }, []);
 
   const checkPincodeDelivery = async (pin: string) => {
     if (pin.length !== 6) {
@@ -214,7 +222,7 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <Truck className="w-4 h-4 text-emerald-600 shrink-0" /> 
                   <span>
-                    Express delivery by <strong className="text-gray-900">{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</strong> if ordered in 2 hrs!
+                    Express delivery by <strong className="text-gray-900">{expressDeliveryDate}</strong> if ordered in 2 hrs!
                   </span>
                 </div>
 

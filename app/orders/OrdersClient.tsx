@@ -15,6 +15,13 @@ import {
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
+function isReturnEligible(deliveredAt?: string): boolean {
+  if (!deliveredAt) return false;
+  const deliveredTime = new Date(deliveredAt).getTime();
+  if (isNaN(deliveredTime)) return false;
+  return (Date.now() - deliveredTime) / (1000 * 60 * 60 * 24) <= 7;
+}
+
 export default function OrdersClient() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -249,7 +256,7 @@ export default function OrdersClient() {
                         <CornerUpLeft size={14} /> Cancel Order
                       </button>
                     )}
-                    {order.status === 'delivered' && order.deliveredAt && ((Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24)) <= 7 && (
+                    {order.status === 'delivered' && isReturnEligible(order.deliveredAt) && (
                       <button 
                         onClick={() => setShowReturnModal(order)}
                         className="px-3.5 py-2 rounded-xl text-amber-600 hover:bg-amber-50 text-xs font-semibold flex items-center gap-1"
