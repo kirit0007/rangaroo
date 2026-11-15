@@ -3,6 +3,7 @@
 
 @theme {
   --font-heading: var(--font-outfit), 'Outfit', sans-serif;
+  --font-outfit: var(--font-outfit), 'Outfit', sans-serif;
   --font-body: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
 
   --color-brand-orange: #FF5722;

@@ -84,7 +84,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Image Area - Link */}
-      <Link href={`/products/${product.slug}`} className="relative h-[200px] w-full bg-cream overflow-hidden block">
+      <Link href={`/products/${product.slug}`} className="relative h-[200px] w-full bg-brand-cream overflow-hidden block">
         <Image
           src={imgSrc}
           alt={`${product.name} - Non-toxic DIY plaster craft kit for kids`}

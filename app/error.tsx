@@ -37,7 +37,7 @@ export default function ErrorPage({
           </button>
           <Link
             href="/"
-            className="flex-1 btn-outline py-2.5 px-4 text-sm flex items-center justify-center gap-2"
+            className="flex-1 btn-secondary py-2.5 px-4 text-sm flex items-center justify-center gap-2"
           >
             <Home className="w-4 h-4" /> Go Home
           </Link>
