@@ -35,14 +35,14 @@ export default function SearchClient() {
         <div className="mb-8 flex items-center gap-3">
           <Search className="text-orange-500 w-8 h-8" />
           <h1 className="text-3xl font-outfit font-bold text-gray-900">
-            Search Results for "{query}"
+            Search Results for &quot;{query}&quot;
           </h1>
         </div>
 
         {results.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">No results found</h2>
-            <p className="text-gray-500">We couldn't find any products matching your search.</p>
+            <p className="text-gray-500">We couldn&apos;t find any products matching your search.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

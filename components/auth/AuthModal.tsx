@@ -306,7 +306,7 @@ export default function AuthModal() {
               <div className="mt-6 text-center text-xs text-gray-500">
                 {authModalMode === 'login' && (
                   <p>
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <button onClick={() => setAuthModalMode('signup')} className="text-[var(--brand-orange)] font-semibold hover:underline">
                       Sign Up
                     </button>

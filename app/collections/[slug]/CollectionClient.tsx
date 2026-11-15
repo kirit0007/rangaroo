@@ -43,7 +43,7 @@ export default function CollectionClient({ initialCollection, initialProducts }:
           <PackageX className="w-12 h-12" />
         </div>
         <h1 className="text-4xl font-outfit font-bold text-gray-900 mb-4">Collection Not Found</h1>
-        <p className="text-gray-600 mb-8 max-w-md">We couldn't find the collection you're looking for. It might have been moved or deleted.</p>
+        <p className="text-gray-600 mb-8 max-w-md">We couldn&apos;t find the collection you&apos;re looking for. It might have been moved or deleted.</p>
         <Link href="/products" className="px-8 py-3 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-600 transition-colors shadow-md">
           Shop All Kits
         </Link>

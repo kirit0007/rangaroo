@@ -103,7 +103,7 @@ ${notes ? `- Note: ${notes}` : ''}`;
                 </div>
                 <h4 className="text-2xl font-bold text-gray-900 font-outfit">Inquiry Received!</h4>
                 <p className="text-gray-600 text-sm max-w-xs mx-auto">
-                  Thank you! We've generated your custom quote request. You can also chat directly with our team on WhatsApp.
+                  Thank you! We&apos;ve generated your custom quote request. You can also chat directly with our team on WhatsApp.
                 </p>
                 <div className="pt-4 flex flex-col gap-3">
                   <a

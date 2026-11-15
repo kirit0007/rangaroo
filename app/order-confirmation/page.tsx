@@ -64,7 +64,7 @@ function ConfirmationContent() {
         </h1>
         
         <p className="text-lg text-gray-600 mb-2">
-          Thank you for choosing Rangaroo. Your little artist's next masterpiece is on its way!
+          Thank you for choosing Rangaroo. Your little artist&apos;s next masterpiece is on its way!
         </p>
 
         <div className="inline-block bg-gray-50 px-6 py-3 rounded-full text-sm font-medium text-gray-700 border border-gray-200 mb-10">

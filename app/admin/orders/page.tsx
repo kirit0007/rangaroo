@@ -209,7 +209,7 @@ export default function OrdersAdminPage() {
                           </div>
                           {order.shippingAddress?.giftMessage && (
                             <div className="text-sm text-gray-700 bg-white p-3 rounded-xl border border-orange-100/50 italic shadow-sm">
-                              "{order.shippingAddress.giftMessage}"
+                              &quot;{order.shippingAddress.giftMessage}&quot;
                             </div>
                           )}
                         </div>
@@ -224,7 +224,7 @@ export default function OrdersAdminPage() {
                           </div>
                           {order.cancelReason && (
                             <div className="text-sm text-gray-700 bg-white p-3 rounded-xl border border-red-100/50 mb-3 shadow-sm">
-                              Reason: "{order.cancelReason}"
+                              Reason: &quot;{order.cancelReason}&quot;
                             </div>
                           )}
                           <div className="flex gap-2">
@@ -259,7 +259,7 @@ export default function OrdersAdminPage() {
                           </div>
                           {order.returnReason && (
                             <div className="text-sm text-gray-700 bg-white p-3 rounded-xl border border-amber-100/50 mb-3 shadow-sm">
-                              Reason: "{order.returnReason}"
+                              Reason: &quot;{order.returnReason}&quot;
                             </div>
                           )}
                           <div className="flex gap-2">

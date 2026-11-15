@@ -40,7 +40,7 @@ export default function AboutPage() {
                 Our Story: Painting a <span className="text-orange-500">Brighter</span> Future
               </h1>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Rangaroo started with a simple observation: kids today spend too much time staring at screens and not enough time creating with their hands. As parents, we wanted to provide a fun, engaging alternative that wasn't just another plastic toy.
+                Rangaroo started with a simple observation: kids today spend too much time staring at screens and not enough time creating with their hands. As parents, we wanted to provide a fun, engaging alternative that wasn&apos;t just another plastic toy.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed">
                 We discovered that painting 3D plaster figures offered the perfect blend of focus, creativity, and tangible reward. After months of testing to find the safest paints and the best plaster formulas, Rangaroo was born.
@@ -67,7 +67,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-outfit font-bold text-gray-900 mb-6">Our Mission</h2>
           <p className="text-2xl font-medium text-gray-700 leading-relaxed italic">
-            "To spark imagination, build confidence, and create lasting childhood memories through accessible, high-quality creative experiences."
+            &quot;To spark imagination, build confidence, and create lasting childhood memories through accessible, high-quality creative experiences.&quot;
           </p>
         </div>
       </section>
@@ -104,7 +104,7 @@ export default function AboutPage() {
             <div>
               <h2 className="text-2xl font-outfit font-bold text-gray-900 mb-2">A Note From the Founder</h2>
               <p className="text-gray-600 mb-4 leading-relaxed">
-                "When I saw the pure joy on my niece's face after finishing her first painted figurine, I knew I had to share this experience with more families. Rangaroo isn't just about painting; it's about giving kids the pride of saying 'I made this!'"
+                &quot;When I saw the pure joy on my niece&apos;s face after finishing her first painted figurine, I knew I had to share this experience with more families. Rangaroo isn&apos;t just about painting; it&apos;s about giving kids the pride of saying &apos;I made this!&apos;&quot;
               </p>
               <p className="font-bold text-gray-900">- Team Rangaroo</p>
             </div>

@@ -285,7 +285,7 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
               {/* Kit Contents */}
               {product.kitContents && product.kitContents.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="font-semibold text-gray-900 mb-3 font-outfit text-lg">What's inside the box?</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3 font-outfit text-lg">What&apos;s inside the box?</h3>
                   <ul className="space-y-2 bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
                     {product.kitContents.map((item: string, idx: number) => (
                       <li key={idx} className="flex items-start text-gray-700">
@@ -365,7 +365,7 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
           <h2 className="text-2xl font-outfit font-bold text-gray-900 mb-6">Product Details</h2>
           <div className="prose prose-orange max-w-none text-gray-600">
             <p>
-              Let your child's imagination run wild with the {product.name}. Our premium plaster painting kits are designed to provide hours of screen-free entertainment while developing fine motor skills and color recognition.
+              Let your child&apos;s imagination run wild with the {product.name}. Our premium plaster painting kits are designed to provide hours of screen-free entertainment while developing fine motor skills and color recognition.
             </p>
             <p className="mt-4">
               Each piece is carefully hand-poured using high-quality, durable plaster that absorbs paint beautifully, resulting in vibrant, lasting colors. The included paints are 100% non-toxic, water-based, and completely safe for little hands.

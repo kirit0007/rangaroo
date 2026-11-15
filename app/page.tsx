@@ -386,7 +386,7 @@ function HomepageReviewsSection() {
                     </span>
                   </div>
                   {rev.title && <h4 className="font-bold text-gray-900 text-base mb-2">{rev.title}</h4>}
-                  <p className="text-gray-700 text-sm italic leading-relaxed mb-6">"{rev.comment}"</p>
+                  <p className="text-gray-700 text-sm italic leading-relaxed mb-6">&quot;{rev.comment}&quot;</p>
                 </div>
                 <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
                   <span className="font-bold text-gray-900">{rev.customerName}</span>
@@ -402,7 +402,7 @@ function HomepageReviewsSection() {
             <span className="text-4xl mb-3 block">🎨</span>
             <h3 className="text-xl font-bold font-outfit text-gray-900 mb-2">Be the First to Leave a 5-Star Review!</h3>
             <p className="text-gray-600 text-xs sm:text-sm mb-6 leading-relaxed">
-              Purchase any DIY paint kit and share your child's masterpiece on the product page!
+              Purchase any DIY paint kit and share your child&apos;s masterpiece on the product page!
             </p>
             <Link
               href="/products"

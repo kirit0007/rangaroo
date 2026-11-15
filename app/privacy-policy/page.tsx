@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
         
         <div className="prose prose-orange max-w-none text-gray-700 space-y-6">
           <p>
-            Rangaroo ("we" and "us") is the operator of (https://www.rangaroo.store). This privacy policy describes how we collect, use, and protect your personal information when you use our website.
+            Rangaroo (&quot;we&quot; and &quot;us&quot;) is the operator of (https://www.rangaroo.store). This privacy policy describes how we collect, use, and protect your personal information when you use our website.
           </p>
           
           <h2 className="text-xl font-bold text-gray-900">1. Information We Collect</h2>

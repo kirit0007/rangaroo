@@ -53,7 +53,7 @@ export default function ShippingPolicyPage() {
           </p>
 
           <p className="mt-8 pt-6 border-t border-gray-100 text-sm">
-            If you have any further questions, please don't hesitate to <Link href="/contact" className="text-orange-600 hover:underline">contact us</Link>.
+            If you have any further questions, please don&apos;t hesitate to <Link href="/contact" className="text-orange-600 hover:underline">contact us</Link>.
           </p>
         </div>
       </div>

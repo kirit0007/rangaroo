@@ -23,7 +23,7 @@ export default function ContactPage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-outfit font-extrabold text-gray-900 mb-4">Get in Touch</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Have a question about our kits, shipping, or looking for bulk return gifts? We'd love to hear from you!
+            Have a question about our kits, shipping, or looking for bulk return gifts? We&apos;d love to hear from you!
           </p>
         </div>
 

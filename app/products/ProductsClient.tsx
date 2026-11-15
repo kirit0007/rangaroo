@@ -170,7 +170,7 @@ function ProductsContent() {
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-500 max-w-md mx-auto mb-6">
-              We couldn't find any kits matching your current filter. Try selecting a different category.
+              We couldn&apos;t find any kits matching your current filter. Try selecting a different category.
             </p>
             <button 
               onClick={() => setActiveCategory('All')}

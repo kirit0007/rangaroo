@@ -435,7 +435,7 @@ export default function Navbar() {
                   ))
                 ) : (
                   <div className="py-8 text-center text-gray-400 text-xs">
-                    No craft kits found matching "{searchQuery}"
+                    No craft kits found matching &quot;{searchQuery}&quot;
                   </div>
                 )}
               </div>

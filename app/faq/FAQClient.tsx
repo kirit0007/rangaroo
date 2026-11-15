@@ -82,7 +82,7 @@ export default function FAQClient() {
         {/* Still have questions */}
         <div className="mt-16 bg-white rounded-3xl p-8 text-center shadow-sm border border-gray-100">
           <h3 className="text-2xl font-outfit font-bold text-gray-900 mb-2">Still have questions?</h3>
-          <p className="text-gray-600 mb-6">Can't find the answer you're looking for? Please chat to our friendly team.</p>
+          <p className="text-gray-600 mb-6">Can&apos;t find the answer you&apos;re looking for? Please chat to our friendly team.</p>
           <Link href="/contact" className="inline-block px-8 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors">
             Contact Us
           </Link>

@@ -142,7 +142,7 @@ export default function CartDrawer() {
                   <div className="text-6xl animate-bounceIn">🦘</div>
                   <div>
                     <h3 className="font-heading text-xl font-semibold text-gray-800 mb-2">Your cart is empty!</h3>
-                    <p className="text-gray-500 mb-6 text-sm">Looks like you haven't added any paint kits yet. Let's find something creative!</p>
+                    <p className="text-gray-500 mb-6 text-sm">Looks like you haven&apos;t added any paint kits yet. Let&apos;s find something creative!</p>
                     <Link 
                       href="/products" 
                       onClick={closeCart}
