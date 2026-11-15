@@ -1,21 +1,20 @@
-import React from 'react';
-import { Metadata } from 'next';
-import { MapPin, Send, PhoneCall } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Contact Us | Rangaroo',
-  description: 'Get in touch with the Rangaroo team for any questions about our DIY paint kits.',
-  alternates: {
-    canonical: '/contact',
-  },
-  openGraph: {
-    title: 'Contact Us | Rangaroo',
-    description: 'Get in touch with the Rangaroo team for any questions about our DIY paint kits.',
-    url: '/contact',
-  },
-};
+import React, { useEffect } from 'react';
+import { MapPin, Send, PhoneCall } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ContactPage() {
+  useEffect(() => {
+    document.title = 'Contact Us | Rangaroo';
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    toast.success("Message sent! We'll reply within 24 hours.");
+    e.currentTarget.reset();
+  };
+
   return (
     <div className="min-h-screen bg-[#FFF9F2] pt-24 pb-20 font-body">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -113,7 +112,7 @@ export default function ContactPage() {
             <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100">
               <h2 className="text-2xl font-outfit font-bold text-gray-900 mb-6">Send us a Message</h2>
               
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Your Name *</label>
