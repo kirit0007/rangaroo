@@ -1,5 +1,15 @@
 import { Order } from '@/types';
 
+export function escapeHtml(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function sendOrderConfirmationEmail(order: Order, customerEmailOverride?: string) {
   try {
     const apiKey = process.env.BREVO_API_KEY;
@@ -27,7 +37,7 @@ export async function sendOrderConfirmationEmail(order: Order, customerEmailOver
     const itemRows = (order.items || []).map((item: any) => `
       <tr style="border-bottom: 1px solid #f0f0f0;">
         <td style="padding: 12px 8px; vertical-align: middle;">
-          <strong style="color: #1f2937; font-size: 14px;">${item.productName || 'DIY Paint Kit'}</strong>
+          <strong style="color: #1f2937; font-size: 14px;">${escapeHtml(item.productName || 'DIY Paint Kit')}</strong>
           <br><span style="color: #6b7280; font-size: 12px;">Qty: ${item.quantity}</span>
         </td>
         <td style="padding: 12px 8px; text-align: right; color: #1f2937; font-weight: bold; font-size: 14px;">
@@ -61,7 +71,7 @@ export async function sendOrderConfirmationEmail(order: Order, customerEmailOver
               <div style="display: inline-block; background-color: #ecfdf5; color: #047857; padding: 8px 18px; border-radius: 50px; font-weight: bold; font-size: 14px; border: 1px solid #a7f3d0;">
                 🎉 Payment Confirmed & Order Placed!
               </div>
-              <h2 style="color: #111827; margin-top: 15px; margin-bottom: 5px; font-size: 22px;">Thank you for your order, ${recipientName}!</h2>
+              <h2 style="color: #111827; margin-top: 15px; margin-bottom: 5px; font-size: 22px;">Thank you for your order, ${escapeHtml(recipientName)}!</h2>
               <p style="color: #6b7280; margin: 0; font-size: 14px;">We have received your payment and are getting your DIY paint kit ready for dispatch.</p>
             </td>
           </tr>
@@ -73,7 +83,7 @@ export async function sendOrderConfirmationEmail(order: Order, customerEmailOver
                 <tr>
                   <td>
                     <span style="color: #9ca3af; font-size: 11px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Order Number</span>
-                    <br><strong style="color: #FF5722; font-size: 18px;">${orderNum}</strong>
+                    <br><strong style="color: #FF5722; font-size: 18px;">${escapeHtml(orderNum)}</strong>
                   </td>
                   <td style="text-align: right;">
                     <span style="color: #9ca3af; font-size: 11px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Payment Status</span>
@@ -124,10 +134,10 @@ export async function sendOrderConfirmationEmail(order: Order, customerEmailOver
             <td style="padding: 0 30px 30px 30px;">
               <h3 style="color: #111827; font-size: 16px; margin-bottom: 10px; border-bottom: 2px solid #FF5722; padding-bottom: 6px; display: inline-block;">Shipping Address</h3>
               <div style="background-color: #f9fafb; padding: 15px; border-radius: 12px; font-size: 13px; color: #374151; line-height: 1.5; border: 1px solid #f3f4f6;">
-                <strong>${order.shippingAddress?.fullName || recipientName}</strong><br>
-                ${order.shippingAddress?.addressLine1 || ''}${order.shippingAddress?.addressLine2 ? `, ${order.shippingAddress.addressLine2}` : ''}<br>
-                ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} - ${order.shippingAddress?.pincode || ''}<br>
-                📞 Phone: ${order.shippingAddress?.phone || 'N/A'}
+                <strong>${escapeHtml(order.shippingAddress?.fullName || recipientName)}</strong><br>
+                ${escapeHtml(order.shippingAddress?.addressLine1 || '')}${order.shippingAddress?.addressLine2 ? `, ${escapeHtml(order.shippingAddress.addressLine2)}` : ''}<br>
+                ${escapeHtml(order.shippingAddress?.city || '')}, ${escapeHtml(order.shippingAddress?.state || '')} - ${escapeHtml(order.shippingAddress?.pincode || '')}<br>
+                📞 Phone: ${escapeHtml(order.shippingAddress?.phone || 'N/A')}
               </div>
             </td>
           </tr>
