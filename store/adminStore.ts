@@ -290,6 +290,12 @@ export const useAdminStore = create<AdminStore>()(
           products: state.products.filter(p => p.id !== productId),
         })),
     }),
-    { name: 'rangaroo-admin' }
+    {
+      name: 'rangaroo-admin',
+      partialize: (state) => ({
+        siteSettings: state.siteSettings,
+        coupons: state.coupons,
+      }),
+    }
   )
 );
