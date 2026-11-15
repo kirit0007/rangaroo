@@ -175,6 +175,7 @@ export default function CartDrawer() {
                                 fill
                                 className="object-cover"
                                 unoptimized
+                                onError={(e) => { e.currentTarget.src = '/logo.png'; }}
                               />
                             </div>
                             <div className="flex-1 flex flex-col justify-between py-1">

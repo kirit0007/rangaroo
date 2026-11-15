@@ -422,7 +422,7 @@ export default function Navbar() {
                       className="flex items-center gap-4 p-3 rounded-2xl hover:bg-orange-50/70 border border-transparent hover:border-orange-100 transition-all group"
                     >
                       <div className="w-12 h-12 rounded-xl bg-gray-100 relative overflow-hidden flex-shrink-0">
-                        <Image src={product.images?.[0] || '/logo.png'} alt={product.name} fill className="object-cover" unoptimized />
+                        <Image src={product.images?.[0] || '/logo.png'} alt={product.name} fill className="object-cover" unoptimized onError={(e) => { e.currentTarget.src = '/logo.png'; }} />
                       </div>
                       <div className="flex-grow min-w-0">
                         <h4 className="font-bold text-sm text-gray-900 truncate group-hover:text-orange-600 transition-colors">{product.name}</h4>

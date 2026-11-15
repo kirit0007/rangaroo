@@ -210,6 +210,7 @@ export default function OrdersClient() {
                             width={50} 
                             height={50} 
                             className="object-contain max-h-12"
+                            onError={(e) => { e.currentTarget.src = '/logo.png'; }}
                           />
                         </div>
                         <div>
