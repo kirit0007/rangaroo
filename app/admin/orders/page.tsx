@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { 
   ClipboardList, 
   ChevronDown, 
@@ -290,7 +291,7 @@ export default function OrdersAdminPage() {
                           <div key={idx} className="flex justify-between items-center text-sm border-b last:border-b-0 pb-3 last:pb-0 border-gray-100">
                             <div className="flex items-center space-x-3">
                               {item.image && (
-                                <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover border border-gray-100" />
+                                <Image src={item.image} alt={item.productName || item.name || 'Order item'} width={48} height={48} unoptimized className="w-12 h-12 rounded-xl object-cover border border-gray-100" />
                               )}
                               <div>
                                 <p className="font-bold text-gray-800">{item.productName || item.name || item.product?.name}</p>

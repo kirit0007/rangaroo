@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { 
   Package, 
   Search, 
@@ -22,9 +23,12 @@ function SafeProductThumbnail({ src, alt }: { src?: string; alt: string }) {
   return (
     <div className="h-12 w-12 rounded-xl overflow-hidden relative bg-gray-100 shrink-0 border border-gray-200 flex items-center justify-center select-none text-[0px] font-sans">
       {!hasError ? (
-        <img
+        <Image
           src={cleanSrc}
           alt={alt}
+          width={48}
+          height={48}
+          unoptimized
           onError={() => setHasError(true)}
           className="w-full h-full object-cover block"
         />

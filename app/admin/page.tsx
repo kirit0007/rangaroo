@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Package, 
   CreditCard, 
@@ -121,7 +122,7 @@ export default function AdminDashboardPage() {
               {lowStockProducts.map(product => (
                 <div key={product.id} className="flex justify-between items-center p-3 bg-red-50/50 rounded-xl border border-red-100">
                   <div className="flex items-center gap-3">
-                    <img src={product.images?.[0] || '/logo.png'} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
+                    <Image src={product.images?.[0] || '/logo.png'} alt={product.name} width={40} height={40} unoptimized className="w-10 h-10 rounded-lg object-cover" />
                     <div>
                       <p className="text-sm font-semibold text-gray-900 line-clamp-1">{product.name}</p>
                       <p className="text-xs text-red-600 font-medium">{product.stockQuantity} remaining</p>
