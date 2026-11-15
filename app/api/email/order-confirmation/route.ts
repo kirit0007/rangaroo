@@ -1,8 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
+import { isUserAdmin } from '@/lib/auth/serverAuth';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authorization: must be admin or provide valid x-internal-secret
+    const internalSecret = process.env.INTERNAL_API_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const providedSecret = request.headers.get('x-internal-secret');
+    let isInternal = false;
+
+    if (internalSecret && providedSecret) {
+      const a = Buffer.from(providedSecret, 'utf8');
+      const b = Buffer.from(internalSecret, 'utf8');
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+        isInternal = true;
+      }
+    }
+
+    const isAdmin = await isUserAdmin(request);
+
+    if (!isInternal && !isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { order, customerEmail } = body || {};
 
