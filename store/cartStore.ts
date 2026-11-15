@@ -121,6 +121,13 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((count, item) => count + item.quantity, 0);
       },
     }),
-    { name: 'rangaroo-cart' }
+    {
+      name: 'rangaroo-cart',
+      partialize: (state) => ({
+        items: state.items,
+        isGiftWrapped: state.isGiftWrapped,
+        giftMessage: state.giftMessage,
+      }),
+    }
   )
 );
