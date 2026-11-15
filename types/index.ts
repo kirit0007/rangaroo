@@ -73,9 +73,11 @@ export interface CartStore {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  getTotal: () => number;
+  getTotal: (threshold?: number) => number;
   getSubtotal: () => number;
-  getShippingFee: () => number;
+  getShippingFee: (threshold?: number) => number;
+  getGiftWrapFee: () => number;
+  getTaxAmount: () => number;
   getItemCount: () => number;
 }
 
