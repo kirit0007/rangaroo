@@ -45,19 +45,20 @@ export default function CheckoutPage() {
   });
 
   const [isFetchingPincode, setIsFetchingPincode] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Allow guest checkout or logged-in users
   useEffect(() => {
-    // Guest checkout is enabled by default
+    setMounted(true);
   }, []);
 
   // Redirect if empty cart
   useEffect(() => {
+    if (!mounted) return;
     if (items.length === 0 && !isLoading && user) {
       toast.error('Your cart is empty');
       router.push('/products');
     }
-  }, [items, router, isLoading, user]);
+  }, [items, router, isLoading, user, mounted]);
 
   // Handle Pincode Auto-fill
   useEffect(() => {
@@ -251,6 +252,7 @@ export default function CheckoutPage() {
     }
   };
 
+  if (!mounted) return null;
   if (items.length === 0) return null; // Will redirect via useEffect
 
   return (
