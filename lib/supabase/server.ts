@@ -1,12 +1,20 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js';
 
-export function createServerClient() {
+let cachedClient: SupabaseClient | null = null;
+
+export function createServerClient(): SupabaseClient {
+  if (cachedClient) {
+    return cachedClient;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-  return createSupabaseClient(
+  cachedClient = createSupabaseClient(
     supabaseUrl,
     serviceRoleKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
+
+  return cachedClient;
 }
