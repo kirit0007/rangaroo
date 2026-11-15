@@ -429,14 +429,10 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className="font-medium text-gray-900">{formatPrice(getShippingFee(threshold))}</span>
+                  <span className={`font-medium ${getSubtotal() >= threshold ? 'text-green-600' : 'text-gray-900'}`}>
+                    {getSubtotal() >= threshold ? 'FREE' : formatPrice(getShippingFee(threshold))}
+                  </span>
                 </div>
-                {getSubtotal() >= threshold && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Shipping Discount</span>
-                    <span>-₹60</span>
-                  </div>
-                )}
               </div>
 
               <div className="flex justify-between items-end mb-8">
