@@ -21,16 +21,9 @@ export async function getAuthenticatedUser(request: NextRequest) {
 }
 
 export async function isUserAdmin(request: NextRequest): Promise<boolean> {
-  // Check authorization header first
   const user = await getAuthenticatedUser(request);
   if (user) {
     return user.user_metadata?.role === 'admin' || user.app_metadata?.role === 'admin';
-  }
-
-  // Check user role header if supplied by secure edge proxy
-  const roleHeader = request.headers.get('x-user-role');
-  if (roleHeader === 'admin') {
-    return true;
   }
 
   return false;
