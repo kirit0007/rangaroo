@@ -110,25 +110,25 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    let supabase;
-    // Save to Supabase DB if available
-    try {
-      supabase = createServerClient();
-      await supabase.from('reviews').insert({
-        id: newReview.id,
-        product_id: newReview.productId,
-        customer_name: newReview.customerName,
-        title: newReview.title,
-        rating: newReview.rating,
-        comment: newReview.comment,
-        is_verified: newReview.isVerified,
-        created_at: newReview.createdAt,
-      });
-    } catch (dbErr) {
-      console.warn('[Reviews POST Supabase Warning]', dbErr);
+    const supabase = createServerClient();
+    // Save to Supabase DB
+    const { error: insertError } = await supabase.from('reviews').insert({
+      id: newReview.id,
+      product_id: newReview.productId,
+      customer_name: newReview.customerName,
+      title: newReview.title,
+      rating: newReview.rating,
+      comment: newReview.comment,
+      is_verified: newReview.isVerified,
+      created_at: newReview.createdAt,
+    });
+
+    if (insertError) {
+      console.error('[Reviews POST Supabase Error]', insertError);
+      return NextResponse.json({ error: insertError.message || 'Failed to submit review' }, { status: 500 });
     }
 
-    const { data: productReviews } = await (supabase || createServerClient()).from('reviews').select('*').eq('product_id', productId);
+    const { data: productReviews } = await supabase.from('reviews').select('*').eq('product_id', productId);
     const summary = calculateReviewSummary(productReviews || []);
 
     return NextResponse.json({

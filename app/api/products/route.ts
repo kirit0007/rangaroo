@@ -60,33 +60,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert into Supabase DB
-    try {
-      const supabase = createServerClient();
-      await supabase.from('products').upsert({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        short_description: product.shortDescription,
-        description: product.description,
-        price: product.price,
-        compare_at_price: product.compareAtPrice,
-        category_id: product.categoryId,
-        collection_id: product.collectionId,
-        images: JSON.stringify(product.images),
-        kit_contents: JSON.stringify(product.kitContents),
-        age_group: product.ageGroup,
-        difficulty: product.difficulty,
-        paint_type: product.paintType,
-        figure_count: product.figureCount,
-        figure_size: product.figureSize,
-        weight_grams: product.weightGrams,
-        stock_quantity: product.stockQuantity,
-        is_active: product.isActive,
-        is_featured: product.isFeatured,
-        tags: JSON.stringify(product.tags),
-      });
-    } catch (dbErr) {
-      console.warn('[Supabase Product Upsert Warning]', dbErr);
+    const supabase = createServerClient();
+    const { error: upsertError } = await supabase.from('products').upsert({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      short_description: product.shortDescription,
+      description: product.description,
+      price: product.price,
+      compare_at_price: product.compareAtPrice,
+      category_id: product.categoryId,
+      collection_id: product.collectionId,
+      images: JSON.stringify(product.images),
+      kit_contents: JSON.stringify(product.kitContents),
+      age_group: product.ageGroup,
+      difficulty: product.difficulty,
+      paint_type: product.paintType,
+      figure_count: product.figureCount,
+      figure_size: product.figureSize,
+      weight_grams: product.weightGrams,
+      stock_quantity: product.stockQuantity,
+      is_active: product.isActive,
+      is_featured: product.isFeatured,
+      tags: JSON.stringify(product.tags),
+    });
+
+    if (upsertError) {
+      console.error('[Supabase Product Upsert Error]', upsertError);
+      return NextResponse.json({ error: upsertError.message || 'Database product upsert failed' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, product });
@@ -109,11 +110,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
     }
 
-    try {
-      const supabase = createServerClient();
-      await supabase.from('products').delete().eq('id', productId);
-    } catch (dbErr) {
-      console.warn('[Supabase Product Delete Warning]', dbErr);
+    const supabase = createServerClient();
+    const { error: deleteError } = await supabase.from('products').delete().eq('id', productId);
+
+    if (deleteError) {
+      console.error('[Supabase Product Delete Error]', deleteError);
+      return NextResponse.json({ error: deleteError.message || 'Database product deletion failed' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, productId });
