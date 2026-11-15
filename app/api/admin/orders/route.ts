@@ -143,7 +143,8 @@ export async function PATCH(request: NextRequest) {
     if (status === 'cancelled' || status === 'refunded') {
       const { data: orderData } = await supabase.from('orders').select('items').or(`id.eq.${cleanId},order_number.eq.${cleanId}`).single();
       if (orderData && orderData.items) {
-        for (const item of orderData.items) {
+        const parsedItems = typeof orderData.items === 'string' ? JSON.parse(orderData.items) : orderData.items;
+        for (const item of (parsedItems || [])) {
           const productId = item.productId || item.product_id;
           if (productId) {
             const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', productId).single();
