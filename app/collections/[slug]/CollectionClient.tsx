@@ -72,7 +72,7 @@ export default function CollectionClient({ initialCollection, initialProducts }:
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Back Link */}
-        <Link href="/#collections" className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 mb-8 transition-colors">
+        <Link href="/collections" className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 mb-8 transition-colors">
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to Collections
         </Link>
