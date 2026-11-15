@@ -6,7 +6,41 @@ const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 const LIMIT = 60; // 60 requests per minute
 const WINDOW_MS = 60 * 1000;
 
+function isAllowedOrigin(origin: string): boolean {
+  if (origin === 'https://rangaroo.store' || origin === 'https://www.rangaroo.store') {
+    return true;
+  }
+  if (/^http:\/\/localhost(:\d+)?$/.test(origin)) {
+    return true;
+  }
+  if (/^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) {
+    return true;
+  }
+  if (/^https:\/\/([a-zA-Z0-9-]+\.)*vercel\.app$/.test(origin)) {
+    return true;
+  }
+  return false;
+}
+
 export function middleware(request: NextRequest) {
+  const origin = request.headers.get('origin');
+
+  // Handle preflight OPTIONS requests immediately
+  if (request.method === 'OPTIONS') {
+    const headers = new Headers();
+    if (origin && isAllowedOrigin(origin)) {
+      headers.set('Access-Control-Allow-Origin', origin);
+    }
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    headers.set('Access-Control-Allow-Credentials', 'true');
+    headers.set('Access-Control-Max-Age', '86400');
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('X-Frame-Options', 'SAMEORIGIN');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return new NextResponse(null, { status: 204, headers });
+  }
+
   const { pathname } = request.nextUrl;
 
   // Rate limiting for API endpoints
@@ -42,8 +76,7 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // CORS settings for trusted origins
-  const origin = request.headers.get('origin');
-  if (origin && (origin.includes('rangaroo.store') || origin.includes('localhost') || origin.includes('vercel.app'))) {
+  if (origin && isAllowedOrigin(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
   }
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
