@@ -45,9 +45,11 @@ export async function GET() {
       }));
       return NextResponse.json({ coupons: formatted, source: 'supabase' });
     }
+
+    return NextResponse.json({ coupons: defaultCoupons, source: 'default_fallback' });
   } catch (err: any) {
     console.error('Error fetching coupons from Supabase:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ coupons: defaultCoupons, source: 'default_fallback' });
   }
 }
 
@@ -100,10 +102,6 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
-
-    if (!code) {
-      return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
-    }
 
     if (!code) {
       return NextResponse.json({ error: 'Coupon code required' }, { status: 400 });
