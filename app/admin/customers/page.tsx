@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Search, ShoppingBag } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 
 export default function CustomersAdminPage() {

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getProductBySlug, products as defaultProducts, formatPrice } from '@/data/products';
+import { getProductBySlug, products as defaultProducts } from '@/data/products';
 import ProductClient from './ProductClient';
 import { notFound } from 'next/navigation';
 

@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useAdminStore } from '@/store/adminStore';
 import { Order, OrderStatus } from '@/types';
 import { 
   Package, ShoppingBag, Truck, CheckCircle2, Clock, XCircle, 
-  RefreshCw, FileText, ChevronRight, Star, AlertCircle, ArrowLeft, Download, ExternalLink, CornerUpLeft
+  RefreshCw, FileText, Star, AlertCircle, ArrowLeft, Download, CornerUpLeft
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,12 +21,9 @@ function isReturnEligible(deliveredAt?: string): boolean {
 }
 
 export default function OrdersClient() {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
   const addItem = useCartStore((state) => state.addItem);
 
   const [mounted, setMounted] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState<Order | null>(null);
   const [showTrackModal, setShowTrackModal] = useState<Order | null>(null);
   const [showReviewModal, setShowReviewModal] = useState<{ order: Order; item: any } | null>(null);
@@ -492,7 +487,7 @@ export default function OrdersClient() {
                           const err = await res.json();
                           toast.error(err.error || 'Cancellation failed');
                         }
-                      } catch (err) {
+                      } catch {
                         toast.error('An error occurred');
                       }
                       setShowCancelModal(null);
@@ -561,7 +556,7 @@ export default function OrdersClient() {
                           const err = await res.json();
                           toast.error(err.error || 'Return request failed');
                         }
-                      } catch (err) {
+                      } catch {
                         toast.error('An error occurred');
                       }
                       setShowReturnModal(null);

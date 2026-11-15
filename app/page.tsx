@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Palette, Shield, Gift, Star, Heart, ArrowRight, Brush, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Palette, Shield, Gift, Star, Heart, ArrowRight, Brush, Sparkles } from 'lucide-react';
 import { getFeaturedProducts } from '@/data/products';
 import ProductCard from '@/components/product/ProductCard';
 import ReviewSkeleton from '@/components/reviews/ReviewSkeleton';
@@ -49,30 +49,6 @@ export default function HomePage() {
       slug: 'signature-collection',
       desc: 'Deluxe gift kits for special occasions'
     },
-  ];
-
-  const collections = [
-    { name: 'Dinosaur', emoji: '🦖', desc: 'Roar into creativity', slug: 'dinosaur' },
-    { name: 'Space', emoji: '🚀', desc: 'Out of this world', slug: 'space' },
-    { name: 'Vehicle', emoji: '🚗', desc: 'Vroom vroom paint', slug: 'vehicle' },
-    { name: 'Animal', emoji: '🐘', desc: 'Jungle adventures', slug: 'animal' },
-    { name: 'Food', emoji: '🍩', desc: 'Sweet treats', slug: 'food' },
-    { name: 'Magic', emoji: '🦄', desc: 'Enchanted colors', slug: 'magic' },
-  ];
-
-  const usps = [
-    { title: 'Premium Plaster Figurines', desc: 'Smooth, durable plaster crafted specially for kids', icon: Palette, color: 'bg-purple-100 text-purple-600' },
-    { title: 'Non-Toxic Washable Paints', desc: 'Child-safe, 100% non-toxic tempera colors', icon: Shield, color: 'bg-emerald-100 text-emerald-600' },
-    { title: 'Gift-Ready Premium Box', desc: 'Beautifully packaged with brushes & thank you card', icon: Gift, color: 'bg-pink-100 text-pink-600' },
-    { title: 'Ideal Return Gifts', desc: 'Loved by parents & kids for birthday celebrations', icon: Heart, color: 'bg-rose-100 text-rose-600' },
-    { title: 'Parent Approved Quality', desc: 'Loved by parents and young artists across India', icon: Star, color: 'bg-amber-100 text-amber-600' },
-    { title: 'Proudly Made in India', desc: 'Handcrafted with care by local artisans', icon: CheckCircle2, color: 'bg-orange-100 text-orange-600' },
-  ];
-
-  const testimonials = [
-    { name: 'Priya S.', location: 'Mumbai', text: 'My kids loved the dinosaur kit! The plaster figurines are super smooth and the colors are vibrant.', rating: 5 },
-    { name: 'Rahul M.', location: 'Bangalore', text: 'Ordered 25 Fun Kits as return gifts for my daughter\'s 6th birthday. Parents were so appreciative!', rating: 5 },
-    { name: 'Anita K.', location: 'Delhi', text: 'Keeps them engaged away from screens for hours. Truly high quality craft kits.', rating: 5 },
   ];
 
   return (

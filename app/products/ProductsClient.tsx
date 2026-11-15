@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { products as defaultProducts, categories } from '@/data/products';
 import { useAdminStore } from '@/store/adminStore';
 import ProductCard from '@/components/product/ProductCard';
-import { Filter, ChevronDown, PackageX } from 'lucide-react';
+import { ChevronDown, PackageX } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
 const CATEGORIES = ['All', 'Mini Kit', 'Fun Kit', 'Creative Kit', 'Signature', 'Return Gifts', 'Festival Special'];

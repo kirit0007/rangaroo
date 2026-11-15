@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Sparkles, Send, CheckCircle2, MessageCircle } from 'lucide-react';
+import { X, Gift, Send, CheckCircle2, MessageCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface BulkInquiryModalProps {
@@ -13,7 +13,6 @@ interface BulkInquiryModalProps {
 export default function BulkInquiryModal({ isOpen, onClose }: BulkInquiryModalProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [quantity, setQuantity] = useState('20');
   const [eventDate, setEventDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -48,7 +47,6 @@ ${notes ? `- Note: ${notes}` : ''}`;
     setSubmitted(false);
     setName('');
     setPhone('');
-    setEmail('');
     setNotes('');
     onClose();
   };

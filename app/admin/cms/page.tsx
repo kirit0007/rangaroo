@@ -41,7 +41,7 @@ export default function CmsAdminPage() {
     try {
       await updateSiteSettings(cmsForm);
       toast.success('Site settings published globally across all devices!', { id: toastId });
-    } catch (_err) {
+    } catch {
       toast.error('Failed to publish settings', { id: toastId });
     }
   };

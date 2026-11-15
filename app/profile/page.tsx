@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import ProductCard from '@/components/product/ProductCard';
 import { 
-  User, Mail, Phone, Lock, ShieldCheck, MapPin, CreditCard, 
-  Bell, Trash2, Plus, Edit2, Check, AlertTriangle, KeyRound, ChevronRight, Save, Heart, ShoppingBag
+  User, Mail, Lock, ShieldCheck, MapPin, CreditCard, 
+  Trash2, Plus, Edit2, AlertTriangle, KeyRound, ChevronRight, Save, Heart, ShoppingBag
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,13 +61,6 @@ function ProfileContent() {
 
   // Saved Payment Methods
   const [savedPayments, setSavedPayments] = useState<any[]>([]);
-
-  // Communication Preferences
-  const [preferences, setPreferences] = useState({
-    marketingEmails: true,
-    smsAlerts: true,
-    whatsAppUpdates: true,
-  });
 
   // Deactivate Account modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);

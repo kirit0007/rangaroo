@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { MapPin, Send, PhoneCall } from 'lucide-react';
+import { Send, PhoneCall } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ContactPage() {

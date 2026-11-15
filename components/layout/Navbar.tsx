@@ -5,8 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag, User, ChevronDown, Search, Heart, Sparkles, Copy, Gift } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Menu, X, ShoppingBag, User, ChevronDown, Search, Heart, Sparkles, Gift } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
@@ -63,15 +62,6 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
-
-  const handleCopyCoupon = (code: string) => {
-    try {
-      navigator.clipboard.writeText(code);
-      toast.success(`Coupon ${code} copied to clipboard! 🎉`, { duration: 3000 });
-    } catch (_err) {
-      toast.success(`Coupon ${code} ready at checkout! 🎉`);
-    }
-  };
 
   // Zustand stores with atomic selectors to prevent infinite re-renders
   const user = useAuthStore((state) => state.user);

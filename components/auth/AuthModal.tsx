@@ -85,7 +85,7 @@ export default function AuthModal() {
         return;
       }
       toast.success('Redirecting to Google Sign-In...');
-    } catch (err: any) {
+    } catch {
       toast.error('Google login failed');
     }
   };

@@ -14,20 +14,16 @@ import toast from 'react-hot-toast';
 export default function CheckoutPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const items = useCartStore((state) => state.items) || [];
   const clearCart = useCartStore((state) => state.clearCart);
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotal = useCartStore((state) => state.getTotal);
   const getShippingFee = useCartStore((state) => state.getShippingFee);
-  const getGiftWrapFee = useCartStore((state) => state.getGiftWrapFee);
-  const getTaxAmount = useCartStore((state) => state.getTaxAmount);
   const threshold = useAdminStore((state) => state.siteSettings?.freeShippingThreshold) || 499;
   const isGiftWrapped = useCartStore((state) => state.isGiftWrapped);
   const giftMessage = useCartStore((state) => state.giftMessage);
   
   const appliedCoupon: any = null; // Placeholder for coupon implementation
-  const addOrder = useAdminStore((state) => state.addOrder);
   
   const [step, setStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -168,7 +164,7 @@ export default function CheckoutPage() {
         throw new Error(orderData.error || 'Failed to initialize checkout');
       }
 
-      const { razorpayOrderId, key: keyId, orderId, orderNumber, amountInPaise } = orderData;
+      const { razorpayOrderId, key: keyId, orderNumber, amountInPaise } = orderData;
 
       // 2. Load SDK Script safely AFTER order creation
       const res = await loadRazorpayScript();

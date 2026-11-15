@@ -4,9 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { ChevronRight, Star, Plus, Minus, ShoppingCart, Zap, CheckCircle2, Shield, Truck, Package, RotateCcw, Heart } from 'lucide-react';
-import { getProductBySlug, getProductsByCollection, products as defaultProducts, categories, formatPrice, calculateDiscount } from '@/data/products';
+import { getProductBySlug, products as defaultProducts, categories, formatPrice, calculateDiscount } from '@/data/products';
 import { useAdminStore } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
@@ -72,7 +71,7 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
         const deliveryDate = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
         setPincodeStatus(`🚚 Standard Delivery by ${deliveryDate} to Pincode ${pin}`);
       }
-    } catch (_err) {
+    } catch {
       const deliveryDate = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
       setPincodeStatus(`🚚 Delivery available! Expected by ${deliveryDate}`);
     }

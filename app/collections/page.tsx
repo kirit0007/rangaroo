@@ -25,7 +25,7 @@ export default function CollectionsOverviewPage() {
 
         {/* Collections Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {collections.map((col, idx) => (
+          {collections.map((col) => (
             <Link key={col.id} href={`/collections/${col.id}`}>
               <motion.div
                 whileHover={{ y: -8 }}

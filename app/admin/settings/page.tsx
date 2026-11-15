@@ -31,7 +31,7 @@ export default function SettingsAdminPage() {
     try {
       await updateSiteSettings(settingsForm);
       toast.success('Store settings updated successfully!', { id: toastId });
-    } catch (_err) {
+    } catch {
       toast.error('Failed to update settings', { id: toastId });
     }
   };
