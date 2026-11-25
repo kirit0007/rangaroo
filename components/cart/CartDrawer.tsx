@@ -1,237 +1,270 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Lock } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Lock, Sparkles, Tag, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/cartStore';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuthStore } from '@/store/authStore';
+import FreeShippingBar from '@/components/storefront/FreeShippingBar';
 
 export default function CartDrawer() {
-  const user = useAuthStore((state) => state.user);
-  const openAuthModal = useAuthStore((state) => state.openAuthModal);
-  const isCartOpen = useCartStore((state: any) => state.isOpen || state.isCartOpen);
+  const isOpen = useCartStore((state: any) => state.isOpen ?? state.isCartOpen ?? false);
   const closeCart = useCartStore((state) => state.closeCart);
   const items = useCartStore((state) => state.items) || [];
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const getCoupon = useAdminStore((state) => state.getCoupon);
-
-  const [mounted, setMounted] = useState(false);
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null);
-  
   const isGiftWrapped = useCartStore((state) => state.isGiftWrapped);
   const setIsGiftWrapped = useCartStore((state) => state.setGiftWrap);
   const giftMessage = useCartStore((state) => state.giftMessage);
   const setGiftMessage = useCartStore((state) => state.setGiftMessage);
+  const getCoupon = useAdminStore((state) => state.getCoupon);
 
-  React.useEffect(() => {
+  const [mounted, setMounted] = useState(false);
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountValue: number; discountType: string } | null>(null);
+
+  useEffect(() => {
     setMounted(true);
   }, []);
 
-  const FREE_SHIPPING_THRESHOLD = useAdminStore((state) => state.siteSettings?.freeShippingThreshold) || 499;
-  const cartSubtotal = items.reduce((acc: number, item: any) => acc + (item.price * (item.quantity || 1)), 0);
-  const shippingFee = cartSubtotal >= FREE_SHIPPING_THRESHOLD || items.length === 0 ? 0 : 60;
+  const freeShippingThreshold = useAdminStore((state) => state.siteSettings?.freeShippingThreshold) || 499;
+
+  const cartSubtotal = items.reduce(
+    (acc: number, item: any) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+    0
+  );
+
+  const shippingFee = cartSubtotal >= freeShippingThreshold || items.length === 0 ? 0 : 60;
   const giftWrapFee = isGiftWrapped ? 30 : 0;
 
-  const handleCheckoutClick = (e: React.MouseEvent) => {
-    closeCart();
-    if (!user) {
-      e.preventDefault();
-      toast.error('Please login or create an account to proceed to checkout');
-      openAuthModal('login');
+  // Authoritative discount calculation
+  let discountAmount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountType === 'percentage') {
+      const pct = appliedCoupon.discountValue > 1 ? appliedCoupon.discountValue / 100 : appliedCoupon.discountValue;
+      discountAmount = Math.round(cartSubtotal * pct);
+    } else {
+      discountAmount = Math.min(cartSubtotal, appliedCoupon.discountValue);
     }
-  };
-  
-  // Calculate discount based on subtotal (assume flat rate for now or percentage if < 1)
-  const discountAmount = appliedCoupon 
-    ? (appliedCoupon.discount < 1 ? cartSubtotal * appliedCoupon.discount : appliedCoupon.discount) 
-    : 0;
+  }
 
-  const cartTotal = Math.max(0, cartSubtotal + shippingFee + giftWrapFee - discountAmount);
-  const cartItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
+  const finalTotal = Math.max(0, cartSubtotal + shippingFee + giftWrapFee - discountAmount);
+  const totalItemCount = items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
 
   const handleApplyCoupon = () => {
-    if (!couponCode.trim()) return;
-    
-    const coupon = typeof getCoupon === 'function' ? getCoupon(couponCode.trim()) : undefined;
-    if (coupon) {
-      const discountVal = coupon.discountType === 'percentage'
-        ? (coupon.discountValue > 1 ? coupon.discountValue / 100 : coupon.discountValue)
-        : coupon.discountValue;
-      setAppliedCoupon({ code: coupon.code, discount: discountVal });
-      toast.success(`Coupon ${coupon.code} applied successfully! 🎉`);
+    const code = couponInput.trim().toUpperCase();
+    if (!code) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    const found = typeof getCoupon === 'function' ? getCoupon(code) : undefined;
+    if (found && (found.isActive === undefined || found.isActive === true)) {
+      setAppliedCoupon({
+        code: found.code,
+        discountValue: found.discountValue,
+        discountType: found.discountType,
+      });
+      toast.success(`Coupon ${found.code} applied successfully! 🎉`);
     } else {
-      toast.error('Invalid or expired coupon code');
-      setAppliedCoupon(null);
+      // Fallback for default promo codes
+      if (code === 'FIRST10' || code === 'WELCOME10') {
+        setAppliedCoupon({
+          code,
+          discountValue: 10,
+          discountType: 'percentage',
+        });
+        toast.success(`Coupon ${code} applied (10% OFF)! 🎉`);
+      } else if (code === 'CRAFT50') {
+        setAppliedCoupon({
+          code,
+          discountValue: 50,
+          discountType: 'fixed',
+        });
+        toast.success(`Coupon ${code} applied (₹50 OFF)! 🎉`);
+      } else {
+        toast.error('Invalid or expired promo code');
+      }
     }
   };
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
-    setCouponCode('');
+    setCouponInput('');
     toast.success('Coupon removed');
   };
 
   return (
     <AnimatePresence>
-      {mounted && isCartOpen && (
-        <>
-          {/* Overlay */}
+      {mounted && isOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Shopping Cart">
+          {/* Backdrop overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="cart-drawer-overlay"
             onClick={closeCart}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
           />
 
-          {/* Drawer */}
-          <motion.div
+          {/* Drawer container with Indian DTC craft colors */}
+          <motion.aside
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="cart-drawer"
+            transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+            className="relative w-full max-w-md sm:max-w-lg h-full bg-[#FFFDF9] text-gray-900 border-l border-[#EFE8DE] shadow-2xl flex flex-col z-10 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100/20 bg-white/40">
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-[#EFE8DE] bg-[#FFFDF9]">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="text-[var(--brand-orange)]" size={24} />
-                <h2 className="font-heading text-2xl font-bold text-gray-800">Your Cart</h2>
-                <span className="bg-[var(--brand-orange)] text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {cartItemCount}
-                </span>
+                <div className="w-10 h-10 rounded-2xl bg-[#FF5722]/10 text-[#FF5722] flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-heading text-xl sm:text-2xl font-bold text-gray-900">
+                    Your Craft Box
+                  </h2>
+                  <p className="text-xs text-gray-600">
+                    {totalItemCount} {totalItemCount === 1 ? 'kit selected' : 'kits selected'}
+                  </p>
+                </div>
               </div>
-              <button 
+              <button
+                type="button"
                 onClick={closeCart}
-                className="p-2 rounded-full hover:bg-white/60 transition-colors text-gray-500 hover:text-gray-800"
+                aria-label="Close cart drawer"
+                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-2xl border border-[#EFE8DE] bg-white hover:bg-gray-100 text-gray-700 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[#FF5722]"
               >
-                <X size={20} />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Free Shipping Progress */}
+            {/* Live Free Shipping Progress Bar */}
             {items.length > 0 && (
-              <div className="px-6 py-4 bg-orange-50/70 border-b border-orange-100/70">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs sm:text-sm font-bold text-gray-800">
-                    {cartSubtotal >= FREE_SHIPPING_THRESHOLD 
-                      ? "🎉 You've unlocked FREE Express Shipping!" 
-                      : `Add ₹${(FREE_SHIPPING_THRESHOLD - cartSubtotal).toLocaleString('en-IN')} more for FREE Express Delivery`}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (cartSubtotal / FREE_SHIPPING_THRESHOLD) * 100)}%` }}
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full transition-all duration-500 ease-out"
-                  />
-                </div>
+              <div className="p-4 bg-white/70 border-b border-[#EFE8DE]">
+                <FreeShippingBar currentSubtotal={cartSubtotal} threshold={freeShippingThreshold} />
               </div>
             )}
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 hide-scrollbar">
+            {/* Cart Items Area */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 hide-scrollbar">
               {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-                  <div className="text-6xl animate-bounceIn">🦘</div>
-                  <div>
-                    <h3 className="font-heading text-xl font-semibold text-gray-800 mb-2">Your cart is empty!</h3>
-                    <p className="text-gray-500 mb-6 text-sm">Looks like you haven&apos;t added any paint kits yet. Let&apos;s find something creative!</p>
-                    <Link 
-                      href="/products" 
-                      onClick={closeCart}
-                      className="btn-primary inline-flex"
-                    >
-                      Shop Now
-                    </Link>
+                <div className="flex flex-col items-center justify-center h-full text-center py-16 px-4">
+                  <div className="w-20 h-20 rounded-full bg-[#FF5722]/10 text-[#FF5722] flex items-center justify-center text-4xl mb-4">
+                    🎨
                   </div>
+                  <h3 className="font-heading text-xl font-bold text-gray-900 mb-2">
+                    Your craft cart is empty
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-xs mb-8">
+                    Discover safe, non-toxic plaster paint kits designed for hours of creative fun!
+                  </p>
+                  <Link
+                    href="/shop"
+                    onClick={closeCart}
+                    className="min-h-[44px] min-w-[44px] px-8 py-3 bg-[#FF5722] hover:bg-[#E64A19] text-white rounded-full font-bold text-sm shadow-md transition-all flex items-center gap-2"
+                  >
+                    Explore Paint Kits <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
               ) : (
-                <div className="space-y-5">
-                  {/* Cart Items */}
-                  <div className="space-y-4">
-                    <AnimatePresence>
-                      {items.map((item: any) => {
-                        const id = item.productId || item.id;
-                        return (
-                          <motion.div 
-                            key={id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="flex gap-4 p-3 bg-white/60 rounded-2xl border border-white/40 shadow-sm"
-                          >
-                            <div className="w-20 h-20 bg-white rounded-xl overflow-hidden relative shrink-0">
-                              <Image 
-                                src={item.image || '/logo.png'} 
-                                alt={item.name}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                                onError={(e) => { e.currentTarget.src = '/logo.png'; }}
-                              />
-                            </div>
-                            <div className="flex-1 flex flex-col justify-between py-1">
-                              <div className="flex justify-between items-start gap-2">
-                                <Link 
-                                  href={`/products/${item.slug || id}`}
-                                  onClick={closeCart}
-                                  className="font-semibold text-sm text-gray-800 hover:text-[var(--brand-orange)] line-clamp-2"
-                                >
-                                  {item.name}
-                                </Link>
-                                <button 
-                                  onClick={() => removeItem(id)}
-                                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                              <div className="flex items-center justify-between mt-2">
-                                <span className="font-bold text-[var(--brand-orange)]">
-                                  ₹{item.price.toLocaleString('en-IN')}
-                                </span>
-                                <div className="flex items-center gap-3 bg-white/80 rounded-full px-2 py-1 border border-gray-100">
-                                  <button 
-                                    onClick={() => updateQuantity(id, Math.max(1, (item.quantity || 1) - 1))}
-                                    className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                                  >
-                                    <Minus size={12} />
-                                  </button>
-                                  <span className="text-xs font-semibold w-4 text-center">{item.quantity || 1}</span>
-                                  <button 
-                                    onClick={() => updateQuantity(id, (item.quantity || 1) + 1)}
-                                    className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                                  >
-                                    <Plus size={12} />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </AnimatePresence>
-                  </div>
+                <div className="space-y-4">
+                  {/* Item List */}
+                  {items.map((item: any) => {
+                    const id = item.productId || item.id;
+                    const qty = item.quantity || 1;
+                    return (
+                      <motion.div
+                        key={id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="flex gap-4 p-3.5 bg-white rounded-2xl border border-[#EFE8DE] shadow-xs"
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-xl bg-[#FFFDF9] border border-[#EFE8DE] overflow-hidden shrink-0">
+                          <Image
+                            src={item.image || '/logo.png'}
+                            alt={item.name}
+                            fill
+                            sizes="88px"
+                            className="object-cover"
+                            unoptimized
+                            onError={(e) => {
+                              e.currentTarget.src = '/logo.png';
+                            }}
+                          />
+                        </div>
 
-                  {/* Gift Packaging & Personalization */}
-                  <div className="bg-pink-50/70 p-4 rounded-2xl border border-pink-100/80 space-y-3">
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                        {/* Item Details */}
+                        <div className="flex-1 flex flex-col justify-between">
+                          <div className="flex justify-between items-start gap-2">
+                            <Link
+                              href={`/products/${item.slug || id}`}
+                              onClick={closeCart}
+                              className="font-heading font-bold text-sm text-gray-900 hover:text-[#FF5722] line-clamp-2 transition-colors"
+                            >
+                              {item.name}
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => removeItem(id)}
+                              aria-label={`Remove ${item.name} from cart`}
+                              className="min-w-[44px] min-h-[44px] w-11 h-11 -mr-2 -mt-2 text-gray-400 hover:text-red-600 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-red-500 rounded-xl"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#EFE8DE]/60">
+                            <span className="font-extrabold text-base text-[#FF5722] font-mono">
+                              ₹{(Number(item.price) * qty).toLocaleString('en-IN')}
+                            </span>
+
+                            {/* Accessible Quantity Stepper (44x44px touch targets) */}
+                            <div className="flex items-center bg-[#FFFDF9] border border-[#EFE8DE] rounded-xl overflow-hidden shadow-2xs">
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(id, Math.max(1, qty - 1))}
+                                aria-label={`Decrease quantity of ${item.name}`}
+                                className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-[#FF5722]"
+                              >
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="w-8 text-center text-xs font-bold text-gray-900 font-mono select-none">
+                                {qty}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(id, qty + 1)}
+                                aria-label={`Increase quantity of ${item.name}`}
+                                className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-[#FF5722]"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* Gift Wrap & Birthday Card Note */}
+                  <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/70 space-y-3">
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={isGiftWrapped}
                         onChange={(e) => setIsGiftWrapped(e.target.checked)}
-                        className="w-4 h-4 text-pink-500 rounded focus:ring-pink-400 accent-pink-500"
+                        className="w-5 h-5 rounded text-[#FF5722] accent-[#FF5722] focus:ring-[#FF5722]"
                       />
-                      <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                        🎁 Add Gift Wrap & Custom Note <span className="text-pink-600 font-extrabold">(+₹30)</span>
+                      <span className="text-xs sm:text-sm font-bold text-gray-800 flex items-center gap-1.5">
+                        🎁 Add Artisanal Gift Packaging & Note <span className="text-[#FF5722] font-mono">(+₹30)</span>
                       </span>
                     </label>
                     {isGiftWrapped && (
@@ -240,35 +273,55 @@ export default function CartDrawer() {
                           rows={2}
                           value={giftMessage}
                           onChange={(e) => setGiftMessage(e.target.value)}
-                          placeholder="Write your custom birthday wish or note here..."
-                          className="w-full bg-white p-2.5 rounded-xl border border-pink-200 text-xs focus:outline-none focus:ring-2 focus:ring-pink-400 resize-none"
+                          placeholder="Write a custom birthday or celebration message for the little artist..."
+                          className="w-full bg-white p-3 rounded-xl border border-amber-200 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#FF5722] resize-none"
                         />
                       </motion.div>
                     )}
                   </div>
 
-                  {/* Coupon Section */}
-                  <div className="bg-white/50 p-4 rounded-2xl border border-white/40">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Promo Code</h4>
+                  {/* Promo Code Input Card */}
+                  <div className="p-4 bg-white rounded-2xl border border-[#EFE8DE] shadow-xs space-y-3">
+                    <div className="flex items-center justify-between text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      <span className="flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-[#FF5722]" /> Have a Promo Code?
+                      </span>
+                    </div>
+
                     {appliedCoupon ? (
-                      <div className="flex items-center justify-between bg-green-50 text-green-700 px-3 py-2 rounded-xl text-sm border border-green-200">
-                        <span className="font-semibold flex items-center gap-1">
-                          🎉 {appliedCoupon.code} applied (10% OFF)
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-emerald-600" />
+                          Coupon &quot;{appliedCoupon.code}&quot; applied (-₹{discountAmount.toLocaleString('en-IN')})
                         </span>
-                        <button onClick={handleRemoveCoupon} className="hover:text-green-900"><X size={16}/></button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          aria-label="Remove promo code"
+                          className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center text-emerald-700 hover:text-red-600 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     ) : (
                       <div className="flex gap-2">
-                        <input 
-                          type="text" 
-                          placeholder="Enter code (e.g. FIRST10)" 
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                          className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[var(--brand-orange)] transition-colors uppercase placeholder:normal-case"
+                        <input
+                          type="text"
+                          placeholder="e.g. FIRST10, CRAFT50"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyCoupon();
+                            }
+                          }}
+                          className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border border-gray-300 uppercase text-xs sm:text-sm font-semibold tracking-wider bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
                         />
-                        <button 
+                        <button
+                          type="button"
                           onClick={handleApplyCoupon}
-                          className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-black transition-colors"
+                          className="min-h-[44px] min-w-[44px] px-4 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-colors shrink-0"
                         >
                           Apply
                         </button>
@@ -279,63 +332,67 @@ export default function CartDrawer() {
               )}
             </div>
 
-            {/* Footer Summary */}
+            {/* Footer Summary & Frictionless Guest Checkout CTA */}
             {items.length > 0 && (
-              <div className="p-6 bg-white/80 border-t border-gray-100/50 backdrop-blur-md">
-                <div className="space-y-3 mb-6 text-sm">
-                  <div className="flex justify-between text-gray-600">
+              <div className="p-5 sm:p-6 bg-[#FFFDF9] border-t border-[#EFE8DE] shadow-lg space-y-4">
+                <div className="space-y-2 text-xs sm:text-sm text-gray-700 font-medium">
+                  <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-semibold">₹{cartSubtotal.toLocaleString('en-IN')}</span>
+                    <span className="font-bold text-gray-900 font-mono">
+                      ₹{cartSubtotal.toLocaleString('en-IN')}
+                    </span>
                   </div>
 
                   {isGiftWrapped && (
-                    <div className="flex justify-between text-pink-600">
-                      <span>Gift Wrap & Custom Note</span>
-                      <span className="font-semibold">+₹30</span>
+                    <div className="flex justify-between text-amber-800">
+                      <span>Artisanal Gift Packaging</span>
+                      <span className="font-bold font-mono">+₹30</span>
                     </div>
                   )}
-                  
+
                   {discountAmount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
-                      <span className="font-semibold">-₹{discountAmount.toLocaleString('en-IN')}</span>
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span>Discount ({appliedCoupon?.code})</span>
+                      <span className="font-mono">-₹{discountAmount.toLocaleString('en-IN')}</span>
                     </div>
                   )}
-                  
-                  <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
+
+                  <div className="flex justify-between">
+                    <span>Delivery Charges</span>
                     {shippingFee === 0 ? (
-                      <span className="font-semibold text-green-600">Free Express Delivery</span>
+                      <span className="font-bold text-emerald-700">FREE Express Shipping</span>
                     ) : (
-                      <span className="font-semibold">₹{shippingFee.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-gray-900 font-mono">₹{shippingFee}</span>
                     )}
                   </div>
-                  
-                  <div className="h-px bg-gray-200 w-full my-2"></div>
-                  
-                  <div className="flex justify-between items-end">
-                    <span className="text-gray-800 font-semibold text-base">Total</span>
-                    <span className="text-2xl font-bold font-heading text-gray-900">
-                      ₹{cartTotal.toLocaleString('en-IN')}
+
+                  <div className="pt-2 border-t border-[#EFE8DE] flex justify-between items-baseline">
+                    <span className="font-heading text-base font-extrabold text-gray-900">
+                      Total Amount
+                    </span>
+                    <span className="font-heading text-2xl font-black text-[#FF5722] font-mono">
+                      ₹{finalTotal.toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
 
-                <Link 
+                {/* Frictionless Guest Checkout: No forced login modals! */}
+                <Link
                   href="/checkout"
-                  onClick={handleCheckoutClick}
-                  className="w-full btn-primary justify-center text-lg py-3 flex items-center gap-2 group"
+                  onClick={closeCart}
+                  className="w-full min-h-[48px] py-3.5 px-6 rounded-2xl bg-[#FF5722] hover:bg-[#E64A19] text-white font-heading font-bold text-base shadow-lg shadow-[#FF5722]/25 flex items-center justify-center gap-2 transition-all active:scale-98"
                 >
-                  Proceed to Checkout 
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  Proceed to Checkout <ArrowRight className="w-5 h-5" />
                 </Link>
-                <p className="text-center text-xs text-gray-500 mt-4 flex items-center justify-center gap-1">
-                  <Lock size={12} /> Secure Checkout with Razorpay
-                </p>
+
+                <div className="flex items-center justify-center gap-2 text-[11px] text-gray-500 font-medium pt-1">
+                  <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>100% Secure Guest Checkout • No Account Required</span>
+                </div>
               </div>
             )}
-          </motion.div>
-        </>
+          </motion.aside>
+        </div>
       )}
     </AnimatePresence>
   );

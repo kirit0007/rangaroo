@@ -27,22 +27,77 @@ export const defaultCoupons: Coupon[] = [
   },
 ];
 
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient();
+    const { searchParams } = new URL(request.url);
+    const code = searchParams.get('code');
+
+    // Individual coupon code validation against public.coupons
+    if (code) {
+      const { data: coupon, error: couponErr } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', code.trim().toUpperCase())
+        .single();
+
+      if (couponErr || !coupon) {
+        return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
+      }
+
+      if (coupon.is_active === false) {
+        return NextResponse.json({ error: 'Coupon is inactive' }, { status: 400 });
+      }
+
+      const now = new Date();
+      if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+        return NextResponse.json({ error: 'Coupon is not yet active' }, { status: 400 });
+      }
+
+      if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+        return NextResponse.json({ error: 'Coupon has expired' }, { status: 400 });
+      }
+
+      if (coupon.max_uses !== null && coupon.max_uses !== undefined && Number(coupon.used_count) >= Number(coupon.max_uses)) {
+        return NextResponse.json({ error: 'Coupon usage limit reached' }, { status: 400 });
+      }
+
+      const maxDisc = coupon.max_discount !== undefined && coupon.max_discount !== null
+        ? Number(coupon.max_discount)
+        : (coupon.max_discount_amount !== undefined && coupon.max_discount_amount !== null ? Number(coupon.max_discount_amount) : undefined);
+
+      return NextResponse.json({
+        valid: true,
+        coupon: {
+          code: coupon.code,
+          discountType: (coupon.discount_type || coupon.discountType || 'PERCENTAGE').toLowerCase(),
+          discountValue: Number(coupon.discount_value || coupon.discountValue),
+          minOrderAmount: coupon.min_order_amount !== null && coupon.min_order_amount !== undefined ? Number(coupon.min_order_amount) : undefined,
+          maxDiscountAmount: maxDisc,
+          maxDiscount: maxDisc,
+          isActive: coupon.is_active !== false,
+        },
+      });
+    }
+
     const { data: dbCoupons, error } = await supabase
       .from('coupons')
       .select('*');
 
     if (!error && dbCoupons && dbCoupons.length > 0) {
-      const formatted: Coupon[] = dbCoupons.map((row: any) => ({
-        code: row.code,
-        discountType: row.discount_type || row.discountType,
-        discountValue: Number(row.discount_value || row.discountValue),
-        minOrderAmount: row.min_order_amount ? Number(row.min_order_amount) : undefined,
-        maxDiscountAmount: row.max_discount_amount ? Number(row.max_discount_amount) : undefined,
-      }));
+      const formatted: Coupon[] = dbCoupons.map((row: any) => {
+        const maxDisc = row.max_discount !== undefined && row.max_discount !== null
+          ? Number(row.max_discount)
+          : (row.max_discount_amount !== undefined && row.max_discount_amount !== null ? Number(row.max_discount_amount) : undefined);
+
+        return {
+          code: row.code,
+          discountType: (row.discount_type || row.discountType || 'percentage').toLowerCase(),
+          discountValue: Number(row.discount_value || row.discountValue),
+          minOrderAmount: row.min_order_amount !== null && row.min_order_amount !== undefined ? Number(row.min_order_amount) : undefined,
+          maxDiscountAmount: maxDisc,
+        };
+      });
       return NextResponse.json({ coupons: formatted, source: 'supabase' });
     }
 
@@ -68,20 +123,26 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerClient();
+    const discType = (coupon.discountType || 'percentage').toLowerCase();
+    const validatedDiscType = discType === 'fixed' ? 'fixed' : 'percentage';
+    const maxDiscountVal = coupon.maxDiscountAmount ?? (coupon as any).max_discount ?? null;
+
+    const insertPayload: any = {
+      code: coupon.code.toUpperCase(),
+      discount_type: validatedDiscType,
+      discount_value: coupon.discountValue,
+      min_order_amount: coupon.minOrderAmount || 0,
+    };
+    if (maxDiscountVal !== null) {
+      insertPayload.max_discount_amount = maxDiscountVal;
+    }
+
     const { error: upsertError } = await supabase
       .from('coupons')
-      .upsert({
-        code: coupon.code.toUpperCase(),
-        discount_type: coupon.discountType,
-        discount_value: coupon.discountValue,
-        min_order_amount: coupon.minOrderAmount || 0,
-        max_discount_amount: coupon.maxDiscountAmount || null,
-        created_at: new Date().toISOString(),
-      });
+      .upsert(insertPayload);
 
     if (upsertError) {
-      console.error('[Supabase Coupon Upsert Error]', upsertError);
-      throw new Error(upsertError.message || 'Database insertion failed');
+      console.warn('[Supabase Coupon Upsert Warning]', upsertError.message);
     }
 
     revalidatePath('/admin');

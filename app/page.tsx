@@ -4,170 +4,144 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Palette, Shield, Gift, Star, Heart, ArrowRight, Brush, Sparkles } from 'lucide-react';
+import { Palette, Shield, Gift, Star, ArrowRight, Brush, Sparkles, Truck, Box } from 'lucide-react';
 import { getFeaturedProducts } from '@/data/products';
 import ProductCard from '@/components/product/ProductCard';
 import ReviewSkeleton from '@/components/reviews/ReviewSkeleton';
+import TrustPillars from '@/components/storefront/TrustPillars';
 
 export default function HomePage() {
   const featuredProducts = getFeaturedProducts().slice(0, 4);
 
   const kitTiers = [
-    { 
-      name: 'Mini Kit', 
-      price: 149, 
-      color: 'bg-emerald-500 text-white', 
-      border: 'border-emerald-200', 
-      glow: 'shadow-[0_10px_25px_rgba(16,185,129,0.15)]',
+    {
+      name: 'Mini Kit',
+      price: 149,
+      color: 'bg-emerald-700 text-white',
+      border: 'border-[#EFE8DE]',
       slug: 'mini-paint-kit',
-      desc: 'Perfect for quick fun & beginners'
+      desc: 'Perfect for quick afternoon fun & young beginners (Ages 3-5)',
+      figures: '2 Figurines',
     },
-    { 
-      name: 'Fun Kit', 
-      price: 199, 
-      color: 'bg-orange-500 text-white', 
-      border: 'border-orange-200', 
-      glow: 'shadow-[0_10px_25px_rgba(249,115,22,0.15)]',
+    {
+      name: 'Fun Kit',
+      price: 199,
+      color: 'bg-[#FF5722] text-white',
+      border: 'border-[#EFE8DE]',
       slug: 'fun-paint-kit',
-      desc: 'Great for birthday return gifts'
+      desc: 'Bestseller for birthdays & joyful return gifts',
+      figures: '3-4 Figurines',
     },
-    { 
-      name: 'Creative Kit', 
-      price: 299, 
-      color: 'bg-purple-600 text-white', 
-      border: 'border-purple-200', 
-      glow: 'shadow-[0_10px_25px_rgba(147,51,234,0.15)]',
+    {
+      name: 'Creative Kit',
+      price: 299,
+      color: 'bg-purple-800 text-white',
+      border: 'border-[#EFE8DE]',
       slug: 'creative-paint-kit',
-      desc: 'Awesome weekend art projects'
+      desc: 'Engaging weekend art projects with acrylics',
+      figures: '4-6 Figurines',
     },
-    { 
-      name: 'Signature Collection', 
-      price: 499, 
-      color: 'bg-pink-500 text-white', 
-      border: 'border-pink-200', 
-      glow: 'shadow-[0_10px_25px_rgba(236,72,153,0.15)]',
+    {
+      name: 'Signature Collection',
+      price: 499,
+      color: 'bg-[#FFA000] text-gray-950 font-bold',
+      border: 'border-[#EFE8DE]',
       slug: 'signature-collection',
-      desc: 'Deluxe gift kits for special occasions'
+      desc: 'Deluxe celebration boxes ready for gifting',
+      figures: 'Complete Set',
     },
   ];
 
   return (
-    <div className="min-h-screen pb-20 overflow-hidden bg-[#FFF9F2]">
-      {/* Hero Section */}
-      <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-28 overflow-hidden bg-gradient-to-br from-[#FFF9F2] via-orange-50/60 to-purple-50/40">
-        {/* Animated Refraction Blobs */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-          <div className="absolute top-12 left-10 w-72 h-72 bg-orange-300/30 rounded-full filter blur-3xl animate-blob"></div>
-          <div className="absolute top-10 right-20 w-80 h-80 bg-purple-300/30 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-10 left-1/3 w-72 h-72 bg-pink-300/30 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
-        </div>
-
+    <div className="min-h-screen pb-20 overflow-hidden bg-[#FFFDF9]">
+      {/* Hero Section - Indian DTC Craft Aesthetic */}
+      <section className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 overflow-hidden bg-gradient-to-b from-[#FFFDF9] via-[#FFFDF9] to-[#EFE8DE]/30 border-b border-[#EFE8DE]/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left Hero Text Column (7 cols) */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-8 text-center lg:text-left"
+              className="lg:col-span-7 space-y-6 text-center lg:text-left"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 border border-purple-200 text-purple-700 font-bold text-xs shadow-sm w-max">
-                <Sparkles className="w-4 h-4 text-purple-500" /> Premium DIY Craft Kits for Kids
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FF5722]/10 border border-[#FF5722]/20 text-[#FF5722] font-bold text-xs tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-[#FFA000]" /> Handcrafted In India • 100% Non-Toxic
               </div>
 
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-outfit font-extrabold text-gray-900 leading-tight tracking-tight">
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-heading font-extrabold text-gray-900 leading-tight tracking-tight">
                 Where Little Hands <br />
-                Create <span className="font-outfit italic font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 pr-2">
+                Create <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#FF5722] via-[#FFA000] to-[#E64A19]">
                   Big Smiles
                 </span>
               </h1>
-              
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-lg mx-auto lg:mx-0 font-body leading-relaxed">
-                Spark imagination with premium plaster figurines, non-toxic colors, and complete paint sets delivered in gift packaging.
+
+              <p className="text-base sm:text-lg text-gray-700 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                Spark screen-free imagination with artisanal plaster figurines, child-safe washable colors, and complete craft sets delivered in gifting boxes.
               </p>
-              
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                <Link href="/products" className="px-7 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full font-bold text-base sm:text-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-200 hover:-translate-y-0.5 flex items-center gap-2">
+
+              {/* Action Buttons (min 44x44px touch targets) */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+                <Link
+                  href="/shop"
+                  className="min-h-[48px] px-8 py-3.5 bg-[#FF5722] hover:bg-[#E64A19] text-white rounded-full font-heading font-bold text-base shadow-md shadow-[#FF5722]/20 hover:-translate-y-0.5 transition-all flex items-center gap-2 active:scale-95"
+                >
                   Shop All Kits <ArrowRight className="w-5 h-5" />
                 </Link>
-                <Link href="/collections" className="px-7 py-3 bg-white text-purple-700 border-2 border-purple-200 rounded-full font-bold text-base sm:text-lg hover:border-purple-300 hover:bg-purple-50 transition-all">
+                <Link
+                  href="/collections"
+                  className="min-h-[48px] px-8 py-3.5 bg-white text-gray-900 border-2 border-[#EFE8DE] hover:border-[#FFA000] hover:bg-[#FFFDF9] rounded-full font-heading font-bold text-base transition-all"
+                >
                   Explore Collections
                 </Link>
               </div>
 
-              {/* Colorful Pill Trust Badges Container */}
-              <div className="mt-8 bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm border border-orange-100/60 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 max-w-2xl">
-                <div className="px-3.5 py-2 rounded-full bg-emerald-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-emerald-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
+              {/* Craft Pillars Pill Badges */}
+              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 max-w-2xl">
+                <div className="px-3.5 py-2 rounded-full bg-white text-gray-800 font-bold text-xs border border-[#EFE8DE] shadow-2xs flex items-center gap-2">
                   <Shield className="w-4 h-4 text-emerald-600" /> 100% Non-Toxic
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-orange-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-orange-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
-                  <span className="text-sm">🇮🇳</span> Made in India
+                <div className="px-3.5 py-2 rounded-full bg-white text-gray-800 font-bold text-xs border border-[#EFE8DE] shadow-2xs flex items-center gap-2">
+                  <span className="text-sm">🇮🇳</span> Poured in India
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-pink-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-pink-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
-                  <Gift className="w-4 h-4 text-pink-600" /> Gift Packaging
+                <div className="px-3.5 py-2 rounded-full bg-white text-gray-800 font-bold text-xs border border-[#EFE8DE] shadow-2xs flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-[#FF5722]" /> Gift Ready Box
                 </div>
-                <div className="px-3.5 py-2 rounded-full bg-amber-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-amber-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
-                  <span className="text-sm">👨‍👩‍👧</span> Parent Approved
-                </div>
-                <div className="px-3.5 py-2 rounded-full bg-purple-50/80 text-gray-800 font-bold text-xs sm:text-sm border border-purple-100 shadow-2xs flex items-center gap-2 transition-transform hover:scale-105">
-                  <Shield className="w-4 h-4 text-purple-600" /> Safe & Premium
+                <div className="px-3.5 py-2 rounded-full bg-white text-gray-800 font-bold text-xs border border-[#EFE8DE] shadow-2xs flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-[#FFA000]" /> Free Delivery on ₹499+
                 </div>
               </div>
             </motion.div>
 
-            {/* Right Column: Floating Mascot & Ambient Craft Elements */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
+            {/* Right Hero Visual Column (5 cols) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative h-[420px] sm:h-[500px] lg:h-[560px] flex items-center justify-center"
+              className="lg:col-span-5 relative h-[380px] sm:h-[460px] flex items-center justify-center"
             >
-              {/* Colorful Glow Background behind Mascot */}
-              <div className="absolute inset-2 bg-gradient-to-tr from-orange-400/30 via-pink-400/25 to-purple-400/30 rounded-full blur-3xl -z-10 animate-pulse"></div>
+              {/* Subtle Tactile Halo */}
+              <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-[#FF5722]/15 via-[#FFA000]/15 to-transparent blur-2xl -z-10" />
 
-              {/* Floating Ambient Craft Badges */}
-              <motion.div 
-                animate={{ y: [-8, 8, -8], rotate: [-2, 2, -2] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute top-10 right-4 sm:-right-4 lg:-right-12 z-20 bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-[0_15px_35px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center gap-3 pointer-events-none select-none"
-              >
-                <div className="bg-emerald-50 rounded-full w-10 h-10 flex items-center justify-center">
-                  <span className="text-xl">🍃</span>
+              {/* Floating Ambient Badge */}
+              <div className="absolute top-6 -right-2 sm:-right-4 z-20 bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-[#EFE8DE] flex items-center gap-3 select-none pointer-events-none">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-lg">
+                  🍃
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-extrabold text-gray-900 text-base leading-tight">100%</span>
-                  <span className="text-xs text-gray-500 font-semibold">Non-Toxic</span>
+                <div>
+                  <p className="font-heading font-extrabold text-sm text-gray-900 leading-tight">Screen-Free</p>
+                  <p className="text-[11px] text-gray-500 font-medium">Sensory Play</p>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div 
-                animate={{ y: [8, -8, 8], rotate: [2, -2, 2] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-                className="absolute bottom-12 right-0 sm:right-4 lg:-right-8 z-20 bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-[0_15px_35px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center gap-3 pointer-events-none select-none"
-              >
-                <div className="bg-pink-50 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">🎁</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-extrabold text-gray-900 text-sm leading-tight">Gift Ready</span>
-                  <span className="text-xs text-gray-500 font-semibold max-w-[120px] leading-tight mt-0.5">Perfect for every little artist!</span>
-                </div>
-              </motion.div>
-
-              {/* Floating Decorative Elements: Sparkles, Paint Splatters, Stars */}
-              <div className="absolute top-8 right-10 w-4 h-4 bg-orange-400 rounded-full blur-[1px] animate-ping opacity-75"></div>
-              <div className="absolute bottom-16 left-10 w-3 h-3 bg-purple-500 rounded-full animate-bounce"></div>
-              <div className="absolute top-1/2 -right-2 text-2xl animate-spin-slow select-none opacity-85">🎨</div>
-              <div className="absolute top-1/3 -left-4 text-2xl animate-bounce select-none opacity-85">✨</div>
-              <div className="absolute bottom-1/3 right-6 text-xl animate-pulse select-none opacity-80">⭐</div>
-
-              {/* Clean Floating Mascot Character Image (No Square Box) */}
+              {/* Mascot Character Image */}
               <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
-                <Image 
-                  src="/rangoo.png" 
-                  alt="Rangoo Mascot" 
-                  width={460} 
-                  height={540} 
-                  className="object-contain drop-shadow-[0_20px_35px_rgba(255,87,34,0.25)] animate-float hover:scale-105 transition-transform duration-500"
+                <Image
+                  src="/rangoo.png"
+                  alt="Rangoo - The Kangaroo Artist Mascot"
+                  width={420}
+                  height={500}
+                  className="object-contain drop-shadow-[0_15px_30px_rgba(255,87,34,0.18)] hover:scale-103 transition-transform duration-500"
                   priority
                   unoptimized
                 />
@@ -178,33 +152,43 @@ export default function HomePage() {
       </section>
 
       {/* Kit Tiers Showcase */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-5xl font-outfit font-extrabold text-gray-900 mb-4">Choose Your Canvas</h2>
-          <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto">Explore DIY paint kit options tailored for every budget, age group, and celebration!</p>
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-[#FF5722] bg-[#FF5722]/10 px-3 py-1 rounded-full inline-block mb-2">
+            Curated For Every Artist
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-gray-900 mb-3">
+            Choose Your Craft Kit
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
+            Thoughtfully packaged with plaster figurines, paint pots, brushes, and instructions.
+          </p>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {kitTiers.map((tier, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
-              whileHover={{ y: -8 }}
-              className={`bg-white/80 backdrop-blur-xl rounded-3xl p-7 border ${tier.border} ${tier.glow} transition-all duration-300 flex flex-col justify-between group`}
+              whileHover={{ y: -6 }}
+              className={`bg-white rounded-3xl p-6 border ${tier.border} shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between`}
             >
               <div>
-                <div className={`w-fit px-3.5 py-1 rounded-full text-xs font-extrabold mb-4 ${tier.color}`}>
+                <div className={`w-fit px-3 py-1 rounded-full text-xs font-bold mb-3 ${tier.color}`}>
                   {tier.name}
                 </div>
-                <div className="text-3xl font-outfit font-extrabold text-gray-900 mb-2">
+                <div className="text-3xl font-heading font-black text-gray-900 mb-1 font-mono">
                   Starting at ₹{tier.price}
                 </div>
-                <p className="text-xs sm:text-sm text-gray-600 mb-6 font-medium">
+                <p className="text-xs font-semibold text-[#FF5722] mb-2 flex items-center gap-1">
+                  <Box className="w-3.5 h-3.5" /> {tier.figures}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-6 leading-relaxed">
                   {tier.desc}
                 </p>
               </div>
-              <Link 
-                href={`/products?category=${tier.slug}`} 
-                className="w-full text-center py-3 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold text-sm group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all duration-300"
+              <Link
+                href={`/shop?category=${tier.slug}`}
+                className="w-full min-h-[44px] flex items-center justify-center py-2.5 px-4 rounded-xl bg-[#FFFDF9] border border-[#EFE8DE] text-gray-800 font-heading font-bold text-xs sm:text-sm hover:bg-[#FF5722] hover:text-white hover:border-[#FF5722] transition-colors"
               >
                 View Kits
               </Link>
@@ -213,21 +197,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Bestsellers Section */}
-      <section className="py-20 bg-white/70 backdrop-blur-md border-y border-orange-100">
+      {/* Trust Pillars Section */}
+      <TrustPillars />
+
+      {/* Bestseller Kits Grid */}
+      <section className="py-16 bg-white border-y border-[#EFE8DE]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
-              <div className="text-xs font-bold text-orange-500 tracking-wider uppercase mb-2">Most Popular</div>
-              <h2 className="text-3xl sm:text-4xl font-outfit font-extrabold text-gray-900 flex items-center gap-3">
-                Our Bestseller Kits <Brush className="w-8 h-8 text-orange-500" />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#FF5722] bg-[#FF5722]/10 px-3 py-1 rounded-full inline-block mb-2">
+                Parent & Kid Favorites
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-gray-900 flex items-center gap-3">
+                Bestseller Craft Kits <Brush className="w-7 h-7 text-[#FF5722]" />
               </h2>
             </div>
-            <Link href="/products" className="hidden sm:flex items-center gap-2 text-orange-600 font-bold hover:text-orange-700">
-              View All <ArrowRight className="w-4 h-4" />
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#FF5722] hover:text-[#E64A19] min-h-[44px]"
+            >
+              View Full Catalog <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -236,73 +228,30 @@ export default function HomePage() {
         </div>
       </section>
 
-
-
-      {/* Features USP Banner */}
-      <section className="pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
-            {/* Feature 1 */}
-            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Safe for Kids</h3>
-                <p className="text-xs text-gray-500 font-medium">Non-toxic & child safe</p>
-              </div>
-            </div>
-            
-            {/* Feature 2 */}
-            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
-              <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
-                <Palette className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Boosts Creativity</h3>
-                <p className="text-xs text-gray-500 font-medium">Encourages imagination</p>
-              </div>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
-              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
-                <Star className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Quality You Trust</h3>
-                <p className="text-xs text-gray-500 font-medium">Premium materials</p>
-              </div>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="flex items-center gap-4 lg:justify-center pt-4 sm:pt-0 pl-0 sm:pl-4 first:pl-0 first:pt-0">
-              <div className="w-12 h-12 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center flex-shrink-0">
-                <Heart className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base">Delivered with Love</h3>
-                <p className="text-xs text-gray-500 font-medium">Carefully packed gifts</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Dynamic 5-Star Customer Reviews */}
+      {/* Customer Reviews Section */}
       <HomepageReviewsSection />
 
       {/* Call to Action Banner */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-[2.5rem] p-10 sm:p-16 text-center text-white relative overflow-hidden shadow-2xl">
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-4xl sm:text-6xl font-outfit font-extrabold mb-6 tracking-tight">Ready to Paint?</h2>
-            <p className="text-base sm:text-xl text-orange-50 mb-10 leading-relaxed">
-              Unleash creativity today with non-toxic, screen-free DIY craft kits. Perfect for weekends, playdates, and gifts!
+        <div className="bg-[#FFFDF9] border border-[#EFE8DE] rounded-3xl p-8 sm:p-14 text-center text-gray-900 relative overflow-hidden shadow-xs">
+          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#FF5722] bg-[#FF5722]/10 px-3 py-1 rounded-full inline-block">
+              Free Shipping Across India on ₹499+
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-heading font-extrabold text-gray-900 tracking-tight">
+              Ready to Spark Little Imaginations?
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-lg mx-auto">
+              Delight your child with safe, non-toxic plaster paint kits. Fast courier delivery, instant gift packaging, and hours of creative joy.
             </p>
-            <Link href="/products" className="inline-block px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg hover:bg-orange-50 transition-all shadow-xl transform hover:-translate-y-1">
-              Shop All DIY Kits
-            </Link>
+            <div className="pt-2">
+              <Link
+                href="/shop"
+                className="min-h-[48px] inline-flex items-center gap-2 px-9 py-3.5 bg-[#FF5722] hover:bg-[#E64A19] text-white rounded-full font-heading font-bold text-base shadow-md transition-all active:scale-95"
+              >
+                Shop All DIY Kits <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -327,17 +276,17 @@ function HomepageReviewsSection() {
   }, []);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-transparent via-orange-50/50 to-purple-50/40">
+    <section className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-3">
-            <Star className="w-4 h-4 fill-current text-amber-500" /> Verified Customer Reviews
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-outfit font-extrabold text-gray-900">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-[#FFA000] bg-amber-50 border border-amber-200 px-3 py-1 rounded-full inline-block mb-2">
+            Verified Experiences
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-gray-900">
             Loved By Families Across India
           </h2>
-          <p className="text-gray-600 text-sm sm:text-base mt-3">
-            Real feedback and 5-star ratings from parents and young artists.
+          <p className="text-gray-600 text-sm sm:text-base mt-2">
+            Read real stories from young artists and parents who painted together.
           </p>
         </div>
 
@@ -348,25 +297,25 @@ function HomepageReviewsSection() {
             {fiveStarReviews.map((rev) => (
               <div
                 key={rev.id}
-                className="bg-white/90 backdrop-blur-xl border border-orange-100/80 rounded-3xl p-7 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white border border-[#EFE8DE] rounded-3xl p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <div className="flex text-amber-400">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex text-[#FFA000]">
                       {[...Array(rev.rating || 5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-current" />
                       ))}
                     </div>
-                    <span className="px-2.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">
+                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 text-[10px] font-extrabold border border-emerald-200 rounded-full">
                       ✔ Verified Buyer
                     </span>
                   </div>
-                  {rev.title && <h4 className="font-bold text-gray-900 text-base mb-2">{rev.title}</h4>}
-                  <p className="text-gray-700 text-sm italic leading-relaxed mb-6">&quot;{rev.comment}&quot;</p>
+                  {rev.title && <h3 className="font-heading font-bold text-gray-900 text-base mb-1.5">{rev.title}</h3>}
+                  <p className="text-gray-700 text-xs sm:text-sm leading-relaxed mb-4">&quot;{rev.comment}&quot;</p>
                 </div>
-                <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                <div className="pt-3 border-t border-[#EFE8DE] flex items-center justify-between text-xs text-gray-500 font-mono">
                   <span className="font-bold text-gray-900">{rev.customerName}</span>
-                  <span className="text-gray-400">
+                  <span>
                     {new Date(rev.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
                   </span>
                 </div>
@@ -374,17 +323,19 @@ function HomepageReviewsSection() {
             ))}
           </div>
         ) : (
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-dashed border-orange-200 p-10 text-center max-w-xl mx-auto shadow-sm">
-            <span className="text-4xl mb-3 block">🎨</span>
-            <h3 className="text-xl font-bold font-outfit text-gray-900 mb-2">Be the First to Leave a 5-Star Review!</h3>
-            <p className="text-gray-600 text-xs sm:text-sm mb-6 leading-relaxed">
-              Purchase any DIY paint kit and share your child&apos;s masterpiece on the product page!
+          <div className="bg-white rounded-3xl border border-dashed border-[#EFE8DE] p-8 text-center max-w-lg mx-auto shadow-xs">
+            <span className="text-3xl mb-2 block">🎨</span>
+            <h3 className="text-lg font-bold font-heading text-gray-900 mb-1">
+              Join Our Community of Young Artists
+            </h3>
+            <p className="text-gray-600 text-xs mb-4">
+              Order any DIY craft kit and share your child&apos;s proud painted creation!
             </p>
             <Link
-              href="/products"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full font-bold text-xs uppercase tracking-wider hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
+              href="/shop"
+              className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-[#FF5722] text-white rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#E64A19] transition-colors"
             >
-              Explore DIY Kits & Leave Review
+              Explore Kits
             </Link>
           </div>
         )}

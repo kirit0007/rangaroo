@@ -84,6 +84,7 @@ export interface CartStore {
 export interface Address {
   id?: string;
   fullName: string;
+  email?: string;
   phone: string;
   addressLine1: string;
   addressLine2?: string;
@@ -156,11 +157,13 @@ export interface User {
 }
 
 export interface Coupon {
+  id?: string;
   code: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   minOrderAmount?: number;
   maxDiscountAmount?: number;
+  isActive?: boolean;
 }
 
 export interface Testimonial {

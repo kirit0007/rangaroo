@@ -84,7 +84,8 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { name: 'Home', path: '/' },
-                { name: 'Shop All', path: '/products' },
+                { name: 'Shop All Kits', path: '/shop' },
+                { name: 'Collections', path: '/collections' },
                 { name: 'About Us', path: '/about' },
                 { name: 'Contact', path: '/contact' },
                 { name: 'FAQ', path: '/faq' },
@@ -108,7 +109,7 @@ export default function Footer() {
                 { name: 'Return Policy', path: '/refund-policy' },
                 { name: 'Privacy Policy', path: '/privacy-policy' },
                 { name: 'Terms of Service', path: '/terms' },
-                { name: 'Track Order', path: '/orders' },
+                { name: 'Track Order', path: '/track' },
               ].map((link) => (
                 <li key={link.name}>
                   <Link href={link.path} className="text-gray-300 hover:text-[var(--brand-amber)] transition-colors text-sm flex items-center gap-2">

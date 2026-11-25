@@ -43,13 +43,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Signature verified — now update order in database ──────────────
+    // ── Signature verified — now confirm order & inventory via atomic RPC ──
     const supabase = createServerClient();
 
     // Find the pending order by razorpay_order_id
     const { data: order, error: findErr } = await supabase
       .from('orders')
-      .select('id, order_number, items, payment_status')
+      .select('id, order_number, items, payment_status, order_status, total, total_amount, razorpay_order_id')
       .eq('razorpay_order_id', razorpay_order_id)
       .single();
 
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Prevent double-processing
-    if (order.payment_status === 'paid') {
+    // Prevent double-processing if already confirmed
+    if (order.payment_status?.toLowerCase() === 'paid' || order.order_status === 'PROCESSING') {
       return NextResponse.json({
         success: true,
         message: 'Payment already verified',
@@ -71,42 +71,40 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Update order status to confirmed + paid
-    const { error: updateErr } = await supabase
-      .from('orders')
-      .update({
-        status: 'confirmed',
-        payment_status: 'paid',
-        razorpay_payment_id,
-      })
-      .eq('id', order.id);
+    // Call atomic confirm_order_payment RPC to transition inventory and order status
+    const orderAmount = Number(order.total_amount ?? order.total ?? 0);
+    const { data: confirmResult, error: confirmErr } = await supabase.rpc('confirm_order_payment', {
+      p_order_id: order.id,
+      p_payment_id: razorpay_payment_id,
+      p_razorpay_order_id: razorpay_order_id,
+      p_amount: orderAmount > 0 ? orderAmount : null,
+      p_currency: 'INR',
+    });
 
-    if (updateErr) {
-      console.error('[Verify] Order update error:', updateErr);
+    if (confirmErr) {
+      console.error('[Verify] confirm_order_payment RPC error:', confirmErr);
+      return NextResponse.json(
+        { success: false, error: confirmErr.message || 'Payment confirmation failed' },
+        { status: 500 }
+      );
     }
 
-    // Decrement stock for each item
-    const orderItems = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
-    for (const item of orderItems) {
-      const productId = item.productId || item.product_id;
-      if (productId && item.quantity) {
-        const { data: product } = await supabase
-          .from('products')
-          .select('stock_quantity')
-          .eq('id', productId)
-          .single();
+    // Handle INVENTORY_CONFLICT outcome: payment captured but hold expired
+    if (confirmResult?.status === 'INVENTORY_CONFLICT') {
+      revalidatePath('/orders');
+      revalidatePath('/admin/orders');
 
-        if (product && product.stock_quantity !== null) {
-          const newStock = Math.max(0, product.stock_quantity - item.quantity);
-          await supabase
-            .from('products')
-            .update({ stock_quantity: newStock })
-            .eq('id', productId);
-        }
-      }
+      return NextResponse.json({
+        success: true,
+        status: 'INVENTORY_CONFLICT',
+        message: confirmResult.message || 'Payment captured but inventory hold expired; order flagged for recovery',
+        orderId: order.id,
+        orderNumber: order.order_number,
+        paymentId: razorpay_payment_id,
+      });
     }
 
-    // Trigger confirmation email (fire-and-forget)
+    // Normal successful fulfillment: trigger confirmation email (fire-and-forget)
     try {
       const { data: fullOrder } = await supabase
         .from('orders')
@@ -137,6 +135,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      status: 'PROCESSING',
       message: 'Payment verified and order confirmed',
       orderId: order.id,
       orderNumber: order.order_number,
@@ -151,4 +150,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

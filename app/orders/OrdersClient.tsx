@@ -144,6 +144,27 @@ export default function OrdersClient() {
           </div>
         </div>
 
+        {/* Guest Order Tracking Quick-Access Banner */}
+        <div className="mb-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-orange-50 via-[#FFFDF9] to-amber-50 border border-[#EFE8DE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#FF5722] bg-[#FF5722]/10 px-3 py-1 rounded-full inline-block mb-1.5">
+              Guest Order Tracking
+            </span>
+            <h2 className="font-heading font-extrabold text-base sm:text-lg text-gray-900">
+              Placed an order as a guest without signing in?
+            </h2>
+            <p className="text-xs text-gray-600 mt-0.5">
+              Track courier milestones, package transit & delivery details securely using your private tracking key.
+            </p>
+          </div>
+          <Link
+            href="/track"
+            className="min-h-[44px] min-w-[44px] px-6 py-2.5 bg-[#FF5722] hover:bg-[#E64A19] text-white font-heading font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 active:scale-95"
+          >
+            <Truck size={16} /> Track Guest Order
+          </Link>
+        </div>
+
         {!mounted ? (
           <div className="space-y-6">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-sm animate-pulse h-64"></div>

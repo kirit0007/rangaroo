@@ -55,32 +55,37 @@ function ProductsContent() {
   }, [products, activeCategory, activeAge, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#FFF9F2] pt-24 pb-20">
+    <div className="min-h-screen bg-[#FFFDF9] pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-outfit font-extrabold text-gray-900 mb-4">Shop All Kits</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Discover our complete range of DIY paint kits. From mini projects to signature collections, find the perfect creative activity for your little one.
+        <div className="text-center mb-10">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-[#FF5722] bg-[#FF5722]/10 px-3.5 py-1.5 rounded-full inline-block mb-3">
+            Pure Craft • Screen-Free Fun
+          </span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-gray-900 mb-3">
+            Handcrafted DIY Paint Kits
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+            Discover our complete range of child-safe plaster figurines and washable colors. From quick weekend projects to signature gift sets.
           </p>
         </div>
 
         {/* Filter & Sort Bar */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-[#EFE8DE] mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           {/* Categories & Age Filters */}
           <div className="flex-grow space-y-3 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
             <div className="flex items-center gap-2 min-w-max">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1">Category:</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-gray-500 mr-1">Category:</span>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                  className={`min-h-[44px] px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap active:scale-95 ${
                     activeCategory === cat 
-                      ? 'bg-orange-500 text-white shadow-md' 
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                      ? 'bg-[#FF5722] text-white shadow-xs' 
+                      : 'bg-[#FFFDF9] text-gray-700 hover:bg-[#EFE8DE] border border-[#EFE8DE]'
                   }`}
                 >
                   {cat}
@@ -89,15 +94,15 @@ function ProductsContent() {
             </div>
 
             <div className="flex items-center gap-2 min-w-max">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1">Age Group:</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-gray-500 mr-1">Age Group:</span>
               {['All', '3-5', '5+', '8+'].map((age) => (
                 <button
                   key={age}
                   onClick={() => setActiveAge(age)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${
+                  className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap active:scale-95 ${
                     activeAge === age 
-                      ? 'bg-purple-600 text-white shadow-sm' 
-                      : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                      ? 'bg-purple-700 text-white shadow-xs' 
+                      : 'bg-purple-50 text-purple-900 hover:bg-purple-100 border border-purple-200'
                   }`}
                 >
                   {age === 'All' ? 'All Ages' : `Age ${age}`}
@@ -107,17 +112,17 @@ function ProductsContent() {
           </div>
 
           {/* Sort Dropdown */}
-          <div className="relative shrink-0 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-4 mt-2 md:mt-0">
+          <div className="relative shrink-0 border-t md:border-t-0 md:border-l border-[#EFE8DE] pt-4 md:pt-0 md:pl-4 mt-2 md:mt-0">
             <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 bg-gray-50 px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors w-full md:w-auto justify-between"
+              className="min-h-[44px] flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 bg-[#FFFDF9] border border-[#EFE8DE] px-4 py-2.5 rounded-xl hover:bg-[#EFE8DE] transition-colors w-full md:w-auto justify-between"
             >
               Sort: {SORT_OPTIONS.find(opt => opt.value === sortBy)?.label}
-              <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform text-[#FF5722] ${isSortOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {isSortOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-20">
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-[#EFE8DE] overflow-hidden z-20 py-1">
                 {SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
@@ -125,8 +130,8 @@ function ProductsContent() {
                       setSortBy(opt.value);
                       setIsSortOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 text-sm hover:bg-orange-50 transition-colors ${
-                      sortBy === opt.value ? 'text-orange-600 font-semibold bg-orange-50/50' : 'text-gray-700'
+                    className={`block w-full text-left px-4 py-3 text-xs sm:text-sm transition-colors ${
+                      sortBy === opt.value ? 'text-[#FF5722] font-bold bg-orange-50' : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     {opt.label}

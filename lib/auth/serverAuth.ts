@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest } from 'next/server';
+import { getAuthoritativeAdminUser } from '@/lib/admin/adminAuth';
 
 export async function getAuthenticatedUser(request: NextRequest) {
   try {
@@ -20,11 +21,11 @@ export async function getAuthenticatedUser(request: NextRequest) {
   }
 }
 
+/**
+ * Authoritative check:
+ * Validates strictly against public.admin_users table (never client-editable user_metadata).
+ */
 export async function isUserAdmin(request: NextRequest): Promise<boolean> {
-  const user = await getAuthenticatedUser(request);
-  if (user) {
-    return user.user_metadata?.role === 'admin' || user.app_metadata?.role === 'admin';
-  }
-
-  return false;
+  const admin = await getAuthoritativeAdminUser(request);
+  return admin !== null && admin.is_active === true;
 }

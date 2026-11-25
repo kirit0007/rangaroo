@@ -60,24 +60,24 @@ export default function CollectionClient({ initialCollection, initialProducts }:
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF9F2] pt-24 pb-20">
+    <div className="min-h-screen bg-[#FFFDF9] pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Back Link */}
-        <Link href="/collections" className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 mb-8 transition-colors">
+        <Link href="/collections" className="inline-flex items-center min-h-[44px] text-xs sm:text-sm font-bold text-[#FF5722] hover:text-[#E64A19] mb-6 transition-colors">
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to Collections
         </Link>
 
         {/* Collection Header */}
-        <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-sm border border-orange-100 mb-12 relative overflow-hidden flex flex-col items-center text-center">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-50/50 to-purple-50/50 z-0"></div>
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xs border border-[#EFE8DE] mb-12 relative overflow-hidden flex flex-col items-center text-center">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-50/40 via-transparent to-amber-50/30 z-0"></div>
           
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", bounce: 0.5 }}
-            className="text-6xl md:text-8xl mb-6 relative z-10"
+            className="text-6xl md:text-8xl mb-4 relative z-10"
           >
             {getEmoji(collection.slug)}
           </motion.div>
@@ -86,7 +86,7 @@ export default function CollectionClient({ initialCollection, initialProducts }:
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-outfit font-extrabold text-gray-900 mb-4 relative z-10"
+            className="text-3xl md:text-5xl font-heading font-extrabold text-gray-900 mb-3 relative z-10"
           >
             {collection.name} Collection
           </motion.h1>
@@ -95,15 +95,15 @@ export default function CollectionClient({ initialCollection, initialProducts }:
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-gray-600 max-w-2xl relative z-10"
+            className="text-sm sm:text-base text-gray-600 max-w-2xl relative z-10 leading-relaxed font-medium"
           >
-            {collection.description} Explore our hand-picked selection of {collection.name.toLowerCase()} themed painting kits. Perfect for sparking imagination and creative play!
+            {collection.description} Explore our hand-picked selection of {collection.name.toLowerCase()} themed painting kits. Safe, non-toxic, and ready to paint straight out of the box!
           </motion.p>
         </div>
 
         {/* Product Grid */}
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 font-outfit">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 font-heading">
             {products.length} {products.length === 1 ? 'Kit' : 'Kits'} Available
           </h2>
         </div>
@@ -115,10 +115,10 @@ export default function CollectionClient({ initialCollection, initialProducts }:
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-xl text-gray-500 mb-4">No kits found in this collection yet.</p>
-            <Link href="/products" className="text-orange-500 font-semibold hover:underline">
-              Browse all products
+          <div className="text-center py-16 bg-white rounded-3xl border border-[#EFE8DE] shadow-xs p-8">
+            <p className="text-lg text-gray-600 mb-4 font-heading font-bold">No kits currently available in this collection.</p>
+            <Link href="/shop" className="min-h-[44px] inline-flex items-center justify-center px-6 py-2.5 bg-[#FF5722] text-white rounded-xl font-bold text-sm hover:bg-[#E64A19] transition-colors">
+              Browse All Paint Kits
             </Link>
           </div>
         )}

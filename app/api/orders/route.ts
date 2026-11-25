@@ -15,18 +15,18 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerClient();
 
-    const userPhone = user.user_metadata?.phone || user.phone;
-    const orQuery = userPhone 
-      ? `user_id.eq.${user.id},customer_email.eq.${user.email},shipping_address->>phone.eq.${userPhone}`
-      : `user_id.eq.${user.id},customer_email.eq.${user.email}`;
+    // Secure order ownership:
+    // 1. Registered user orders matching user_id
+    // 2. Safe account linking: Only link unclaimed guest orders if user's email is verified
+    let query = supabase.from('orders').select('*');
 
-    console.log(`[Customer Orders API] Fetching orders for user ID: ${user.id} and Email: ${user.email}`);
+    if (user.email_confirmed_at && user.email) {
+      query = query.or(`user_id.eq.${user.id},and(customer_email.eq.${user.email},user_id.is.null)`);
+    } else {
+      query = query.eq('user_id', user.id);
+    }
 
-    const { data: dbOrders, error } = await supabase
-      .from('orders')
-      .select('*')
-      .or(orQuery)
-      .order('created_at', { ascending: false });
+    const { data: dbOrders, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('[Supabase Fetch Orders Error]', error);

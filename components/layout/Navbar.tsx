@@ -99,7 +99,8 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/products' },
+    { name: 'Shop All', path: '/shop' },
+    { name: 'Track Order', path: '/track' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
@@ -280,7 +281,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.95 }}
               onClick={openCart}
               aria-label="Shopping Cart"
-              className="relative p-2 rounded-full hover:bg-white/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              className="relative min-w-[44px] min-h-[44px] p-2.5 rounded-full hover:bg-white/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 flex items-center justify-center"
             >
               <ShoppingBag size={22} className="text-gray-800" />
               <AnimatePresence>
@@ -289,7 +290,7 @@ export default function Navbar() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute -top-1 -right-1 bg-[var(--brand-orange)] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md"
+                    className="absolute top-0 right-0 bg-[#FF5722] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md font-mono"
                   >
                     {cartItemCount}
                   </motion.div>
@@ -299,7 +300,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="md:hidden p-2 rounded-full hover:bg-white/50 transition-colors"
+              className="md:hidden min-w-[44px] min-h-[44px] p-2.5 rounded-full hover:bg-white/50 transition-colors flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={isMobileMenuOpen}

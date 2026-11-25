@@ -1,29 +1,33 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronRight, Star, Plus, Minus, ShoppingCart, Zap, CheckCircle2, Shield, Truck, Package, RotateCcw, Heart } from 'lucide-react';
+import { ChevronRight, ShoppingCart, Zap, Heart, CheckCircle2, Truck, RotateCcw, ShieldCheck, Box, Palette } from 'lucide-react';
 import { getProductBySlug, products as defaultProducts, categories, formatPrice, calculateDiscount } from '@/data/products';
 import { useAdminStore } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
-import { useAuthStore } from '@/store/authStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import ProductCard from '@/components/product/ProductCard';
-import ReviewSkeleton from '@/components/reviews/ReviewSkeleton';
+import ImageGallery from '@/components/storefront/ImageGallery';
+import KitContentsBreakdown from '@/components/storefront/KitContentsBreakdown';
+import VerifiedReviews from '@/components/storefront/VerifiedReviews';
 import toast from 'react-hot-toast';
 
-export default function ProductClient({ initialProduct, initialRelatedProducts }: { initialProduct: any, initialRelatedProducts: any[] }) {
+export default function ProductClient({
+  initialProduct,
+  initialRelatedProducts,
+}: {
+  initialProduct: any;
+  initialRelatedProducts: any[];
+}) {
   const { slug } = useParams();
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const openAuthModal = useAuthStore((state) => state.openAuthModal);
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const isInWishlist = useWishlistStore((state) => state.isInWishlist);
   const storeProducts = useAdminStore((state) => state.products) || defaultProducts;
-  
+
   const product = useMemo(() => {
     if (typeof slug === 'string') {
       return storeProducts.find((p: any) => p.slug === slug || p.id === slug) || getProductBySlug(slug) || initialProduct;
@@ -41,7 +45,6 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
   }, [product, storeProducts, initialRelatedProducts]);
 
   const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(0);
   const [pincode, setPincode] = useState('');
   const [pincodeStatus, setPincodeStatus] = useState<string | null>(null);
 
@@ -54,7 +57,7 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
   }, []);
 
   const checkPincodeDelivery = async (pin: string) => {
-    if (pin.length !== 6) {
+    if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
       toast.error('Please enter a valid 6-digit Pincode');
       return;
     }
@@ -63,329 +66,320 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
       const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
       const data = await res.json();
       if (data && data[0]?.Status === 'Success') {
-        const district = data[0].PostOffice[0]?.District || 'your location';
-        const deliveryDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
-        setPincodeStatus(`🚚 Express Delivery by ${deliveryDate} to ${district} (${pin})`);
-        toast.success(`Delivery available to ${district}!`);
+        const district = data[0].PostOffice[0]?.District || 'your city';
+        setPincodeStatus(`🚚 Express Delivery by ${expressDeliveryDate} to ${district} (${pin})`);
+        toast.success(`Express Delivery verified for ${district}!`);
       } else {
-        const deliveryDate = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
-        setPincodeStatus(`🚚 Standard Delivery by ${deliveryDate} to Pincode ${pin}`);
+        setPincodeStatus(`🚚 Standard Courier Delivery available to Pincode ${pin}`);
       }
     } catch {
-      const deliveryDate = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
-      setPincodeStatus(`🚚 Delivery available! Expected by ${deliveryDate}`);
+      setPincodeStatus(`🚚 Delivery available! Expected by ${expressDeliveryDate}`);
     }
   };
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFF9F2]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#FFFDF9]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF5722]" />
       </div>
     );
   }
 
-  const discount = product.compareAtPrice 
-    ? calculateDiscount(product.price, product.compareAtPrice) 
-    : 0;
+  const discount = product.compareAtPrice ? calculateDiscount(product.price, product.compareAtPrice) : 0;
+  const productImages = product.images?.length ? product.images : ['/logo.png'];
+  const figureCount = product.figureCount ?? product.figure_count ?? 2;
+  const paintType = product.paintType ?? product.paint_type ?? 'Tempera (Washable & Safe)';
+  const kitContents = product.kitContents ?? product.kit_contents ?? [];
 
   const handleAddToCart = () => {
     addItem(product, quantity);
-    toast.success(`Added ${quantity} ${quantity > 1 ? 'items' : 'item'} to cart!`);
+    toast.success(`Added ${quantity} ${quantity > 1 ? 'kits' : 'kit'} to your craft box! 🎨`);
   };
 
+  // Frictionless guest checkout: direct navigation to /checkout without forced login!
   const handleBuyNow = () => {
-    if (!user) {
-      toast.error('Please login or create an account to place an order');
-      openAuthModal('login');
-      return;
-    }
     addItem(product, quantity);
     router.push('/checkout');
   };
 
   const handleToggleWishlist = () => {
-    if (product) {
-      toggleWishlist(product);
-      if (!isInWishlist(product.id)) {
-        toast.success('Saved to Wishlist!');
-      } else {
-        toast.success('Removed from Wishlist');
-      }
+    toggleWishlist(product);
+    if (!isInWishlist(product.id)) {
+      toast.success('Saved to Wishlist! ❤️');
+    } else {
+      toast.success('Removed from Wishlist');
     }
   };
 
-  const productImages = product.images?.length ? product.images : ['/logo.png'];
-
   return (
-    <div className="min-h-screen bg-[#FFF9F2] pt-24 pb-20">
+    <div className="min-h-screen bg-[#FFFDF9] pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Breadcrumbs */}
-        <nav className="flex text-sm text-gray-500 mb-8" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2">
-            <li className="inline-flex items-center">
-              <Link href="/" className="hover:text-orange-600">Home</Link>
+        {/* Breadcrumb Navigation */}
+        <nav className="flex text-xs sm:text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 sm:space-x-2">
+            <li>
+              <Link href="/" className="hover:text-[#FF5722] transition-colors">
+                Home
+              </Link>
             </li>
             <li>
               <div className="flex items-center">
-                <ChevronRight className="w-4 h-4 mx-1" />
-                <Link href="/products" className="hover:text-orange-600">Shop</Link>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 mx-1" />
+                <Link href="/shop" className="hover:text-[#FF5722] transition-colors">
+                  Shop All
+                </Link>
               </div>
             </li>
             <li>
               <div className="flex items-center">
-                <ChevronRight className="w-4 h-4 mx-1" />
-                <span className="text-gray-900 font-medium truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 mx-1" />
+                <span className="text-gray-900 font-bold truncate max-w-[200px] sm:max-w-md">
+                  {product.name}
+                </span>
               </div>
             </li>
           </ol>
         </nav>
 
-        <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-sm border border-gray-100 mb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            {/* Left: Images */}
-            <div className="space-y-4">
-              <div className="relative aspect-square w-full bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
-                <Image
-                  src={productImages[activeImage]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  unoptimized={true}
-                  priority
-                />
-                {discount > 0 && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <span className="px-3 py-1.5 text-sm font-bold bg-orange-500 text-white rounded-full shadow-md">
-                      Save {discount}%
-                    </span>
-                  </div>
-                )}
-              </div>
-              
-              {productImages.length > 1 && (
-                <div className="grid grid-cols-4 gap-4">
-                  {productImages.map((img: string, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveImage(idx)}
-                      className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                        activeImage === idx ? 'border-orange-500 shadow-md' : 'border-transparent opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <Image
-                        src={img}
-                        alt={`${product.name} thumbnail ${idx + 1}`}
-                        fill
-                        className="object-cover"
-                        unoptimized={true}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
+        {/* Product Feature Showcase Card */}
+        <div className="bg-white rounded-3xl p-6 lg:p-10 shadow-xs border border-[#EFE8DE] mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            {/* Left Column: Image Gallery (5 cols) */}
+            <div className="lg:col-span-6">
+              <ImageGallery
+                images={productImages}
+                productName={product.name}
+                discountPercent={discount}
+              />
             </div>
 
-            {/* Right: Info */}
-            <div className="flex flex-col">
-              <div className="mb-2">
-                <span className="px-3 py-1 text-xs font-semibold bg-purple-100 text-purple-700 rounded-full">
-                  {categories.find(c => c.id === product.categoryId)?.name || 'DIY Paint Kit'}
+            {/* Right Column: Specifications, Price & Actions (6 cols) */}
+            <div className="lg:col-span-6 flex flex-col space-y-6">
+              {/* Category & Collection Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 text-xs font-extrabold uppercase tracking-wider bg-orange-100 text-orange-900 rounded-full border border-orange-200">
+                  {categories.find((c) => c.id === product.categoryId)?.name || 'DIY Plaster Kit'}
                 </span>
+                <span className="px-3 py-1 text-xs font-bold bg-[#EFE8DE] text-gray-800 rounded-full">
+                  Hand-Poured Craft
+                </span>
+                {product.ageGroup && (
+                  <span className="px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
+                    Ages {product.ageGroup}
+                  </span>
+                )}
               </div>
-              
-              <h1 className="text-3xl sm:text-4xl font-outfit font-bold text-gray-900 mb-3">
-                {product.name}
-              </h1>
-              
-              <ProductHeaderRating productId={product.id} />
 
-              <div className="flex items-end gap-3 mb-4">
-                <span className="text-4xl font-bold text-orange-600">
+              {/* Title & Short Description */}
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-gray-900 leading-tight">
+                  {product.name}
+                </h1>
+                {product.shortDescription && (
+                  <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
+                    {product.shortDescription}
+                  </p>
+                )}
+              </div>
+
+              {/* Price & Savings */}
+              <div className="flex items-baseline gap-3 pb-4 border-b border-[#EFE8DE]">
+                <span className="text-4xl font-black text-[#FF5722] font-mono">
                   {formatPrice(product.price)}
                 </span>
                 {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <span className="text-xl text-gray-400 line-through mb-1">
-                    {formatPrice(product.compareAtPrice)}
-                  </span>
+                  <>
+                    <span className="text-lg text-gray-400 line-through font-mono">
+                      {formatPrice(product.compareAtPrice)}
+                    </span>
+                    <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                      Save {discount}%
+                    </span>
+                  </>
                 )}
               </div>
 
-              {/* Stock Urgency & Delivery Pincode Speed Estimator */}
-              <div className="space-y-3 mb-6 p-4 bg-orange-50/80 rounded-2xl border border-orange-100/80">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-orange-700">
-                  <span className="animate-pulse">🔥</span> High Demand — Only 4 kits left in stock!
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <Truck className="w-4 h-4 text-emerald-600 shrink-0" /> 
-                  <span>
-                    Express delivery by <strong className="text-gray-900">{expressDeliveryDate}</strong> if ordered in 2 hrs!
-                  </span>
-                </div>
-
-                {/* Interactive Pincode Checker */}
-                <div className="pt-2 border-t border-orange-200/60">
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 flex items-center justify-between">
-                    <span>Check Delivery Speed to Your Pincode</span>
-                    <span className="text-[10px] text-gray-500 font-normal">Nationwide India</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={pincode}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '');
-                        setPincode(val);
-                        if (val.length === 6) checkPincodeDelivery(val);
-                      }}
-                      placeholder="Enter 6-digit Pincode (e.g. 400001)"
-                      className="flex-1 px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
-                    />
-                    <button
-                      onClick={() => checkPincodeDelivery(pincode)}
-                      className="px-3.5 py-1.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-colors"
-                    >
-                      Check
-                    </button>
+              {/* Kit Breakdown Highlights: Figure Count & Paint Type */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#EFE8DE] flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#FF5722]/10 text-[#FF5722] flex items-center justify-center shrink-0">
+                    <Box className="w-5 h-5" />
                   </div>
-                  {pincodeStatus && (
-                    <p className="mt-2 text-xs font-bold text-emerald-700 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> {pincodeStatus}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Figurines</p>
+                    <p className="text-sm font-extrabold text-gray-900 font-heading">
+                      {figureCount} Handcrafted
                     </p>
-                  )}
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#EFE8DE] flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#FFA000]/15 text-[#FFA000] flex items-center justify-center shrink-0">
+                    <Palette className="w-5 h-5 text-amber-700" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Paints</p>
+                    <p className="text-sm font-extrabold text-gray-900 font-heading truncate max-w-[130px]" title={paintType}>
+                      {paintType.split('(')[0].trim()}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                {product.description}
-              </p>
-
-              {/* Info Badges */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <Shield className="w-5 h-5 text-green-500" />
-                  <span className="text-sm font-medium text-gray-700">Non-Toxic Paints</span>
+              {/* Interactive Delivery Pincode Checker */}
+              <div className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#EFE8DE] space-y-2.5">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-800">
+                  <span className="flex items-center gap-1.5">
+                    <Truck className="w-4 h-4 text-[#FF5722]" /> Check Delivery Speed
+                  </span>
+                  <span className="text-emerald-700">Nationwide Express</span>
                 </div>
-                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <Package className="w-5 h-5 text-purple-500" />
-                  <span className="text-sm font-medium text-gray-700">Gift Ready</span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={pincode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setPincode(val);
+                      if (val.length === 6) checkPincodeDelivery(val);
+                    }}
+                    placeholder="Enter 6-digit Pincode"
+                    className="flex-1 min-h-[44px] px-3.5 py-2 text-xs bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5722] font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => checkPincodeDelivery(pincode)}
+                    className="min-h-[44px] min-w-[44px] px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-colors"
+                  >
+                    Check
+                  </button>
                 </div>
-                {product.ageGroup && (
-                  <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <CheckCircle2 className="w-5 h-5 text-blue-500" />
-                    <span className="text-sm font-medium text-gray-700">Ages {product.ageGroup}</span>
-                  </div>
+                {pincodeStatus && (
+                  <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 pt-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> {pincodeStatus}
+                  </p>
                 )}
               </div>
 
-              {/* Kit Contents */}
-              {product.kitContents && product.kitContents.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="font-semibold text-gray-900 mb-3 font-outfit text-lg">What&apos;s inside the box?</h3>
-                  <ul className="space-y-2 bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
-                    {product.kitContents.map((item: string, idx: number) => (
-                      <li key={idx} className="flex items-start text-gray-700">
-                        <CheckCircle2 className="w-5 h-5 text-orange-500 mr-3 flex-shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="mt-auto pt-8 border-t border-gray-100">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl h-14">
-                    <button 
+              {/* Action Stepper, Add to Cart & Buy Now (44x44px touch targets) */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3">
+                  {/* Quantity Stepper */}
+                  <div className="flex items-center bg-[#FFFDF9] border border-[#EFE8DE] rounded-2xl overflow-hidden shadow-2xs">
+                    <button
+                      type="button"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-12 h-full flex items-center justify-center text-gray-500 hover:text-orange-600 hover:bg-gray-100 rounded-l-xl transition-colors"
+                      aria-label="Decrease quantity"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 font-bold transition-colors"
                     >
-                      <Minus className="w-4 h-4" />
+                      -
                     </button>
-                    <span className="w-12 text-center font-bold text-gray-900 select-none">
+                    <span className="w-10 text-center font-bold text-gray-900 font-mono select-none">
                       {quantity}
                     </span>
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => setQuantity(quantity + 1)}
-                      className="w-12 h-full flex items-center justify-center text-gray-500 hover:text-orange-600 hover:bg-gray-100 rounded-r-xl transition-colors"
+                      aria-label="Increase quantity"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 font-bold transition-colors"
                     >
-                      <Plus className="w-4 h-4" />
+                      +
                     </button>
                   </div>
-                  
+
+                  {/* Add To Cart */}
                   <button
+                    type="button"
                     onClick={handleAddToCart}
-                    className="flex-grow h-14 flex items-center justify-center gap-2 bg-white border-2 border-orange-500 text-orange-600 rounded-xl font-bold text-lg hover:bg-orange-50 transition-colors shadow-sm"
+                    className="flex-1 min-h-[48px] py-3 px-6 bg-white border-2 border-[#FF5722] text-[#FF5722] hover:bg-orange-50 font-heading font-bold text-base rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-95"
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    Add to Cart
+                    <ShoppingCart className="w-5 h-5" /> Add to Box
                   </button>
+
+                  {/* Wishlist Toggle */}
                   <button
+                    type="button"
                     onClick={handleToggleWishlist}
-                    aria-label={product && isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
-                    className={`h-14 w-14 flex-shrink-0 flex items-center justify-center rounded-xl border-2 transition-all ${
-                      product && isInWishlist(product.id)
-                        ? 'border-rose-500 bg-rose-500 text-white shadow-md'
-                        : 'border-gray-200 bg-gray-50 text-gray-500 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50'
+                    aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    className={`min-w-[48px] min-h-[48px] w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all ${
+                      isInWishlist(product.id)
+                        ? 'border-rose-500 bg-rose-500 text-white shadow-sm'
+                        : 'border-[#EFE8DE] bg-[#FFFDF9] text-gray-600 hover:text-rose-500 hover:border-rose-300'
                     }`}
                   >
-                    <Heart className={`w-6 h-6 ${product && isInWishlist(product.id) ? 'fill-current' : ''}`} />
+                    <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
                   </button>
                 </div>
-                
+
+                {/* Buy It Now CTA: Frictionless Guest Checkout */}
                 <button
+                  type="button"
                   onClick={handleBuyNow}
-                  className="w-full h-14 flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+                  className="w-full min-h-[48px] py-3.5 px-6 bg-gradient-to-r from-[#FF5722] to-[#FFA000] hover:from-[#E64A19] hover:to-[#FF8F00] text-white font-heading font-extrabold text-base rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
                 >
-                  <Zap className="w-5 h-5 fill-current" />
-                  Buy It Now
+                  <Zap className="w-5 h-5 fill-current" /> Buy Now (Guest Checkout)
                 </button>
               </div>
 
-              {/* Delivery info */}
-              <div className="flex items-center justify-between text-sm text-gray-500 mt-6 pt-6 border-t border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4" /> Free shipping over ₹499
-                </div>
-                <div className="flex items-center gap-2">
-                  <RotateCcw className="w-4 h-4" /> 7-day returns
-                </div>
+              {/* Guarantees */}
+              <div className="flex items-center justify-between text-xs text-gray-600 pt-3 border-t border-[#EFE8DE]">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> Non-Toxic & Child-Safe
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-[#FF5722]" /> Free Delivery over ₹499
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <RotateCcw className="w-4 h-4 text-indigo-600" /> 7-Day Easy Returns
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Full Description Section */}
-        <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-gray-100 mb-12">
-          <h2 className="text-2xl font-outfit font-bold text-gray-900 mb-6">Product Details</h2>
-          <div className="prose prose-orange max-w-none text-gray-600">
+        {/* Kit Contents Breakdown Section */}
+        <div className="mb-12">
+          <KitContentsBreakdown
+            kitContents={kitContents}
+            figureCount={figureCount}
+            paintType={paintType}
+            ageGroup={product.ageGroup || '5+'}
+          />
+        </div>
+
+        {/* Detailed Description & Craft Story */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EFE8DE] shadow-xs mb-12 space-y-4">
+          <h2 className="text-2xl font-heading font-extrabold text-gray-900">
+            About This Creative Craft Kit
+          </h2>
+          <div className="prose max-w-none text-sm sm:text-base text-gray-700 leading-relaxed space-y-3">
+            <p>{product.description}</p>
             <p>
-              Let your child&apos;s imagination run wild with the {product.name}. Our premium plaster painting kits are designed to provide hours of screen-free entertainment while developing fine motor skills and color recognition.
+              Each plaster figurine in this kit is carefully hand-poured using durable, porous plaster that absorbs watercolors and tempera effortlessly, creating rich, opaque finishes that little artists are proud to display on study desks and shelves.
             </p>
-            <p className="mt-4">
-              Each piece is carefully hand-poured using high-quality, durable plaster that absorbs paint beautifully, resulting in vibrant, lasting colors. The included paints are 100% non-toxic, water-based, and completely safe for little hands.
-            </p>
-            <h3 className="text-lg font-bold text-gray-900 mt-8 mb-4">Why choose our DIY kits?</h3>
-            <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Screen-Free Fun:</strong> A perfect way to keep kids engaged away from digital devices.</li>
-              <li><strong>Skill Development:</strong> Enhances hand-eye coordination, focus, and creative thinking.</li>
-              <li><strong>Perfect for Gifting:</strong> Comes in a beautiful, sturdy box ready to be gifted for birthdays or special occasions.</li>
-              <li><strong>Complete Set:</strong> Everything you need is included in the box—no extra trips to the craft store!</li>
-            </ul>
           </div>
         </div>
 
-        {/* Customer Reviews Section */}
-        <ProductReviewsSection product={product} />
+        {/* Verified Buyer Reviews Section */}
+        <div className="mb-12">
+          <VerifiedReviews productId={product.id} productName={product.name} />
+        </div>
 
-        {/* Related Products */}
+        {/* You May Also Like / Related Kits */}
         {relatedProducts.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-outfit font-bold text-gray-900 mb-8">You May Also Like</h2>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-heading font-extrabold text-gray-900">
+                You May Also Like
+              </h2>
+              <Link
+                href="/shop"
+                className="text-xs sm:text-sm font-bold text-[#FF5722] hover:underline min-h-[44px] flex items-center"
+              >
+                View All Kits &rarr;
+              </Link>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
@@ -393,354 +387,7 @@ export default function ProductClient({ initialProduct, initialRelatedProducts }
             </div>
           </div>
         )}
-
-        {/* Mobile Sticky Add to Cart Bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-gray-200 z-50 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-          <div>
-            <p className="text-[10px] text-gray-500 font-medium tracking-wide">Total Price ({quantity} {quantity > 1 ? 'items' : 'item'})</p>
-            <p className="text-lg font-extrabold text-orange-600 leading-tight">
-              {formatPrice(product.price * quantity)}
-              {product.compareAtPrice && product.compareAtPrice > product.price && (
-                <span className="line-through text-xs text-gray-400 font-normal ml-1.5">
-                  {formatPrice(product.compareAtPrice * quantity)}
-                </span>
-              )}
-            </p>
-          </div>
-          <button
-            onClick={handleAddToCart}
-            className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold px-6 py-3 rounded-full shadow-md hover:from-orange-600 hover:to-amber-600 active:scale-95 transition-all text-sm flex items-center gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" /> Add to Cart
-          </button>
-        </div>
       </div>
-
-      {/* Structured Data (JSON-LD) for Search & AI Engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org/',
-            '@type': 'Product',
-            name: product.name,
-            image: productImages.map((img: string) => (img.startsWith('http') ? img : `https://www.rangaroo.store${img}`)),
-            description: product.description,
-            sku: product.id,
-            brand: {
-              '@type': 'Brand',
-              name: 'Rangaroo',
-            },
-            offers: {
-              '@type': 'Offer',
-              url: `https://www.rangaroo.store/products/${product.slug}`,
-              priceCurrency: 'INR',
-              price: product.price,
-              availability: 'https://schema.org/InStock',
-              itemCondition: 'https://schema.org/NewCondition',
-            },
-          }),
-        }}
-      />
-    </div>
-  );
-}
-
-function ProductHeaderRating({ productId }: { productId: string }) {
-  const [summary, setSummary] = useState({ averageRating: 0, totalReviews: 0 });
-
-  useEffect(() => {
-    if (productId) {
-      fetch(`/api/reviews?productId=${productId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.summary) setSummary(data.summary);
-        })
-        .catch((err) => console.error(err));
-    }
-  }, [productId]);
-
-  if (summary.totalReviews === 0) {
-    return (
-      <div className="flex items-center gap-2 mb-6">
-        <div className="flex text-gray-300">
-          {[...Array(5)].map((_, i) => (
-            <Star key={i} className="w-4 h-4" />
-          ))}
-        </div>
-        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-          No reviews yet
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-3 mb-6">
-      <div className="flex text-amber-400">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-5 h-5 ${i < Math.round(summary.averageRating) ? 'fill-current' : 'text-gray-200'}`}
-          />
-        ))}
-      </div>
-      <span className="text-sm font-bold text-gray-700">
-        {summary.averageRating} ({summary.totalReviews} {summary.totalReviews === 1 ? 'review' : 'reviews'})
-      </span>
-    </div>
-  );
-}
-
-function ProductReviewsSection({ product }: { product: any }) {
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewSummary, setReviewSummary] = useState({
-    averageRating: 0,
-    totalReviews: 0,
-    ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Form State
-  const [showForm, setShowForm] = useState(false);
-  const [customerName, setCustomerName] = useState('');
-  const [rating, setRating] = useState(5);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [title, setTitle] = useState('');
-  const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (product?.id) {
-      let isMounted = true;
-      queueMicrotask(() => {
-        if (isMounted) setIsLoading(true);
-      });
-      fetch(`/api/reviews?productId=${product.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (!isMounted) return;
-          if (data.reviews) setReviews(data.reviews);
-          if (data.summary) setReviewSummary(data.summary);
-        })
-        .catch((err) => console.error('Reviews load error:', err))
-        .finally(() => {
-          if (isMounted) setIsLoading(false);
-        });
-      return () => {
-        isMounted = false;
-      };
-    }
-  }, [product?.id]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!comment.trim()) {
-      toast.error('Please enter a review comment');
-      return;
-    }
-
-    setIsSubmitting(true);
-    const toastId = toast.loading('Publishing your review...');
-
-    try {
-      const res = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          customerName: customerName.trim() || 'Verified Customer',
-          rating,
-          title,
-          comment,
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success('Thank you! Your review has been submitted.', { id: toastId });
-        if (data.review) setReviews((prev) => [data.review, ...prev]);
-        if (data.summary) setReviewSummary(data.summary);
-        setCustomerName('');
-        setTitle('');
-        setComment('');
-        setRating(5);
-        setShowForm(false);
-      } else {
-        toast.error(data.error || 'Failed to submit review', { id: toastId });
-      }
-    } catch (err: any) {
-      console.error('Submit review error:', err);
-      toast.error('Failed to submit review', { id: toastId });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-gray-100 mb-16">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-gray-100 mb-8">
-        <div>
-          <h2 className="text-2xl font-outfit font-bold text-gray-900">Customer Reviews</h2>
-          <div className="flex items-center gap-3 mt-2">
-            {reviewSummary.totalReviews > 0 ? (
-              <>
-                <div className="flex items-center text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 ${i < Math.round(reviewSummary.averageRating) ? 'fill-current' : 'text-gray-200'}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-lg font-extrabold text-gray-900">{reviewSummary.averageRating} out of 5</span>
-                <span className="text-sm text-gray-500">• {reviewSummary.totalReviews} {reviewSummary.totalReviews === 1 ? 'review' : 'reviews'}</span>
-              </>
-            ) : (
-              <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                ★ No reviews yet — Be the first to review!
-              </span>
-            )}
-          </div>
-        </div>
-
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-sm w-fit"
-        >
-          {showForm ? 'Cancel Review' : 'Write a Review'}
-        </button>
-      </div>
-
-      {/* Review Submission Form */}
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-orange-50/40 border border-orange-100 rounded-2xl p-6 mb-10 space-y-4">
-          <h3 className="font-outfit font-bold text-lg text-gray-900">Share Your Experience with {product.name}</h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Your Name</label>
-              <input
-                type="text"
-                placeholder="e.g. Priya Sharma"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Rating</label>
-              <div className="flex items-center gap-1.5 pt-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="p-1 focus:outline-none transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`w-7 h-7 ${
-                        star <= (hoverRating || rating)
-                          ? 'text-amber-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  </button>
-                ))}
-                <span className="text-xs font-bold text-gray-600 ml-2">{hoverRating || rating} Stars</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Review Title</label>
-            <input
-              type="text"
-              placeholder="e.g. Great quality kit! My daughter loved painting it."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Your Review</label>
-            <textarea
-              rows={3}
-              required
-              placeholder="Write your feedback about plaster quality, non-toxic colors, packaging, etc..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-5 py-2.5 border border-gray-300 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm disabled:opacity-50"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Reviews List */}
-      {isLoading ? (
-        <div className="py-6">
-          <ReviewSkeleton />
-        </div>
-      ) : reviews.length === 0 ? (
-        <div className="py-12 text-center text-gray-500 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-          <p className="font-semibold text-gray-700">No customer reviews for this product yet.</p>
-          <p className="text-xs text-gray-400 mt-1">Be the first young artist or parent to post a review after painting!</p>
-        </div>
-      ) : (
-        <div className="space-y-6 divide-y divide-gray-100">
-          {reviews.map((rev) => (
-            <div key={rev.id} className="pt-6 first:pt-0">
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-amber-400 text-white font-bold text-sm flex items-center justify-center shadow-sm">
-                    {rev.customerName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                      {rev.customerName}
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">
-                        ✔ Verified Buyer
-                      </span>
-                    </h4>
-                    <div className="flex items-center text-amber-400 text-xs mt-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-current' : 'text-gray-200'}`} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400">
-                  {new Date(rev.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </span>
-              </div>
-
-              {rev.title && <h5 className="font-bold text-gray-800 text-sm mt-2">{rev.title}</h5>}
-              <p className="text-sm text-gray-600 mt-1 leading-relaxed">{rev.comment}</p>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

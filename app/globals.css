@@ -7,31 +7,40 @@
   --font-body: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
 
   --color-brand-orange: #FF5722;
-  --color-brand-amber: #FFB300;
+  --color-brand-amber: #FFA000;
+  --color-brand-terracotta: #FF5722;
+  --color-brand-honey: #FFA000;
+  --color-brand-sandstone: #EFE8DE;
+  --color-brand-linen: #FFFDF9;
   --color-brand-purple: #7C3AED;
-  --color-brand-cream: #FFF9F2;
+  --color-brand-cream: #FFFDF9;
   --color-brand-pink: #FF69B4;
   --color-brand-green: #25D366;
   --color-brand-dark: #1a1a2e;
 }
 
 :root {
-  /* Brand Colors */
+  /* Indian DTC Craft Design Tokens */
+  --brand-linen: #FFFDF9;
+  --brand-terracotta: #FF5722;
+  --brand-honey: #FFA000;
+  --brand-sandstone: #EFE8DE;
+
   --brand-orange: #FF5722;
   --brand-orange-light: #FF8A65;
   --brand-orange-dark: #E64A19;
   
-  --brand-amber: #FFB300;
+  --brand-amber: #FFA000;
   --brand-amber-light: #FFCA28;
-  --brand-amber-dark: #FFA000;
+  --brand-amber-dark: #FF8F00;
   
   --brand-purple: #7C3AED;
   --brand-purple-light: #9333EA;
   --brand-purple-dark: #6D28D9;
   
-  --brand-cream: #FFF9F2;
+  --brand-cream: #FFFDF9;
   --brand-cream-light: #FFFFFF;
-  --brand-cream-dark: #F2EBE1;
+  --brand-cream-dark: #EFE8DE;
   
   --brand-pink: #FF69B4;
   --brand-pink-light: #FFB6C1;
@@ -476,6 +485,8 @@ p {
   background: linear-gradient(135deg, var(--brand-orange), var(--brand-amber));
   color: white;
   border-radius: var(--radius-full);
+  min-height: 44px;
+  min-width: 44px;
   padding: 0.75rem 2rem;
   font-weight: 600;
   font-family: 'Outfit', sans-serif;
@@ -497,6 +508,8 @@ p {
   color: var(--brand-orange);
   border: 2px solid var(--brand-orange);
   border-radius: var(--radius-full);
+  min-height: 44px;
+  min-width: 44px;
   padding: 0.75rem 2rem;
   font-weight: 600;
   font-family: 'Outfit', sans-serif;
@@ -506,6 +519,36 @@ p {
 .btn-secondary:hover {
   background: var(--brand-cream);
   transform: translateY(-2px);
+}
+
+/* Touch Targets - WCAG 2.2 AA Minimum 44x44px */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Indian DTC Craft Aesthetic Cards & Surfaces */
+.craft-surface {
+  background-color: var(--brand-linen);
+  border: 1px solid var(--brand-sandstone);
+}
+
+.craft-panel {
+  background-color: #FFFFFF;
+  border: 1px solid var(--brand-sandstone);
+  box-shadow: 0 8px 30px -4px rgba(239, 232, 222, 0.8);
+}
+
+.craft-card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.craft-card-hover:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand-amber);
+  box-shadow: 0 12px 30px -6px rgba(255, 87, 34, 0.15);
 }
 
 /* Badges */
